@@ -35,7 +35,7 @@
     var $tool;
     var $tool_videos;
     var video_items = [];
-    var $bad_video_text = $('<span class="bad-video-text">Oops!<br>Some video links are broken.<br>Please press "Keep Going" or refresh the page.</span>');
+    var $bad_video_text = $('<span class="bad-video-text">Oops!<br>Some video links are broken.<br>Please press "Keep Going" to skip this video batch.</span>');
     var $error_text = $('<span class="error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
     var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
@@ -126,7 +126,7 @@
     // Set a batch of labeled video clips back to the server
     function sendVideoBatch(callback) {
       callback = safeGet(callback, {});
-      var labels = collectLabels();
+      var labels = collectAndRemoveLabels();
       showLoadingMsg();
       if (labels.length == 0) {
         if (typeof callback["success"] === "function") callback["success"]();
@@ -155,15 +155,18 @@
     }
 
     // Collect labels from the user interface
-    function collectLabels() {
+    function collectAndRemoveLabels() {
       var labels = [];
       $tool_videos.find("a").each(function () {
         var $item = $(this);
+        var video_id = $item.data("id");
+        if (typeof video_id === "undefined") return;
         var is_selected = $item.hasClass("selected") ? 1 : 0;
         labels.push({
-          video_id: $item.data("id"),
+          video_id: video_id,
           label: is_selected
         });
+        $item.removeData("id")
       });
       return labels;
     }
@@ -321,9 +324,9 @@
     // When getting a batch of videos successfully, update videos
     function onGetVideoBatchSuccess(data, callback) {
       if (typeof data === "undefined") {
-        console.warn("The server does not return any data.");
+        console.error("The server does not return any data.");
         showNoDataMsg();
-        if (typeof callback["abort"] === "function") callback["abort"]();
+        if (typeof callback["error"] === "function") callback["error"]();
       } else {
         updateVideos(data["data"], {
           success: function () {

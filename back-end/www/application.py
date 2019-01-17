@@ -60,7 +60,7 @@ if app.config["ENV"] == "production":
     dir_name = os.path.dirname(custom_log_path)
     if dir_name != "" and not os.path.exists(dir_name):
         os.makedirs(dir_name) # create directory if it does not exist
-    formatter = logging.Formatter("[%(asctime)s] [%(ip)s] [%(agent)s] [%(path)s] [%(method)s] %(levelname)s:\n\n%(message)s\n")
+    formatter = logging.Formatter("[%(asctime)s] [%(ip)s] [%(agent)s] [%(path)s] [%(method)s] %(levelname)s:\n\n\t%(message)s\n")
     handler = logging.handlers.RotatingFileHandler(custom_log_path, mode="a", maxBytes=100000000, backupCount=200)
     handler.setFormatter(formatter)
     logger = logging.getLogger("video_labeling_tool")
@@ -354,7 +354,7 @@ def get_pos_labels():
     if user_id is None:
         q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).paginate(page_number, page_size, False)
     else:
-        q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).paginate(page_number, page_size, False)
+        q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
     return jsonify_videos(q.items, total=q.total)
 
 """
@@ -467,12 +467,13 @@ For consistency, we always use -1 to indicate 0b10, the initial state that has n
 def label_state_machine(s, label, client_type):
     next_s = None
     undefined_labels = [0b101, 0b100, 0b11, -1]
-    # Sanity check, can only use undefined labels (not terminal state)
-    if s not in undefined_labels: return None
     # Researchers will always override the state
     if client_type == 0:
         if label == 1: next_s = 0b10111 # strong pos
         elif label == 0: next_s = 0b10000 # strong neg
+    else:
+        # Sanity check, can only use undefined labels (not terminal state)
+        if s not in undefined_labels: return None
     # Experts, amateurs, and laypeople
     if client_type == 1: # experts
         if s == -1: # 0b10 no data, no discord
