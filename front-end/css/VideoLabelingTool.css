@@ -1,0 +1,125 @@
+/*************************************************************************
+ * GitHub: https://github.com/yenchiah/video-labeling-tool-front-end
+ * Version: v0.1
+ *************************************************************************/
+
+.video-labeling-tool {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+  min-height: 200px;
+}
+
+.video-labeling-tool .video-labeling-tool-videos {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+}
+
+.video-labeling-tool .error-text {
+  color: #ff5e5e;
+  text-align: center;
+  flex: 1 0 100%;
+  max-width: 100%;
+  font-size: 18px;
+  padding: 10px 0;
+}
+
+.video-labeling-tool .no-data-text {
+  color: #63ff5e;
+  text-align: center;
+  flex: 1 0 100%;
+  max-width: 100%;
+  font-size: 18px;
+  padding: 10px 0;
+}
+
+.video-labeling-tool .bad-video-text {
+  color: #3be4ff;
+  text-align: center;
+  flex: 1 0 100%;
+  max-width: 100%;
+  font-size: 18px;
+  padding: 10px 0;
+}
+
+.video-labeling-tool .loading-text {
+  color: #3be4ff;
+  text-align: center;
+  flex: 1 0 100%;
+  max-width: 100%;
+  font-size: 18px;
+  padding: 10px 0;
+  min-height: 100px;
+  background-image: url(../img/loading.gif);
+  background-repeat: no-repeat;
+  background-size: 50px 50px;
+  background-position: center;
+}
+
+.video-labeling-tool a {
+  color: black;
+  text-decoration: none;
+  padding: 10px;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.video-labeling-tool a video {
+  border-radius: 2px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 10px solid #212121;
+  background-image: url(../img/loading.gif);
+  background-repeat: no-repeat;
+  background-size: 50px 50px;
+  background-position: center;
+  min-height: 100px;
+}
+
+.video-labeling-tool a.selected video {
+  border: 10px solid red;
+}
+
+.video-labeling-tool a>div {
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 24px;
+  line-height: 24px;
+}
+
+.video-labeling-tool a.selected>div {
+  color: red;
+}
+
+@media screen and (min-width: 500px) {
+  .video-labeling-tool a {
+    flex: 1 0 50%;
+    max-width: 50%;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .video-labeling-tool a {
+    flex: 1 0 100%;
+    max-width: 100%;
+  }
+}

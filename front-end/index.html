@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Smoke Labeling</title>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/VideoLabelingTool.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/Tracker.js"></script>
+  <script src="js/VideoLabelingTool.js"></script>
+  <script src="js/index.js"></script>
+  <!-- Start for Google Sign-In -->
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <!-- End for Google Sign-In -->
+</head>
+
+<body>
+  <div class="menu-container">
+    <div class="menu">
+      <div class="menu-table flex-row-space-between">
+        <div class="logo flex-row-center">
+          <a href="index.html">Smoke Labeling</a>
+        </div>
+        <a class="menu-button" tabindex="0" href="javascript:void(0)">
+          <img src="img/menu.png">
+        </a>
+        <div class="menu-items flex-row-center flex-item">
+          <a href="index.html" class="menu-highlight">Overview</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="javascript:void(0)" id="account">Account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-container">
+    <div class="content">
+      <div class="content-table flex-column">
+        <div class="flex-row init-show">
+          <div class="flex-item flex-column">
+            <p class="text intro-text">
+              This tool is developed by the <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> for <span class="custom-text-info-dark-theme">labeling smoke emissions</span> from a batch of short air quality monitoring videos.
+              Here are examples that show <span class="custom-text-info-dark-theme">smoke</span>.
+            </p>
+          </div>
+        </div>
+        <div class="gallery init-show">
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-01.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=1094.08&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-09-24.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=936.5&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-01.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=926.25&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-06-11.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=985&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+        </div>
+        <div class="flex-row init-show">
+          <div class="flex-item flex-column">
+            <p class="text">
+              Here are examples that show <span class="custom-text-danger-dark-theme">mainly steam</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
+            </p>
+          </div>
+        </div>
+        <div class="gallery init-show">
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-16.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=303.75&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-01.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=431.5&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-30.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=370.92&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-09-29.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=754.75&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+        </div>
+        <div class="flex-row init-show">
+          <div class="flex-item flex-column">
+            <p class="text">
+              Here are examples that show <span class="custom-text-danger-dark-theme">bad weather</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
+            </p>
+          </div>
+        </div>
+        <div class="gallery init-show">
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-09-29.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=1017.25&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-11-02.timemachine/&boundsLTRB=2330,690,3730,2090&width=175&height=175&startFrame=4950&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-10-28.timemachine/&boundsLTRB=2330,690,3730,2090&width=175&height=175&startFrame=12679&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline>
+              <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-11-02.timemachine/&boundsLTRB=2330,690,3730,2090&width=175&height=175&startFrame=7153&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
+            </video>
+          </a>
+        </div>
+        <div class="flex-row init-show">
+          <div class="flex-item flex-column full-width">
+            <div class="control-group">
+              <button id="start" class="custom-button-flat stretch-on-mobile"><img src="img/play.png"><span>Start Labeling</span></button>
+            </div>
+          </div>
+        </div>
+        <div class="flex-row init-hidden">
+          <div class="flex-item flex-column">
+            <p class="text label-text">
+              Select videos that have <span class="custom-text-info-dark-theme">smoke</span> by clicking.
+              Clicking again to deselect.
+              <span class="custom-text-info-dark-theme">Skip a video if you are not sure about it.</span>
+              Gold standards with answers are randomly placed.
+              You will gain scores if they are answered correctly.
+            </p>
+          </div>
+        </div>
+        <div id="labeling-tool-container" class="init-hidden"></div>
+        <div class="flex-row init-hidden">
+          <div class="flex-item flex-column full-width">
+            <div class="control-group">
+              <button id="next" class="custom-button-flat stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
+              <a id="review" class="custom-button-flat stretch-on-mobile" href="" target="_blank"><img src="img/collection.png"><span>My Collection</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
+    <p id="sign-in-text">Sign in to track your personal achievements.</p>
+    <p id="hello-text"></p>
+    <div id="google-sign-in-button" class="g-signin2"></div>
+    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
+    <button id="guest-button" class="custom-button">Continue as guest</button>
+  </div>
+  <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
+    <p>Videos on this page did not autoplay. Please enable it.</p>
+    <button id="play-video-button" class="custom-button">Enable video autoplay</button>
+  </div>
+</body>
+
+</html>

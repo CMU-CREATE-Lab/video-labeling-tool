@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Smoke Labeling</title>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="lib/pagination/pagination.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="lib/pagination/pagination.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/gallery.js"></script>
+</head>
+
+<body>
+  <div class="menu-container">
+    <div class="menu">
+      <div class="menu-table flex-row-space-between">
+        <div class="logo flex-row-center">
+          <a href="index.html">Smoke Labeling</a>
+        </div>
+        <a class="menu-button" tabindex="0" href="javascript:void(0)">
+          <img src="img/menu.png">
+        </a>
+        <div class="menu-items flex-row-center flex-item">
+          <a href="index.html">Overview</a>
+          <a href="gallery.html" class="menu-highlight">Gallery</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-container">
+    <div class="content">
+      <div class="content-table flex-column">
+        <div class="flex-row">
+          <div class="flex-item flex-column">
+            <p class="text intro-text">
+              We greatly appreciate the efforts taken by the community to find smoke emissions from monitoring cameras. These are the <span class="custom-text-info-dark-theme">smoke videos</span> labeled by using this tool.
+            </p>
+          </div>
+        </div>
+        <div class="gallery"><div class="gallery-videos"></div></div>
+        <div class="flex-row">
+          <div class="flex-item flex-column full-width">
+            <div id="page-control" class="control-group init-hidden">
+              <button id="page-back" class="custom-button-flat stretch-on-mobile" disabled><img src="img/back.png"><span>Back</span></button>
+              <div id="page-navigator" class="stretch-on-mobile"></div>
+              <button id="page-next" class="custom-button-flat stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
+    <p>Videos on this page did not autoplay. Please enable it.</p>
+    <button id="play-video-button" class="custom-button">Enable video autoplay</button>
+  </div>
+</body>
+
+</html>
