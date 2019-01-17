@@ -25,26 +25,28 @@ sudo service mysql start
 # For mac
 brew services start mysql
 ```
-Set the user name and password for the application. Replace [DATABASE_USERNAME] and [DATABASE_PASSWORD] with the database user name and password respectively.
+Set the user name and password for the application. Replace [DATABASE_USERNAME] and [DATABASE_PASSWORD] with your desired database user name and password respectively.
 ```sh
 sudo mysql -u root -p
 # Run the followings in the mysql shell
 CREATE USER '[DATABASE_USERNAME]'@'localhost' IDENTIFIED BY '[DATABASE_PASSWORD]';
 GRANT ALL PRIVILEGES ON *.* TO '[DATABASE_USERNAME]'@'localhost' WITH GRANT OPTION;
 ```
-Create database in the mysql shell.
+Create the database in the mysql shell.
 ```sh
 # If on the production server
-create database video_labeling_tool_production
+create database video_labeling_tool_production;
 
-# If on the development server
-create database video_labeling_tool_development
-
+# If on the development server or your local computer
+create database video_labeling_tool_development;
+```
+If the database exists, drop it and then create it again in the mysql shell.
+```sh
 # For droping database on the production server
-drop database video_labeling_tool_production
+drop database video_labeling_tool_production;
 
-# For droping database on the development server
-drop database video_labeling_tool_development
+# For droping database on the development server or your local computer
+drop database video_labeling_tool_development;
 ```
 # Setup back-end
 Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/docs/user-guide/getting-started.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
@@ -99,16 +101,22 @@ Generate the server private key. This will add a file "private_key" in the "back
 cd video-labeling-tool/back-end/www/
 python gen_key.py confirm
 ```
-Create the first database migration. The workfow is documented on the [flask-migrate](https://flask-migrate.readthedocs.io/en/latest/) website. [This blog](https://www.patricksoftwareblog.com/tag/flask-migrate/) also provides a tutorial. The script "db.sh" enhances the workflow by adding the FLASK_APP environment.
+Create and upgrade the database by using the migration workfow documented on the [flask-migrate](https://flask-migrate.readthedocs.io/en/latest/) website. [This blog](https://www.patricksoftwareblog.com/tag/flask-migrate/) also provides a tutorial. The script "db.sh" enhances the workflow by adding the FLASK_APP environment.
 ```sh
-sh db.sh init
-sh db.sh migrate "initial migration"
 sh db.sh upgrade
+```
+Here are some other migration commands that can be useful. You do not need to run these for normal usage.
+```sh
+# Generate the migration directory
+sh db.sh init
 
-# For downgrade
+# Generate the migration script
+sh db.sh migrate "initial migration"
+
+# Downgrade the database to a previous state
 sh db.sh downgrade
 ```
-Add testing videos (optional).
+Add testing videos (optional) or your own videos.
 ```sh
 python add_video_set_small.py confirm
 python add_video_set_large.py confirm
