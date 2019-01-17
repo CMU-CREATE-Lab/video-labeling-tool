@@ -1,9 +1,5 @@
-/*************************************************************************
- * GitHub: https://github.com/yenchiah/video-labeling-tool-front-end
- * Version: v0.1
- *************************************************************************/
-
 /*
+ * TODO: remove google-signin-client_id meta name from the index.html
  * TODO: add a playback timeline bar to show the video playback time
  * TODO: if the labels are rejected (due to poor quality), need to let user know
  * TODO: an admin panel for only reseachers (client_type=0) to view and edit labels
