@@ -22,3 +22,6 @@ pip install requests==2.21.0
 
 # MySQL
 pip install mysqlclient==1.3.14
+
+# Others
+pip install pytz==2018.9
