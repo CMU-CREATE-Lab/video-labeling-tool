@@ -106,7 +106,7 @@ class Video(db.Model):
     # For example, a point (x, y) on the video has a global coordinate (left + x*scale, top + y*scale)
     width = db.Column(db.Integer, nullable=False)
     height = db.Column(db.Integer, nullable=False)
-    scale = db.Column(db.Integer, nullable=False)
+    scale = db.Column(db.Float, nullable=False)
     # For the global large panorama, the origin (0, 0) is at the top-right corner
     # The top-left point coordinate (x, y) of the video relative to the large panorama
     left = db.Column(db.Integer, nullable=False)

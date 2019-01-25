@@ -1,0 +1,20 @@
+{
+  "clairton1": [
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-22.timemachine/&width=180&height=180&startFrame=4988&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=6327,787,6842,1302&labelsFromDataset&nframes=24",
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-18.timemachine/&width=180&height=180&startFrame=7944&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=5688,730,6529,1571&labelsFromDataset&nframes=24",
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-17.timemachine/&width=180&height=180&startFrame=5521&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=3891,839,4635,1583&labelsFromDataset&nframes=24",
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&width=180&height=180&startFrame=6985&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=3408,783,4260,1635&labelsFromDataset&nframes=24",
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-12-13.timemachine/&width=180&height=180&startFrame=3351&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=2551,938,3162,1549&labelsFromDataset&nframes=24",
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&width=180&height=180&startFrame=9506&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=2860,964,3680,1784&labelsFromDataset&nframes=24"
+  ],
+  "walnuttowers2": [
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/walnuttowers2/2019-01-01.timemachine/&width=180&height=180&startFrame=6260&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=474,1663,1535,2724&labelsFromDataset&nframes=24"
+  ],
+  "braddock1": [
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/braddock1/2018-08-24.timemachine/&width=180&height=180&startFrame=7452&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=3018,478,3536,996&labelsFromDataset&nframes=24"
+  ],
+  "westmifflin1": [
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/westmifflin1/2018-06-12.timemachine/&width=180&height=180&startFrame=4128&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=2502,1543,3126,2167&labelsFromDataset&nframes=24",
+    "https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/westmifflin1/2018-12-28.timemachine/&width=180&height=180&startFrame=6479&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=527,1296,1456,2225&labelsFromDataset&nframes=24"
+  ]
+}
