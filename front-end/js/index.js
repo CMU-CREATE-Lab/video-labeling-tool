@@ -245,6 +245,7 @@
               error: function (xhr) {
                 console.error("Error when updating user id when updating user id by client id!");
                 printServerErrorMsg(xhr);
+                $("#start").prop("disabled", true).find("span").text("Error when connecting to server");
               }
             });
           }

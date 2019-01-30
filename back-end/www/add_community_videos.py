@@ -5,6 +5,7 @@ import pytz
 import numpy as np
 import json
 from urllib.parse import urlparse, parse_qs
+import re
 
 video_size = 180
 
@@ -14,7 +15,7 @@ with open("../data/video_samples.json") as f:
 
 # The sun set and rise time in Pittsburgh
 # Format: [[Jan_sunrise, Jan_sunset], [Feb_sunrise, Feb_sunset], ...]
-pittsburgh_sun_table = [(8,5), (8,5), (7,7), (7,7), (6,8), (6,9), (6,9), (6,8), (7,7), (7,7), (8,5), (8,5)]
+pittsburgh_sun_table = [(8,17), (8,17), (8,19), (7,19), (6,20), (6,20), (6,20), (7,20), (7,19), (7,18), (8,17), (8,17)]
 
 def request_json(url):
     r = requests.get(url)
@@ -50,7 +51,7 @@ def parse_cam_data(data):
 # fmt: format (str), "gif" or "mp4" or "png"
 # fps: frames per second (int)
 # nf: number of frames (int)
-def get_url_part(cam_id=None, ds=None, b=None, w=180, h=180, sf=None, fmt="mp4", fps=12, nf=24):
+def get_url_part(cam_id=None, ds=None, b=None, w=180, h=180, sf=None, fmt="mp4", fps=12, nf=36):
     return "?root=http://tiles.cmucreatelab.org/ecam/timemachines/%s/%s.timemachine/&boundsLTRB=%r,%r,%r,%r&width=%r&height=%r&startFrame=%r&format=%s&fps=%r&tileFormat=mp4&nframes=%r" % (cam_id, ds, b["L"], b["T"], b["R"], b["B"], w, h, sf, fmt, fps, nf)
 
 def get_tm_json_url(cam_id=None, ds=None):
@@ -58,7 +59,7 @@ def get_tm_json_url(cam_id=None, ds=None):
 
 # Given a capture time array (from time machine), sample a start frame parameter set with size n
 # nf: number of frames of the video
-def sample_start_frame(ct_list, n=1, nf=24):
+def sample_start_frame(ct_list, n=1, nf=36):
     sunset = None
     sunrise = None
     frame_min = None
@@ -129,7 +130,7 @@ def check_url(url_part):
 
 # Given a capture time array (from time machine), divide it into a set of start time frames
 # nf: number of frames of the video
-def divide_start_frame(ct_list, nf=24):
+def divide_start_frame(ct_list, nf=36):
     sunset = None
     sunrise = None
     frame_min = None
@@ -162,28 +163,32 @@ def divide_start_frame(ct_list, nf=24):
         ef_dt_list.append(strptime_1(ct_list[ef]))
     return (sf_list, sf_dt_list, ef_dt_list)
 
+def get_datetime_str_from_url(url):
+    m = re.search("\d+-\d+-\d+\.timemachine", url)
+    return m.group(0).split(".")[0]
+
 def add_videos(dt_map):
-    for k in dt_map:
-        for dt in dt_map[k]:
-            for url in video_samples[k]:
-                ds = dt.strftime("%Y-%m-%d")
-                tm_json = request_json(get_tm_json_url(cam_id=k, ds=ds))
-                if tm_json is None: continue
-                sf_list, sf_dt_list, ef_dt_list = divide_start_frame(tm_json["capture-times"])
-                if sf_list is None: continue
-                b_str = parse_qs(urlparse(url).query)["boundsLTRB"][0]
-                b_str_split = list(map(int, b_str.split(",")))
-                b = {"L": b_str_split[0], "T": b_str_split[1], "R": b_str_split[2], "B": b_str_split[3]}
-                for i in range(len(sf_list)):
-                    sf = sf_list[i]
-                    url_part = get_url_part(cam_id=k, ds=ds, b=b, sf=sf, w=video_size, h=video_size)
-                    if check_url(url_part):
-                        s = (b["R"] - b["L"]) / video_size
-                        st = int(sf_dt_list[i].timestamp())
-                        et = int(ef_dt_list[i].timestamp())
-                        fn = "%s-%s-%r-%r-%r-%r-%r-%r-%r-%r-%r" % (k, ds, b["L"], b["T"], b["R"], b["B"], video_size, video_size, sf, st, et)
-                        video = add_video(file_name=fn, start_time=st, end_time=et, width=video_size, height=video_size, scale=s, left=b["L"], top=b["T"], url_part=url_part)
-                        print(video)
+    for k in video_samples:
+        for url in video_samples[k]:
+            if url == "": continue
+            ds = get_datetime_str_from_url(url)
+            tm_json = request_json(get_tm_json_url(cam_id=k, ds=ds))
+            if tm_json is None: continue
+            sf_list, sf_dt_list, ef_dt_list = divide_start_frame(tm_json["capture-times"])
+            if sf_list is None: continue
+            b_str = parse_qs(urlparse(url).query)["boundsLTRB"][0]
+            b_str_split = list(map(int, b_str.split(",")))
+            b = {"L": b_str_split[0], "T": b_str_split[1], "R": b_str_split[2], "B": b_str_split[3]}
+            for i in range(len(sf_list)):
+                sf = sf_list[i]
+                url_part = get_url_part(cam_id=k, ds=ds, b=b, sf=sf, w=video_size, h=video_size)
+                if check_url(url_part):
+                    s = (b["R"] - b["L"]) / video_size
+                    st = int(sf_dt_list[i].timestamp())
+                    et = int(ef_dt_list[i].timestamp())
+                    fn = "%s-%s-%r-%r-%r-%r-%r-%r-%r-%r-%r" % (k, ds, b["L"], b["T"], b["R"], b["B"], video_size, video_size, sf, st, et)
+                    video = add_video(file_name=fn, start_time=st, end_time=et, width=video_size, height=video_size, scale=s, left=b["L"], top=b["T"], url_part=url_part)
+                    print(video)
 
 def add_videos_sampling(dt_map, n_sf=1, n_b=50):
     for k in dt_map:
@@ -209,6 +214,13 @@ def add_videos_sampling(dt_map, n_sf=1, n_b=50):
 def main():
     cam_data = request_json("https://breathecam.cmucreatelab.org/camera_findings")
     dt_map = parse_cam_data(cam_data)
+    for k in dt_map:
+        print("==============================")
+        print(k)
+        dt_map_k = dt_map[k]
+        for m in sorted(dt_map_k):
+            print(m)
+    print("==============================")
     add_videos(dt_map)
     print("END")
 
