@@ -283,7 +283,7 @@ def get_batch():
             e = InvalidUsage(ex.args[0], status_code=401)
             return handle_invalid_usage(e)
         # Query videos (active learning or random sampling)
-        video_batch = query_video_batch()
+        video_batch = query_video_batch(user_id)
         if len(video_batch) < batch_size:
             return make_response("", 204)
         else:
@@ -354,8 +354,8 @@ def get_pos_labels():
     if user_id is None:
         q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).paginate(page_number, page_size, False)
     else:
-        q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
-        #q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
+        #q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
+        q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
     return jsonify_videos(q.items, total=q.total)
 
 """
@@ -575,8 +575,10 @@ def add_batch(**kwargs):
 """
 Query a batch of videos for labeling by using active learning or random sampling
 """
-def query_video_batch():
-    q = Video.query.filter(Video.label_state.in_((-1, 0b11, 0b100, 0b101)))
+def query_video_batch(user_id):
+    v_ids = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).distinct().with_entities(Video.id).all()
+    q = Video.query.filter(and_(Video.label_state.in_((-1, 0b11, 0b100, 0b101)), Video.id.notin_([v[0] for v in v_ids])))
+    #q = Video.query.filter(Video.label_state.in_((-1, 0b11, 0b100, 0b101)))
     return q.order_by(func.random()).limit(batch_size).all()
 
 """

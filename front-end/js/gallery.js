@@ -20,6 +20,7 @@
   var $page_next;
   var $page_control;
   var is_first_time = true;
+  var user_id;
 
   function unpackVars(str) {
     var vars = {};
@@ -70,10 +71,22 @@
     $gallery.empty().append($gallery_error_text);
   }
 
-  function createVideo() {
+  function createVideo(v) {
     var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
     var $vid = $("<video autoplay preload loop muted playsinline></video>");
     $item.append($vid);
+    if (typeof user_id !== "undefined") {
+      var $i;
+      var s = v["label_state"];
+      if ([19, 15, 23, 47].indexOf(s) != -1) {
+        $i = $("<i>Y</i>").addClass("custom-text-primary-dark-theme");
+      } else if ([20, 12, 16, 32].indexOf(s) != -1) {
+        $i = $("<i>N</i>").addClass("custom-text-danger-dark-theme");
+      } else {
+        $i = $("<i>?</i>").addClass("custom-text-info-dark-theme");
+      }
+      $item.append($i);
+    }
     return $item;
   }
 
@@ -83,7 +96,7 @@
       var v = video_data[i];
       var $item;
       if (typeof video_items[i] === "undefined") {
-        $item = createVideo(i);
+        $item = createVideo(v);
         video_items.push($item);
         $gallery_videos.append($item);
       } else {
@@ -216,8 +229,12 @@
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
-    var user_id = getQueryParas()["user_id"];
-    if (typeof user_id !== "undefined") api_url_path += "?user_id=" + user_id;
+    user_id = getQueryParas()["user_id"];
+    if (typeof user_id !== "undefined") {
+      api_url_path += "?user_id=" + user_id;
+      $(".intro-text").hide();
+      $(".user-text").show();
+    };
     initVideoTestDialog();
     initPagination();
   }

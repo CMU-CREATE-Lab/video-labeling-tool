@@ -43,6 +43,11 @@ body,
   margin-top: 0 !important;
 }
 
+.user-text {
+  margin-top: 0 !important;
+  display: none;
+}
+
 .label-text {
   margin-top: 0 !important;
 }
@@ -153,6 +158,10 @@ body,
   color: #3be4ff;
 }
 
+.custom-text-primary-dark-theme {
+  color: #41ff3b;
+}
+
 .custom-text-danger-dark-theme {
   color: #ff5e5e;
 }
@@ -177,6 +186,20 @@ body,
 
 .gallery {
   min-height: 150px;
+}
+
+.gallery a {
+  position: relative;
+}
+
+.gallery a>i {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: bold;
+  position: absolute;
+  bottom: 10px;
+  right: 17px;
 }
 
 .gallery-videos {
