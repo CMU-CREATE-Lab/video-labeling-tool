@@ -10,14 +10,14 @@ def get_all_file_names_in_folder(path):
     return  [f for f in listdir(path) if isfile(join(path, f))]
 
 # Return a thumbnail server url
-# - ds: date (str), "2015-05-22"
-# - b: bounding box (dictionary), {"left": 2330, "top": 690, "right": 3730, "bottom": 2090}
-# - w: width (int)
-# - h: height (int)
-# - sf: start frame number (int)
-# - fmt: format (str), "gif" or "mp4" or "png"
-# - fps: frames per second (int)
-# - nf: number of frames (int)
+# ds: date (str), "2015-05-22"
+# b: bounding box (dictionary), {"left": 2330, "top": 690, "right": 3730, "bottom": 2090}
+# w: width (int)
+# h: height (int)
+# sf: start frame number (int)
+# fmt: format (str), "gif" or "mp4" or "png"
+# fps: frames per second (int)
+# nf: number of frames (int)
 def get_url_part(ds=None, b=None, w=None, h=None, sf=None, fmt="mp4", fps=12, nf=None):
     return "?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/%s.timemachine/&boundsLTRB=%r,%r,%r,%r&width=%r&height=%r&startFrame=%r&format=%s&fps=%r&tileFormat=mp4&nframes=%r" % (ds, b["left"], b["top"], b["right"], b["bottom"], w, h, sf, fmt, fps, nf)
 

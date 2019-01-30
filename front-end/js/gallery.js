@@ -1,5 +1,6 @@
 /*
  * TODO: add links back to the ecam webpage
+ * TODO: an admin mode for only reseachers (client_type=0) to edit the label state
  */
 
 (function () {

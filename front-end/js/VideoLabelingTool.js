@@ -2,7 +2,6 @@
  * TODO: remove google-signin-client_id meta name from the index.html
  * TODO: add a playback timeline bar to show the video playback time
  * TODO: if the labels are rejected (due to poor quality), need to let user know
- * TODO: an admin panel for only reseachers (client_type=0) to view and edit labels
  * TODO: show a bar (with badge) about how many videos are correctly labeled
  * - use gold standard videos to verify this (each batch has at least one)
  * TODO: allow users to share the badge with the achievement on social media
