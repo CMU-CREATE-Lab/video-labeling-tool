@@ -355,6 +355,7 @@ def get_pos_labels():
         q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).paginate(page_number, page_size, False)
     else:
         q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
+        #q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
     return jsonify_videos(q.items, total=q.total)
 
 """
