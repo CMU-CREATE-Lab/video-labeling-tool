@@ -1,3 +1,7 @@
+/*
+ * TODO: use different GA tracking ID for staging and production
+ */
+
 (function () {
   "use strict";
 

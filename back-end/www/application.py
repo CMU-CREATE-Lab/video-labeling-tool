@@ -1,3 +1,4 @@
+#TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
@@ -254,16 +255,17 @@ For the client to login
 def login():
     client_id = None
     # Get client id
-    if "google_id_token" in request.json:
-        google_id_token = request.json["google_id_token"]
-        id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
-        if id_info["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
-            e = InvalidUsage("Wrong token issuer.", status_code=401)
-            return handle_invalid_usage(e)
-        client_id = "google.%s" % id_info["sub"]
-    else:
-        if "client_id" in request.json:
-            client_id = request.json["client_id"]
+    if request.json is not None:
+        if "google_id_token" in request.json:
+            google_id_token = request.json["google_id_token"]
+            id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
+            if id_info["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
+                e = InvalidUsage("Wrong token issuer.", status_code=401)
+                return handle_invalid_usage(e)
+            client_id = "google.%s" % id_info["sub"]
+        else:
+            if "client_id" in request.json:
+                client_id = request.json["client_id"]
     # Get user id by client id, and issued an user jwt
     if client_id is not None:
         return_json = {"user_token": get_user_token_by_client_id(client_id)}
@@ -277,7 +279,7 @@ For the client to get a batch of video clips
 """
 @app.route("/api/v1/get_batch", methods=["POST"])
 def get_batch():
-    if "user_token" in request.json:
+    if request.json is not None and "user_token" in request.json:
         # Decode user jwt
         try:
             user_jwt = decode_jwt(request.json["user_token"])
@@ -304,7 +306,7 @@ For the client to send labels of a batch back to the server
 """
 @app.route("/api/v1/send_batch", methods=["POST"])
 def send_batch():
-    if "data" in request.json and "video_token" in request.json and "user_token" in request.json:
+    if request.json is not None and "data" in request.json and "video_token" in request.json and "user_token" in request.json:
         labels = request.json["data"]
         # Decode user and video jwt
         try:
@@ -352,16 +354,19 @@ def get_neg_gold_standard_labels():
 """
 Get videos with positive labels
 """
-@app.route("/api/v1/get_pos_labels", methods=["GET"])
+@app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
 def get_pos_labels():
     user_id = request.args.get("user_id")
     page_number = request.args.get("pageNumber", 1, type=int)
     page_size = request.args.get("pageSize", 20, type=int)
+    user_jwt = None
+    if request.json is not None and "user_token" in request.json:
+        user_jwt = decode_jwt(request.json["user_token"])
     if user_id is None:
         q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011, 0b101111))).paginate(page_number, page_size, False)
-        return jsonify_videos(q.items, total=q.total, show_label=False)
+        show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False # show label if admin reseacher
+        return jsonify_videos(q.items, total=q.total, show_label=show_label)
     else:
-        #q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
         return jsonify_videos(q.items, total=q.total, show_label="simple")
 

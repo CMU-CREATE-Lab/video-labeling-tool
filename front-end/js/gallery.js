@@ -1,4 +1,5 @@
 /*
+ * TODO: use different GA tracking ID for staging and production
  * TODO: add links back to the ecam webpage
  * TODO: an admin mode for only reseachers (client_type=0) to edit the label state
  */
@@ -8,6 +9,7 @@
 
   var google_account_dialog;
   var video_test_dialog;
+  var ga_tracker;
   var api_url_root = getRootApiUrl();
   var api_url_path = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
@@ -22,6 +24,7 @@
   var is_first_time = true;
   var user_id;
   var is_admin = false;
+  var user_token;
 
   function unpackVars(str) {
     var vars = {};
@@ -149,6 +152,14 @@
       formatAjaxError: function () {
         showGalleryErrorMsg();
       },
+      ajax: {
+        type: "POST",
+        data: JSON.stringify({
+          user_token: user_token
+        }),
+        contentType: "application/json",
+        dataType: "json"
+      },
       className: "paginationjs-custom",
       pageSize: 16,
       showPageNumbers: false,
@@ -240,23 +251,35 @@
       $(".user-text").show();
     };
     google_account_dialog = new edaplotjs.GoogleAccountDialog();
-    google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in, google_user) {
-      if (is_signed_in) {
-        login({
-          google_id_token: google_user.getAuthResponse().id_token
-        }, {
-          success: function (data) {
-            var payload = getJwtPayload(data["user_token"]);
-            if (payload["client_type"] == 0) {
-              is_admin = true;
-            }
-          },
-          complete: function () {
-            initPagination();
+    ga_tracker = new edaplotjs.Tracker({
+      tracker_id: "UA-10682694-25",
+      ready: function (client_id) {
+        google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in, google_user) {
+          if (is_signed_in) {
+            login({
+              google_id_token: google_user.getAuthResponse().id_token
+            }, {
+              success: function (data) {
+                user_token = data["user_token"];
+                is_admin = getJwtPayload(user_token)["client_type"] == 0 ? true : false;
+              },
+              complete: function () {
+                initPagination();
+              }
+            });
+          } else {
+            login({
+              client_id: client_id
+            }, {
+              success: function (data) {
+                user_token = data["user_token"];
+              },
+              complete: function () {
+                initPagination();
+              }
+            });
           }
         });
-      } else {
-        initPagination();
       }
     });
     video_test_dialog = new edaplotjs.VideoTestDialog();
