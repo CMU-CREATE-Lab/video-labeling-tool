@@ -111,7 +111,7 @@
       }
     });
     video_test_dialog = new edaplotjs.VideoTestDialog();
-    ga_tracker = new edaplotjs.Tracker({
+    ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: "UA-10682694-25",
       ready: function (client_id) {
         google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {

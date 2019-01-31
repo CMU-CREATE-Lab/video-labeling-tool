@@ -262,7 +262,7 @@
       $(".user-text").show();
     };
     google_account_dialog = new edaplotjs.GoogleAccountDialog();
-    ga_tracker = new edaplotjs.Tracker({
+    ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: "UA-10682694-25",
       ready: function (client_id) {
         google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in, google_user) {
