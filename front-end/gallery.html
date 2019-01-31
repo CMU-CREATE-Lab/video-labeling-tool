@@ -18,7 +18,14 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="lib/pagination/pagination.js"></script>
   <script src="js/widgets.js"></script>
+  <script src="js/GoogleAccountDialog.js"></script>
+  <script src="js/VideoTestDialog.js"></script>
   <script src="js/gallery.js"></script>
+  <!-- Start for Google Sign-In -->
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <!-- End for Google Sign-In -->
 </head>
 
 <body>
@@ -34,6 +41,7 @@
         <div class="menu-items flex-row-center flex-item">
           <a href="index.html">Overview</a>
           <a href="gallery.html" class="menu-highlight">Gallery</a>
+          <a href="javascript:void(0)" id="account">Account</a>
         </div>
       </div>
     </div>
@@ -54,7 +62,9 @@
             </p>
           </div>
         </div>
-        <div class="gallery"><div class="gallery-videos"></div></div>
+        <div class="gallery">
+          <div class="gallery-videos"></div>
+        </div>
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
             <div id="page-control" class="control-group init-hidden">
@@ -66,6 +76,13 @@
         </div>
       </div>
     </div>
+  </div>
+  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
+    <p id="sign-in-text">Sign in to track your personal achievements.</p>
+    <p id="hello-text"></p>
+    <div id="google-sign-in-button" class="g-signin2"></div>
+    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
+    <button id="guest-button" class="custom-button">Continue as guest</button>
   </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
     <p>Videos on this page did not autoplay. Please enable it.</p>

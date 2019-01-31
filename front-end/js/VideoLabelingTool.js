@@ -356,9 +356,9 @@
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
-    // Privileged methods
+    // Public methods
     //
-    var next = function (callback) {
+    this.next = function (callback) {
       callback = safeGet(callback, {});
       sendVideoBatch({
         success: function (data) {
@@ -372,12 +372,7 @@
         }
       });
     };
-    this.next = next;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Public methods
-    //
     this.userId = function () {
       return user_id;
     };

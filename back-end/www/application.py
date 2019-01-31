@@ -1,7 +1,3 @@
-"""
-GitHub: https://github.com/yenchiah/video-labeling-tool-back-end
-Version: v0.1
-"""
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
@@ -209,6 +205,16 @@ video_schema = VideoSchema()
 videos_schema = VideoSchema(many=True)
 
 """
+The schema for the video table, used for jsonify without label_state
+"""
+class VideoSchemaNoLabel(ma.ModelSchema):
+    class Meta:
+        model = Video # the class for the model
+        fields = ("id", "url_part") # fields to expose
+video_schema_no_label = VideoSchemaNoLabel()
+videos_schema_no_label = VideoSchemaNoLabel(many=True)
+
+"""
 The class for handling errors, such as a bad request
 """
 class InvalidUsage(Exception):
@@ -330,7 +336,7 @@ def send_batch():
 """
 Get videos with positive gold standard labels
 """
-@app.route("/api/v1/get_pos_gold_standard_labels", methods=["GET"])
+#@app.route("/api/v1/get_pos_gold_standard_labels", methods=["GET"])
 def get_pos_gold_standard_labels():
     videos = Video.query.filter(Video.label_state==0b101111).all()
     return jsonify_videos(videos)
@@ -338,7 +344,7 @@ def get_pos_gold_standard_labels():
 """
 Get videos with negative gold standard labels
 """
-@app.route("/api/v1/get_neg_gold_standard_labels", methods=["GET"])
+#@app.route("/api/v1/get_neg_gold_standard_labels", methods=["GET"])
 def get_neg_gold_standard_labels():
     videos = Video.query.filter(Video.label_state==0b100000).all()
     return jsonify_videos(videos)
@@ -352,24 +358,25 @@ def get_pos_labels():
     page_number = request.args.get("pageNumber", 1, type=int)
     page_size = request.args.get("pageSize", 20, type=int)
     if user_id is None:
-        q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).paginate(page_number, page_size, False)
+        q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011, 0b101111))).paginate(page_number, page_size, False)
+        return jsonify_videos(q.items, total=q.total, show_label=False)
     else:
         #q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
-    return jsonify_videos(q.items, total=q.total)
+        return jsonify_videos(q.items, total=q.total, show_label="simple")
 
 """
 Get videos with negative labels
 """
-@app.route("/api/v1/get_neg_labels", methods=["GET"])
+#@app.route("/api/v1/get_neg_labels", methods=["GET"])
 def get_neg_labels():
-    videos = Video.query.filter(Video.label_state.in_((0b10000, 0b1100, 0b10100))).all()
+    videos = Video.query.filter(Video.label_state.in_((0b10000, 0b1100, 0b10100, 0b100000))).all()
     return jsonify_videos(videos)
 
 """
 Get videos with discarded labels
 """
-@app.route("/api/v1/get_bad_labels", methods=["GET"])
+#@app.route("/api/v1/get_bad_labels", methods=["GET"])
 def get_bad_labels():
     videos = Video.query.filter(Video.label_state==0).all()
     return jsonify_videos(videos)
@@ -377,7 +384,7 @@ def get_bad_labels():
 """
 Get videos with no labels or not enough labels
 """
-@app.route("/api/v1/get_no_labels", methods=["GET"])
+#@app.route("/api/v1/get_no_labels", methods=["GET"])
 def get_no_labels():
     # Do not include label state -1 because of too many unlabeled videos
     videos = Video.query.filter(Video.label_state.in_((0b11, 0b100, 0b101))).all()
@@ -388,13 +395,24 @@ Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, show_label=False):
     if len(videos) == 0: return make_response("", 204)
-    videos_json, errors = videos_schema.dump(videos)
+    if show_label == False:
+        videos_json, errors = videos_schema_no_label.dump(videos)
+    else:
+        videos_json, errors = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
         videos_json[i]["url_root"] = video_url_root
+        if show_label == "simple":
+            s = videos_json[i]["label_state"]
+            if s in [0b10011, 0b1111, 0b10111, 0b101111]:
+                videos_json[i]["label_state"] = 1
+            elif s in [0b10100, 0b1100, 0b10000, 0b100000]:
+                videos_json[i]["label_state"] = 0
+            else:
+                videos_json[i]["label_state"] = -1
         if sign:
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}

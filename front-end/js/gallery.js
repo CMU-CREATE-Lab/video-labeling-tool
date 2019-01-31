@@ -6,7 +6,8 @@
 (function () {
   "use strict";
 
-  var widgets = new edaplotjs.Widgets();
+  var google_account_dialog;
+  var video_test_dialog;
   var api_url_root = getRootApiUrl();
   var api_url_path = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
@@ -14,13 +15,13 @@
   var $gallery;
   var $gallery_videos;
   var video_items = [];
-  var $video_test_dialog;
   var $page_nav;
   var $page_back;
   var $page_next;
   var $page_control;
   var is_first_time = true;
   var user_id;
+  var is_admin = false;
 
   function unpackVars(str) {
     var vars = {};
@@ -75,17 +76,30 @@
     var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
     var $vid = $("<video autoplay preload loop muted playsinline></video>");
     $item.append($vid);
-    if (typeof user_id !== "undefined") {
-      var $i;
-      var s = v["label_state"];
-      if ([19, 15, 23, 47].indexOf(s) != -1) {
-        $i = $("<i>Y</i>").addClass("custom-text-primary-dark-theme");
-      } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i = $("<i>N</i>").addClass("custom-text-danger-dark-theme");
-      } else {
-        $i = $("<i>?</i>").addClass("custom-text-info-dark-theme");
+    if (typeof user_id === "undefined") {
+      if (is_admin) {
+        var s = v["label_state"];
+        if (s == 47) {
+          $item.append($("<i>G</i>").addClass("custom-text-primary-dark-theme"));
+        } else if (s == 15) {
+          $item.append($("<i>M</i>").addClass("custom-text-info-dark-theme"));
+        } else if (s == 23) {
+          $item.append($("<i>S</i>").addClass("custom-text-info-dark-theme"));
+        } else if (s == 19) {
+          $item.append($("<i>W</i>").addClass("custom-text-info-dark-theme"));
+        } else {
+          $item.append($("<i>?</i>").addClass("custom-text-danger-dark-theme"));
+        }
       }
-      $item.append($i);
+    } else {
+      var s = v["label_state"];
+      if (s == 1) {
+        $item.append($("<i>Y</i>").addClass("custom-text-primary-dark-theme"));
+      } else if (s == 0) {
+        $item.append($("<i>N</i>").addClass("custom-text-danger-dark-theme"));
+      } else {
+        $item.append($("<i>?</i>").addClass("custom-text-info-dark-theme"));
+      }
     }
     return $item;
   }
@@ -119,47 +133,6 @@
     $gallery.empty().append($gallery_videos);
   }
 
-  function initVideoTestDialog() {
-    $video_test_dialog = widgets.createCustomDialog({
-      selector: "#video-test-dialog",
-      no_body_scroll: true,
-      show_cancel_btn: false,
-      width: 270
-    });
-    $video_test_dialog.on("dialogopen", function () {
-      $(this).parent().find(".ui-dialog-titlebar-close").hide();
-    });
-    $("#play-video-button").on("click", function () {
-      $("video").each(function () {
-        this.play();
-      });
-      $video_test_dialog.dialog("close");
-    });
-  }
-
-  // Test if the video plays. If not, show a dialog for users to click and play.
-  function startVideoPlayTest() {
-    var v = [];
-    var t = [];
-    $("video").each(function () {
-      var element = $(this).get(0);
-      v.push(element);
-      t.push(element.currentTime);
-    });
-    window.setTimeout(function () {
-      var is_autoplay_enabled = false;
-      for (var i = 0; i < v.length; i++) {
-        if (v[i].currentTime != t[i]) {
-          is_autoplay_enabled = true;
-          break;
-        }
-      }
-      if (!is_autoplay_enabled) {
-        $video_test_dialog.dialog("open");
-      }
-    }, 4000);
-  }
-
   function initPagination() {
     $page_nav = $("#page-navigator");
     $page_control = $("#page-control");
@@ -189,7 +162,7 @@
           $(window).scrollTop(0);
           updateVideos(data);
           if (is_first_time) {
-            startVideoPlayTest();
+            video_test_dialog.startVideoPlayTest(4000);
             is_first_time = false;
           }
         } else {
@@ -226,6 +199,37 @@
     });
   }
 
+  function login(post_json, callback) {
+    callback = safeGet(callback, {});
+    $.ajax({
+      url: api_url_root + "login",
+      type: "POST",
+      data: JSON.stringify(post_json),
+      contentType: "application/json",
+      dataType: "json",
+      success: function (data) {
+        if (typeof callback["success"] === "function") callback["success"](data);
+      },
+      error: function (xhr) {
+        if (typeof callback["error"] === "function") callback["error"](xhr);
+      },
+      complete: function () {
+        if (typeof callback["complete"] === "function") callback["complete"]();
+      }
+    });
+  }
+
+  // Safely get the value from a variable, return a default value if undefined
+  function safeGet(v, default_val) {
+    if (typeof default_val === "undefined") default_val = "";
+    return (typeof v === "undefined") ? default_val : v;
+  }
+
+  // Read the payload in a JWT
+  function getJwtPayload(jwt) {
+    return JSON.parse(window.atob(jwt.split('.')[1]));
+  }
+
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
@@ -235,7 +239,27 @@
       $(".intro-text").hide();
       $(".user-text").show();
     };
-    initVideoTestDialog();
+    google_account_dialog = new edaplotjs.GoogleAccountDialog({
+      sign_in_success_callback: function (google_user) {
+        login({
+          google_id_token: google_user.getAuthResponse().id_token
+        }, {
+          success: function (data) {
+            var payload = getJwtPayload(data["user_token"]);
+            if (payload["client_type"] == 0) {
+              is_admin = true;
+            }
+          },
+          complete: function () {
+            console.log("complete");
+          }
+        });
+      },
+      sign_out_success_callback: function () {
+        console.log("sign_out_success_callback");
+      }
+    });
+    video_test_dialog = new edaplotjs.VideoTestDialog();
     initPagination();
   }
 
