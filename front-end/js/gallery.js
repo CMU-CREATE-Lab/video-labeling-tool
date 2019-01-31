@@ -261,11 +261,13 @@
       $(".intro-text").hide();
       $(".user-text").show();
     };
-    google_account_dialog = new edaplotjs.GoogleAccountDialog();
+    google_account_dialog = new edaplotjs.GoogleAccountDialog({
+      no_ui: true
+    });
     ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: "UA-10682694-25",
       ready: function (client_id) {
-        google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in, google_user) {
+        google_account_dialog.silentSignInWithGoogle(function (is_signed_in, google_user) {
           if (is_signed_in) {
             login({
               google_id_token: google_user.getAuthResponse().id_token

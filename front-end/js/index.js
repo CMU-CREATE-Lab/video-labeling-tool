@@ -87,7 +87,7 @@
   function init() {
     video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container");
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
-      sign_in_success_callback: function (google_user) {
+      sign_in_success: function (google_user) {
         video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
@@ -98,7 +98,7 @@
           }
         });
       },
-      sign_out_success_callback: function () {
+      sign_out_success: function () {
         video_labeling_tool.updateUserIdByClientId({
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());

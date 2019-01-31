@@ -17,14 +17,18 @@
     var $sign_in_text;
     var $hello_text;
     var widgets = new edaplotjs.Widgets();
-    var sign_in_success_callback = settings["sign_in_success_callback"];
-    var sign_out_success_callback = settings["sign_out_success_callback"];
+    var sign_in_success = settings["sign_in_success"];
+    var sign_out_success = settings["sign_out_success"];
+    var no_ui = safeGet(settings["no_ui"], false);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
     function init() {
+      if (no_ui) {
+        return;
+      }
       $account_dialog = widgets.createCustomDialog({
         selector: "#account-dialog",
         no_body_scroll: true,
@@ -71,8 +75,8 @@
       var $visible = $content.find(":visible");
       $hidden.show();
       $visible.hide();
-      if (typeof sign_out_success_callback === "function") {
-        sign_out_success_callback();
+      if (typeof sign_out_success === "function") {
+        sign_out_success();
       }
     }
 
@@ -97,8 +101,8 @@
       $sign_in_text.hide();
       $google_sign_in_button.hide();
       $account_dialog.dialog("close");
-      if (typeof sign_in_success_callback === "function") {
-        sign_in_success_callback(google_user);
+      if (typeof sign_in_success === "function") {
+        sign_in_success(google_user);
       }
     }
 
@@ -116,7 +120,7 @@
       if (typeof gapi !== "undefined" && typeof gapi.auth2 === "undefined") {
         gapi.load("auth2", function () {
           gapi.auth2.init().then(function () {
-            return isAuthenticatedWithGoogle(callback);
+            isAuthenticatedWithGoogle(callback);
           });
         });
       } else {
@@ -132,6 +136,23 @@
       }
     };
     this.isAuthenticatedWithGoogle = isAuthenticatedWithGoogle;
+
+    this.silentSignInWithGoogle = function (callback) {
+      gapi.load("auth2", function () {
+        // gapi.auth2.init() will automatically sign in a user to the application if previously signed in
+        gapi.auth2.init().then(function () {
+          if (typeof callback === "function") {
+            var auth2 = gapi.auth2.getAuthInstance();
+            var is_signed_in = auth2.isSignedIn.get();
+            if (is_signed_in) {
+              callback(is_signed_in, auth2.currentUser.get());
+            } else {
+              callback(is_signed_in);
+            }
+          }
+        });
+      });
+    };
 
     this.getDialog = function () {
       return $account_dialog;
