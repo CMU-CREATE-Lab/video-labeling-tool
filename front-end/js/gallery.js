@@ -252,11 +252,12 @@
             }
           },
           complete: function () {
-            console.log("complete");
+            initPagination();
           }
         });
+      } else {
+        initPagination();
       }
-      initPagination();
     });
     video_test_dialog = new edaplotjs.VideoTestDialog();
   }
