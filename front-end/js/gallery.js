@@ -81,29 +81,42 @@
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
+        $item.append($("<i></i>"));
+      }
+    } else {
+      $item.append($("<i></i>"));
+    }
+    return $item;
+  }
+
+  function updateItem($item, v) {
+    var $i = $item.find("i").removeClass();
+    if (typeof user_id === "undefined") {
+      if (is_admin) {
         var s = v["label_state"];
         if (s == 47) {
-          $item.append($("<i>G</i>").addClass("custom-text-primary-dark-theme"));
+          $i.text("G").addClass("custom-text-primary-dark-theme");
         } else if (s == 15) {
-          $item.append($("<i>M</i>").addClass("custom-text-info-dark-theme"));
+          $i.text("M").addClass("custom-text-info-dark-theme");
         } else if (s == 23) {
-          $item.append($("<i>S</i>").addClass("custom-text-info-dark-theme"));
+          $i.text("S").addClass("custom-text-info-dark-theme");
         } else if (s == 19) {
-          $item.append($("<i>W</i>").addClass("custom-text-info-dark-theme"));
+          $i.text("W").addClass("custom-text-info-dark-theme");
         } else {
-          $item.append($("<i>?</i>").addClass("custom-text-danger-dark-theme"));
+          $i.text("?").addClass("custom-text-danger-dark-theme");
         }
       }
     } else {
       var s = v["label_state"];
       if (s == 1) {
-        $item.append($("<i>Y</i>").addClass("custom-text-primary-dark-theme"));
+        $i.text("Y").addClass("custom-text-primary-dark-theme");
       } else if (s == 0) {
-        $item.append($("<i>N</i>").addClass("custom-text-danger-dark-theme"));
+        $i.text("N").addClass("custom-text-danger-dark-theme");
       } else {
-        $item.append($("<i>?</i>").addClass("custom-text-info-dark-theme"));
+        $i.text("?").addClass("custom-text-info-dark-theme");
       }
     }
+    $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
     return $item;
   }
 
@@ -119,8 +132,7 @@
       } else {
         $item = video_items[i];
       }
-      var $vid = $item.find("video");
-      $vid.prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
+      $item = updateItem($item, v);
       if ($item.hasClass("force-hidden")) {
         $item.removeClass("force-hidden");
       }
@@ -154,11 +166,9 @@
       },
       ajax: {
         type: "POST",
-        data: JSON.stringify({
+        data: {
           user_token: user_token
-        }),
-        contentType: "application/json",
-        dataType: "json"
+        }
       },
       className: "paginationjs-custom",
       pageSize: 16,
@@ -173,7 +183,7 @@
           $(window).scrollTop(0);
           updateVideos(data);
           if (is_first_time) {
-            video_test_dialog.startVideoPlayTest(4000);
+            video_test_dialog.startVideoPlayTest(2000);
             is_first_time = false;
           }
         } else {
@@ -273,6 +283,7 @@
             }, {
               success: function (data) {
                 user_token = data["user_token"];
+                is_admin = getJwtPayload(user_token)["client_type"] == 0 ? true : false;
               },
               complete: function () {
                 initPagination();

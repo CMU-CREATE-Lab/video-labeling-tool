@@ -27,6 +27,8 @@ from flask_migrate import Migrate
 import logging
 import logging.handlers
 import os
+import json
+from urllib.parse import parse_qs
 
 """
 Config Parameters
@@ -358,10 +360,17 @@ Get videos with positive labels
 def get_pos_labels():
     user_id = request.args.get("user_id")
     page_number = request.args.get("pageNumber", 1, type=int)
-    page_size = request.args.get("pageSize", 20, type=int)
+    page_size = request.args.get("pageSize", 16, type=int)
     user_jwt = None
-    if request.json is not None and "user_token" in request.json:
-        user_jwt = decode_jwt(request.json["user_token"])
+    data = request.get_data()
+    if data is not None:
+        qs = parse_qs(data.decode("utf8"))
+        if "user_token" in qs:
+            user_jwt = decode_jwt(qs["user_token"][0])
+        if "pageNumber" in qs:
+            page_number = int(qs["pageNumber"][0])
+        if "pageSize" in qs:
+            page_size = int(qs["pageSize"][0])
     if user_id is None:
         q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011, 0b101111))).paginate(page_number, page_size, False)
         show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False # show label if admin reseacher
