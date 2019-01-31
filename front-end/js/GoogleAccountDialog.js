@@ -121,7 +121,13 @@
         });
       } else {
         if (typeof callback === "function") {
-          callback(gapi.auth2.getAuthInstance().isSignedIn.get());
+          var auth2 = gapi.auth2.getAuthInstance();
+          var is_signed_in = auth2.isSignedIn.get();
+          if (is_signed_in) {
+            callback(is_signed_in, auth2.currentUser.get());
+          } else {
+            callback(is_signed_in);
+          }
         }
       }
     };

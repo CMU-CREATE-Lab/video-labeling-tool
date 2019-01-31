@@ -239,8 +239,9 @@
       $(".intro-text").hide();
       $(".user-text").show();
     };
-    google_account_dialog = new edaplotjs.GoogleAccountDialog({
-      sign_in_success_callback: function (google_user) {
+    google_account_dialog = new edaplotjs.GoogleAccountDialog();
+    google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in, google_user) {
+      if (is_signed_in) {
         login({
           google_id_token: google_user.getAuthResponse().id_token
         }, {
@@ -254,13 +255,10 @@
             console.log("complete");
           }
         });
-      },
-      sign_out_success_callback: function () {
-        console.log("sign_out_success_callback");
       }
+      initPagination();
     });
     video_test_dialog = new edaplotjs.VideoTestDialog();
-    initPagination();
   }
 
   $(init);
