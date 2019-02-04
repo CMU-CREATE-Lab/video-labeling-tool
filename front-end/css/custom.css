@@ -48,6 +48,11 @@ body,
   display: none;
 }
 
+.admin-text {
+  margin-top: 0 !important;
+  display: none;
+}
+
 .label-text {
   margin-top: 0 !important;
 }

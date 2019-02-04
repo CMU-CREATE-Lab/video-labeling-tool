@@ -1,5 +1,4 @@
 /*
- * BUG: isAuthenticatedWithGoogle does not sign in user, which caused inconsistant behavior (race condition)
  * TODO: use different GA tracking ID for staging and production
  * TODO: add links back to the ecam webpage
  * TODO: an admin mode for only reseachers (client_type=0) to edit the label state
@@ -95,17 +94,7 @@
     if (typeof user_id === "undefined") {
       if (is_admin) {
         var s = v["label_state"];
-        if (s == 47) {
-          $i.text("G").addClass("custom-text-primary-dark-theme");
-        } else if (s == 15) {
-          $i.text("M").addClass("custom-text-info-dark-theme");
-        } else if (s == 23) {
-          $i.text("S").addClass("custom-text-info-dark-theme");
-        } else if (s == 19) {
-          $i.text("W").addClass("custom-text-info-dark-theme");
-        } else {
-          $i.text("?").addClass("custom-text-danger-dark-theme");
-        }
+        $i.text(s).addClass("custom-text-info-dark-theme");
       }
     } else {
       var s = v["label_state"];
@@ -150,6 +139,10 @@
   }
 
   function initPagination() {
+    if (is_admin) {
+      $(".intro-text").hide();
+      $(".admin-text").show();
+    }
     $page_nav = $("#page-navigator");
     $page_control = $("#page-control");
     $page_nav.pagination({
