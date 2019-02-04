@@ -26,14 +26,14 @@
   var is_admin = false;
   var user_token;
   var label_map = {
-    "47": "Gold Positive",
-    "32": "Gold Negative",
-    "23": "Strong Positive",
-    "16": "Strong Negative",
-    "20": "Weak Negative",
-    "19": "Weak Positive",
-    "15": "Medium Positive",
-    "12": "Medium Negative"
+    "47": "Gold Pos",
+    "32": "Gold Neg",
+    "23": "Strong Pos",
+    "16": "Strong Neg",
+    "20": "Weak Neg",
+    "19": "Weak Pos",
+    "15": "Medium Pos",
+    "12": "Medium Neg"
   }
 
   function unpackVars(str) {
