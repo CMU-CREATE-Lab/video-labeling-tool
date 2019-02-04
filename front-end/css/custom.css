@@ -240,10 +240,6 @@ body,
   outline: none;
 }
 
-.gallery a .label-control .custom-button-flat {
-  margin: 5px 0;
-}
-
 .gallery-videos {
   display: flex;
   flex-direction: row;

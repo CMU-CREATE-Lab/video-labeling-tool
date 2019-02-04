@@ -31,7 +31,6 @@
       }
       $account_dialog = widgets.createCustomDialog({
         selector: "#account-dialog",
-        no_body_scroll: true,
         show_cancel_btn: false,
         width: 270
       });

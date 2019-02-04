@@ -10,6 +10,7 @@
   var google_account_dialog;
   var video_test_dialog;
   var ga_tracker;
+  var widgets = new edaplotjs.Widgets();
   var api_url_root = getRootApiUrl();
   var api_url_path = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
@@ -25,7 +26,7 @@
   var user_id;
   var is_admin = false;
   var user_token;
-  var label_map = {
+  var label_state_map = {
     "47": "Gold Pos",
     "32": "Gold Neg",
     "23": "Strong Pos",
@@ -34,7 +35,16 @@
     "19": "Weak Pos",
     "15": "Medium Pos",
     "12": "Medium Neg"
-  }
+  };
+  var label_map = {
+    "11": "Gold Pos",
+    "10": "Gold Neg",
+    "1": "Strong Pos",
+    "0": "Strong Neg"
+  };
+  var $set_label_confirm_dialog;
+  var desired_label;
+  var $current_desired_state_select;
 
   function unpackVars(str) {
     var vars = {};
@@ -93,14 +103,19 @@
       if (is_admin) {
         var $control = $("<div class='label-control'></div>");
         var $label_state = $("<p class='text-small-margin'><i></i></p>");
-        var $desired_state = createLabelStateSelect();
-        var $set_label = $("<button class='custom-button-flat small'><img src='img/setting.png'><span>Set label</span></button>");
-        $set_label.on("click", function () {
-          console.log($desired_state.val());
+        var $desired_state_select = createLabelStateSelect();
+        $desired_state_select.on("change", function () {
+          var label_str = $desired_state_select.val();
+          desired_label = [{
+            video_id: v["id"],
+            label: parseInt(label_str)
+          }];
+          $current_desired_state_select = $desired_state_select;
+          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v["id"] + ") to " + label_map[label_str]);
+          $set_label_confirm_dialog.dialog("open");
         });
         $control.append($label_state);
-        $control.append($desired_state);
-        $control.append($set_label);
+        $control.append($desired_state_select);
         $item.append($control);
       }
     } else {
@@ -112,11 +127,11 @@
   function createLabelStateSelect() {
     var html = "";
     html += "<select>";
-    html += "<option value='default' selected disabled hidden>Desired label</option>";
-    html += "<option value='47'>" + label_map["47"] + "</option>";
-    html += "<option value='32'>" + label_map["32"] + "</option>";
-    html += "<option value='23'>" + label_map["23"] + "</option>";
-    html += "<option value='16'>" + label_map["16"] + "</option>";
+    html += "<option value='default' selected disabled hidden>Set label</option>";
+    html += "<option value='11'>" + label_map["11"] + "</option>";
+    html += "<option value='10'>" + label_map["10"] + "</option>";
+    html += "<option value='1'>" + label_map["1"] + "</option>";
+    html += "<option value='0'>" + label_map["0"] + "</option>";
     html += "</select>";
     return $(html);
   }
@@ -126,8 +141,8 @@
       if (is_admin) {
         var $i = $item.find("i").removeClass();
         var s = v["label_state"];
-        var label = safeGet(label_map[s], "Undefined")
-        $i.text(label).addClass("custom-text-info-dark-theme");
+        var label = safeGet(label_state_map[s], "Undefined")
+        $i.text(v["id"] + ": " + label).addClass("custom-text-info-dark-theme");
         $item.find("select").val("default");
       }
     } else {
@@ -278,6 +293,25 @@
     return JSON.parse(window.atob(jwt.split('.')[1]));
   }
 
+  function initConfirmDialog() {
+    $set_label_confirm_dialog = widgets.createCustomDialog({
+      selector: "#set-label-confirm-dialog",
+      action_text: "Confirm",
+      action_callback: function () {
+        console.log("confirm", desired_label);
+        $current_desired_state_select.val("default");
+      },
+      cancel_text: "Cancel",
+      cancel_callback: function () {
+        desired_label = undefined;
+        console.log("cancel");
+        $current_desired_state_select.val("default");
+      },
+      no_body_scroll: true,
+      show_close_button: false
+    });
+  }
+
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
@@ -290,6 +324,7 @@
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
       no_ui: true
     });
+    initConfirmDialog();
     ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: "UA-10682694-25",
       ready: function (client_id) {
