@@ -158,8 +158,8 @@ class Label(db.Model):
     time = db.Column(db.Integer, nullable=False, default=get_current_time)
     # The user id in the User table (this information is duplicated in the batch->connnection, for fast query)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
-    # The batch id in the Batch table
-    batch_id = db.Column(db.Integer, db.ForeignKey("batch.id"), nullable=False)
+    # The batch id in the Batch table (null means that an admin changed the label)
+    batch_id = db.Column(db.Integer, db.ForeignKey("batch.id"))
 
     def __repr__(self):
         return ("<Label id=%r video_id=%r label=%r time=%r user_id=%r batch_id=%r>") % (self.id, self.video_id, self.label, self.time, self.user_id, self.batch_id)
@@ -287,7 +287,7 @@ def get_batch():
             user_jwt = decode_jwt(request.json["user_token"])
             user_id = user_jwt["user_id"]
         except jwt.InvalidSignatureError as ex:
-            e = InvalidUsage(ex.args[0], status_code=403)
+            e = InvalidUsage(ex.args[0], status_code=401)
             return handle_invalid_usage(e)
         except Exception as ex:
             e = InvalidUsage(ex.args[0], status_code=401)
@@ -315,7 +315,7 @@ def send_batch():
             video_jwt = decode_jwt(request.json["video_token"])
             user_jwt = decode_jwt(request.json["user_token"])
         except jwt.InvalidSignatureError as ex:
-            e = InvalidUsage(ex.args[0], status_code=403)
+            e = InvalidUsage(ex.args[0], status_code=401)
             return handle_invalid_usage(e)
         except Exception as ex:
             e = InvalidUsage(ex.args[0], status_code=401)
@@ -324,7 +324,7 @@ def send_batch():
         original_v = video_jwt["video_id_list"]
         returned_v = [v["video_id"] for v in labels]
         if Counter(original_v) != Counter(returned_v):
-            e = InvalidUsage("Signature of the video batch is not valid.", status_code=403)
+            e = InvalidUsage("Signature of the video batch is not valid.", status_code=401)
             return handle_invalid_usage(e)
         # Update database
         try:
@@ -335,6 +335,37 @@ def send_batch():
             return handle_invalid_usage(e)
     else:
         e = InvalidUsage("Missing fields: data, video_token, and user_token.", status_code=400)
+        return handle_invalid_usage(e)
+
+"""
+Set video labels to positive, negative, or gold standard (only admin can use this call)
+"""
+@app.route("/api/v1/admin_set_labels", methods=["POST"])
+def admin_set_labels():
+    if request.json is not None and "data" in request.json and "user_token" in request.json:
+        labels = request.json["data"]
+        # Decode user jwt
+        try:
+            user_jwt = decode_jwt(request.json["user_token"])
+        except jwt.InvalidSignatureError as ex:
+            e = InvalidUsage(ex.args[0], status_code=401)
+            return handle_invalid_usage(e)
+        except Exception as ex:
+            e = InvalidUsage(ex.args[0], status_code=401)
+            return handle_invalid_usage(e)
+        # Verify if the user is admin
+        if user_jwt["client_type"] != 0:
+            e = InvalidUsage("Permission denied.", status_code=403)
+            return handle_invalid_usage(e)
+        # Update database
+        try:
+            update_video_labels(labels, user_jwt["user_id"], None, None, user_jwt["client_type"])
+            return make_response("", 204)
+        except Exception as ex:
+            e = InvalidUsage(ex.args[0], status_code=400)
+            return handle_invalid_usage(e)
+    else:
+        e = InvalidUsage("Missing fields: data and user_token.", status_code=400)
         return handle_invalid_usage(e)
 
 """
@@ -442,10 +473,11 @@ Update the Video table when a new label is added
 def update_video_labels(labels, user_id, connection_id, batch_id, client_type):
     if len(labels) == 0: return
     # Record batch returned time
-    batch = Batch.query.filter(Batch.id==batch_id).first()
-    batch.return_time = get_current_time()
-    batch.connection_id = connection_id
-    log("Update batch: %r" % batch)
+    if batch_id is not None and connection_id is not None:
+        batch = Batch.query.filter(Batch.id==batch_id).first()
+        batch.return_time = get_current_time()
+        batch.connection_id = connection_id
+        log("Update batch: %r" % batch)
     # Search the video batch and hash videos by video_id
     video_batch = Video.query.filter(Video.id.in_((v["video_id"] for v in labels))).all()
     video_batch_hashed = {}
@@ -504,6 +536,8 @@ def label_state_machine(s, label, client_type):
     if client_type == 0:
         if label == 1: next_s = 0b10111 # strong pos
         elif label == 0: next_s = 0b10000 # strong neg
+        elif label == 11: next_s = 0b101111 # pos gold standard
+        elif label == 10: next_s = 0b100000 # neg gold standard
     else:
         # Sanity check, can only use undefined labels (not terminal state)
         if s not in undefined_labels: return None
