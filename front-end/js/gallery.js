@@ -25,6 +25,16 @@
   var user_id;
   var is_admin = false;
   var user_token;
+  var label_map = {
+    "47": "Gold Positive",
+    "32": "Gold Negative",
+    "23": "Strong Positive",
+    "16": "Strong Negative",
+    "20": "Weak Negative",
+    "19": "Weak Positive",
+    "15": "Medium Positive",
+    "12": "Medium Negative"
+  }
 
   function unpackVars(str) {
     var vars = {};
@@ -81,7 +91,12 @@
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
-        $item.append($("<i></i>"));
+        var $control = $("<div class='label-control'></div>");
+        var $label_state = $("<p class='text-small-margin'><i></i></p>");
+        var $desired_state = createLabelStateSelect();
+        var $set_to = $("<button class='custom-button-flat small'><img src='img/setting.png'><span>Set label</span></button>");
+        $control.append($label_state, $desired_state, $set_to, );
+        $item.append($control);
       }
     } else {
       $item.append($("<i></i>"));
@@ -89,14 +104,29 @@
     return $item;
   }
 
+  function createLabelStateSelect() {
+    var html = "";
+    html += "<select>";
+    html += "<option value='default' selected disabled hidden>Desired label</option>";
+    html += "<option value='47'>" + label_map["47"] + "</option>";
+    html += "<option value='32'>" + label_map["32"] + "</option>";
+    html += "<option value='23'>" + label_map["23"] + "</option>";
+    html += "<option value='16'>" + label_map["16"] + "</option>";
+    html += "</select>";
+    return $(html);
+  }
+
   function updateItem($item, v) {
-    var $i = $item.find("i").removeClass();
     if (typeof user_id === "undefined") {
       if (is_admin) {
+        var $i = $item.find("i").removeClass();
         var s = v["label_state"];
-        $i.text(s).addClass("custom-text-info-dark-theme");
+        var label = safeGet(label_map[s], "Undefined")
+        $i.text(label).addClass("custom-text-info-dark-theme");
+        $item.find("select").val("default");
       }
     } else {
+      var $i = $item.find("i").removeClass();
       var s = v["label_state"];
       if (s == 1) {
         $i.text("Y").addClass("custom-text-primary-dark-theme");
@@ -139,7 +169,7 @@
   }
 
   function initPagination() {
-    if (is_admin) {
+    if (typeof user_id === "undefined" && is_admin) {
       $(".intro-text").hide();
       $(".admin-text").show();
     }

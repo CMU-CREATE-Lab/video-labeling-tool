@@ -506,23 +506,23 @@ The second bit from the left indicates if the data has discord (1: has discord, 
 The rest of the bits indicates positve (1) or negative (0) labels
 For example, if a layperson labels 0, will attach "0" to the current state
 Another example, if an expert labels 1, will attach "11" to the current state
-    0b101111 : pos (gold standard) [both INITIAL and TERMINAL STATE]
-    0b100000 : neg (gold standard) [both INITIAL and TERMINAL STATE]
-    0b10111 : strong pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10100 : weak neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10011 : weak pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10000 : strong neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b101111 (47) : pos (gold standard) [both INITIAL and TERMINAL STATE]
+    0b100000 (32) : neg (gold standard) [both INITIAL and TERMINAL STATE]
+    0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
     0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10111
     0b1001 -> 0b11
     0b1010 -> 0b11
     0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10000
-    0b1111 : medium pos (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
-    0b1100 : medium neg (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
+    0b1111 (15) : medium pos (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
+    0b1100 (12) : medium neg (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
     0b111 : weak pos (has discord, verified by 1 layperson/amateur) -> 0b10011
     0b110 : weak neg (has discord, verified by 1 layperson/amateur) -> 0b10100
-    0b101 : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
-    0b100 : maybe neg (by 1 layperson/amateur) [TRANSITIONAL STATE]
-    0b11 : no data, has discord [TRANSITIONAL STATE]
+    0b101 (5) : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
+    0b100 (4) : maybe neg (by 1 layperson/amateur) [TRANSITIONAL STATE]
+    0b11 (3) : no data, has discord [TRANSITIONAL STATE]
     0b10 -> -1
     0 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
     -1 : no data, no discord [INITIAL state]

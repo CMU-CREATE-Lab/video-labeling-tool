@@ -561,8 +561,8 @@ ol.publication.A-list li p:before {
   user-select: none;
 }
 
-.gallery a img,
-.gallery a video {
+.gallery a>img,
+.gallery a>video {
   border-radius: 2px;
   width: 100%;
   background-image: url(../img/loading.gif);

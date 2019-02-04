@@ -24,13 +24,6 @@ body,
   color: white !important;
 }
 
-.custom-button-flat {
-  font-size: 18px !important;
-  line-height: 18px !important;
-  padding: 17px !important;
-  border-radius: 56px !important;
-}
-
 .control-group {
   margin-top: 10px !important;
 }
@@ -205,6 +198,44 @@ body,
   position: absolute;
   bottom: 10px;
   right: 17px;
+}
+
+.gallery a .label-control {
+  color: white;
+  text-align: left;
+}
+
+.gallery a .label-control p {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.gallery a .label-control i {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+}
+
+.gallery a .label-control select {
+  margin: 5px 0;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+}
+
+.gallery a .label-control .custom-button-flat {
+  margin: 5px 0;
+  width: 100%;
 }
 
 .gallery-videos {
