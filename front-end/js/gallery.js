@@ -77,16 +77,16 @@
 
   function showNoGalleryMsg() {
     $gallery_videos.detach();
-    $gallery.empty().append($gallery_no_data_text);
+    $gallery.append($gallery_no_data_text);
   }
 
   function showGalleryErrorMsg() {
     $gallery_videos.detach();
-    $gallery.empty().append($gallery_error_text);
+    $gallery.append($gallery_error_text);
   }
 
   function createVideo(v) {
-    var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
+    var $item = $("<a class='flex-column'></a>");
     var $vid = $("<video autoplay preload loop muted playsinline></video>");
     $item.append($vid);
     if (typeof user_id === "undefined") {
@@ -94,8 +94,13 @@
         var $control = $("<div class='label-control'></div>");
         var $label_state = $("<p class='text-small-margin'><i></i></p>");
         var $desired_state = createLabelStateSelect();
-        var $set_to = $("<button class='custom-button-flat small'><img src='img/setting.png'><span>Set label</span></button>");
-        $control.append($label_state, $desired_state, $set_to, );
+        var $set_label = $("<button class='custom-button-flat small'><img src='img/setting.png'><span>Set label</span></button>");
+        $set_label.on("click", function () {
+          console.log($desired_state.val());
+        });
+        $control.append($label_state);
+        $control.append($desired_state);
+        $control.append($set_label);
         $item.append($control);
       }
     } else {
@@ -164,8 +169,6 @@
         $item.addClass("force-hidden");
       }
     }
-    // Show videos
-    $gallery.empty().append($gallery_videos);
   }
 
   function initPagination() {
