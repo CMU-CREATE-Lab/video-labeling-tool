@@ -170,7 +170,7 @@
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
-      var $vid = $("<video autoplay preload loop muted playsinline></video>");
+      var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
       $item.on("click", function () {
         toggleSelect($(this));
       });

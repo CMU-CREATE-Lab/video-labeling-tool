@@ -87,7 +87,7 @@
 
   function createVideo(v) {
     var $item = $("<a class='flex-column'></a>");
-    var $vid = $("<video autoplay preload loop muted playsinline></video>");
+    var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
