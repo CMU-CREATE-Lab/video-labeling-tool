@@ -12,7 +12,7 @@
   var ga_tracker;
   var widgets = new edaplotjs.Widgets();
   var api_url_root = getRootApiUrl();
-  var api_url_path = "get_pos_labels";
+  var api_url_path_get = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
   var $gallery_error_text = $('<span class="gallery-error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
   var $gallery;
@@ -43,8 +43,7 @@
     "0": "Strong Neg"
   };
   var $set_label_confirm_dialog;
-  var desired_label;
-  var $current_desired_state_select;
+  var admin_marked_item = {};
 
   function unpackVars(str) {
     var vars = {};
@@ -106,11 +105,12 @@
         var $desired_state_select = createLabelStateSelect();
         $desired_state_select.on("change", function () {
           var label_str = $desired_state_select.val();
-          desired_label = [{
+          admin_marked_item["data"] = [{
             video_id: v["id"],
             label: parseInt(label_str)
           }];
-          $current_desired_state_select = $desired_state_select;
+          admin_marked_item["select"] = $desired_state_select;
+          admin_marked_item["p"] = $label_state;
           $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v["id"] + ") to " + label_map[label_str]);
           $set_label_confirm_dialog.dialog("open");
         });
@@ -194,7 +194,7 @@
     $page_nav = $("#page-navigator");
     $page_control = $("#page-control");
     $page_nav.pagination({
-      dataSource: api_url_root + api_url_path,
+      dataSource: api_url_root + api_url_path_get,
       locator: "data",
       totalNumberLocator: function (response) {
         if (typeof response === "undefined") {
@@ -282,6 +282,28 @@
     });
   }
 
+  function setLabels(labels, callback) {
+    $.ajax({
+      url: api_url_root + "set_labels",
+      type: "POST",
+      data: JSON.stringify({
+        "data": labels,
+        "user_token": user_token
+      }),
+      contentType: "application/json",
+      dataType: "json",
+      success: function (data) {
+        if (typeof callback["success"] === "function") callback["success"](data);
+      },
+      error: function (xhr) {
+        if (typeof callback["error"] === "function") callback["error"](xhr);
+      },
+      complete: function () {
+        if (typeof callback["complete"] === "function") callback["complete"]();
+      }
+    });
+  }
+
   // Safely get the value from a variable, return a default value if undefined
   function safeGet(v, default_val) {
     if (typeof default_val === "undefined") default_val = "";
@@ -298,14 +320,30 @@
       selector: "#set-label-confirm-dialog",
       action_text: "Confirm",
       action_callback: function () {
-        console.log("confirm", desired_label);
-        $current_desired_state_select.val("default");
+        setLabels(admin_marked_item["data"], {
+          "success": function () {
+            console.log("Set label successfully:");
+            console.log(admin_marked_item["data"]);
+            var v_id = admin_marked_item["data"][0]["video_id"];
+            var v_label = admin_marked_item["data"][0]["label"];
+            var txt = v_id + ": " + safeGet(label_map[v_label], "Undefined");
+            admin_marked_item["p"].find("i").text(txt).removeClass().addClass("custom-text-primary-dark-theme");
+          },
+          "error": function () {
+            console.log("Error when setting label:");
+            console.log(admin_marked_item["data"]);
+            admin_marked_item["p"].find("i").removeClass().addClass("custom-text-danger-dark-theme");
+          },
+          "complete": function () {
+            admin_marked_item["select"].val("default");
+            admin_marked_item = {};
+          }
+        });
       },
       cancel_text: "Cancel",
       cancel_callback: function () {
-        desired_label = undefined;
-        console.log("cancel");
-        $current_desired_state_select.val("default");
+        admin_marked_item["select"].val("default");
+        admin_marked_item = {};
       },
       no_body_scroll: true,
       show_close_button: false
@@ -317,7 +355,7 @@
     $gallery_videos = $(".gallery-videos");
     user_id = getQueryParas()["user_id"];
     if (typeof user_id !== "undefined") {
-      api_url_path += "?user_id=" + user_id;
+      api_url_path_get += "?user_id=" + user_id;
       $(".intro-text").hide();
       $(".user-text").show();
     };

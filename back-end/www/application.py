@@ -1,14 +1,14 @@
+#TODO: implement a data analysis console and a content manage console for admin researchers
+#TODO: use https instead of http
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
-#TODO: implement a data analysis console and a content manage console for admin researchers
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
 #TODO: implement the method for adding gold standards into the queried video batch
 #TODO: implement the check for gold standards, reject the submission if gold standards are wrongly labeled
 #TODO: store the number of gold standards in the Batch table and the accurracy of labeling them
 #TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
-#TODO: use https instead of http
 
 from flask import Flask, render_template, jsonify, request, abort, g, make_response
 from flask_cors import CORS
@@ -340,8 +340,8 @@ def send_batch():
 """
 Set video labels to positive, negative, or gold standard (only admin can use this call)
 """
-@app.route("/api/v1/admin_set_labels", methods=["POST"])
-def admin_set_labels():
+@app.route("/api/v1/set_labels", methods=["POST"])
+def set_labels():
     if request.json is not None and "data" in request.json and "user_token" in request.json:
         labels = request.json["data"]
         # Decode user jwt
