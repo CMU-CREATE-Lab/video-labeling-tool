@@ -111,7 +111,7 @@
           }];
           admin_marked_item["select"] = $desired_state_select;
           admin_marked_item["p"] = $label_state;
-          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v["id"] + ") to " + label_map[label_str]);
+          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v["id"] + ") to " + label_map[label_str] + "?");
           $set_label_confirm_dialog.dialog("open");
         });
         $control.append($label_state);

@@ -369,17 +369,17 @@ def set_labels():
         return handle_invalid_usage(e)
 
 """
-Get videos with positive gold standard labels
+Get videos with positive gold standard labels (only admin can use this call)
 """
-#@app.route("/api/v1/get_pos_gold_standard_labels", methods=["GET"])
+#@app.route("/api/v1/get_pos_gold_standard_labels", methods=["POST"])
 def get_pos_gold_standard_labels():
     videos = Video.query.filter(Video.label_state==0b101111).all()
     return jsonify_videos(videos)
 
 """
-Get videos with negative gold standard labels
+Get videos with negative gold standard labels (only admin can use this call)
 """
-#@app.route("/api/v1/get_neg_gold_standard_labels", methods=["GET"])
+#@app.route("/api/v1/get_neg_gold_standard_labels", methods=["POST"])
 def get_neg_gold_standard_labels():
     videos = Video.query.filter(Video.label_state==0b100000).all()
     return jsonify_videos(videos)
@@ -397,17 +397,25 @@ def get_pos_labels():
     if data is not None:
         qs = parse_qs(data.decode("utf8"))
         if "user_token" in qs:
-            user_jwt = decode_jwt(qs["user_token"][0])
+            # Decode user jwt
+            try:
+                user_jwt = decode_jwt(qs["user_token"][0])
+            except jwt.InvalidSignatureError as ex:
+                e = InvalidUsage(ex.args[0], status_code=401)
+                return handle_invalid_usage(e)
+            except Exception as ex:
+                e = InvalidUsage(ex.args[0], status_code=401)
+                return handle_invalid_usage(e)
         if "pageNumber" in qs:
             page_number = int(qs["pageNumber"][0])
         if "pageSize" in qs:
             page_size = int(qs["pageSize"][0])
     if user_id is None:
-        q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011, 0b101111))).paginate(page_number, page_size, False)
-        show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False # show label if admin reseacher
+        q = get_video_query((0b10111, 0b1111, 0b10011, 0b101111), page_number, page_size)
+        show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False # show label if admin
         return jsonify_videos(q.items, total=q.total, show_label=show_label)
     else:
-        q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
+        q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
         return jsonify_videos(q.items, total=q.total, show_label="simple")
 
 """
@@ -434,6 +442,18 @@ def get_no_labels():
     # Do not include label state -1 because of too many unlabeled videos
     videos = Video.query.filter(Video.label_state.in_((0b11, 0b100, 0b101))).all()
     return jsonify_videos(videos)
+
+"""
+Get video query from the database
+"""
+def get_video_query(labels, page_number, page_size):
+    return Video.query.filter(Video.label_state.in_(labels)).paginate(page_number, page_size, False)
+
+"""
+Get video query from the database by user id
+"""
+def get_pos_video_query_by_user_id(user_id, page_number, page_size):
+    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
 
 """
 Jsonify videos
