@@ -574,8 +574,8 @@ Another example, if an expert labels 1, will attach "11" to the current state
     0b100 (4) : maybe neg (by 1 layperson/amateur) [TRANSITIONAL STATE]
     0b11 (3) : no data, has discord [TRANSITIONAL STATE]
     0b10 -> -1
-    0 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
     -1 : no data, no discord [INITIAL state]
+    -2 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
 Notation "->" means that the state is merged to another state
 For consistency, we always use -1 to indicate 0b10, the initial state that has no data
 """
@@ -588,7 +588,9 @@ def label_state_machine(s, label, client_type):
         elif label == 0b10000: next_s = 0b10000 # strong neg
         elif label == 0b101111: next_s = 0b101111 # pos gold standard
         elif label == 0b100000: next_s = 0b100000 # neg gold standard
-        elif label == 0: next_s = 0 # discard label
+        elif label == 1: next_s = 0b10111 # strong pos
+        elif label == 0: next_s = 0b10000 # strong neg
+        elif label == -2: next_s = -2 # discard label
         elif label == -1: next_s = -1 # reset label
     else:
         # Sanity check, can only use undefined labels (not terminal state)
