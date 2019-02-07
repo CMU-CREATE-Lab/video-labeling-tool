@@ -262,7 +262,7 @@ def login():
             google_id_token = request.json["google_id_token"]
             id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
             if id_info["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
-                e = InvalidUsage("Wrong token issuer.", status_code=401)
+                e = InvalidUsage("Wrong token issuer", status_code=401)
                 return handle_invalid_usage(e)
             client_id = "google.%s" % id_info["sub"]
         else:
@@ -273,7 +273,7 @@ def login():
         return_json = {"user_token": get_user_token_by_client_id(client_id)}
         return jsonify(return_json)
     else:
-        e = InvalidUsage("Missing field: google_id_token or client_id.", status_code=400)
+        e = InvalidUsage("Missing field: google_id_token or client_id", status_code=400)
         return handle_invalid_usage(e)
 
 """
@@ -282,7 +282,7 @@ For the client to get a batch of video clips
 @app.route("/api/v1/get_batch", methods=["POST"])
 def get_batch():
     if request.json is None:
-        e = InvalidUsage("Missing json!", status_code=400)
+        e = InvalidUsage("Missing json", status_code=400)
         return handle_invalid_usage(e)
     if "user_token" not in request.json:
         e = InvalidUsage("Missing field: user_token", status_code=400)
@@ -310,7 +310,7 @@ For the client to send labels of a batch back to the server
 @app.route("/api/v1/send_batch", methods=["POST"])
 def send_batch():
     if request.json is None:
-        e = InvalidUsage("Missing json!", status_code=400)
+        e = InvalidUsage("Missing json", status_code=400)
         return handle_invalid_usage(e)
     if "data" not in request.json:
         e = InvalidUsage("Missing field: data", status_code=400)
@@ -336,7 +336,7 @@ def send_batch():
     original_v = video_jwt["video_id_list"]
     returned_v = [v["video_id"] for v in labels]
     if Counter(original_v) != Counter(returned_v):
-        e = InvalidUsage("Signature of the video batch is not valid.", status_code=401)
+        e = InvalidUsage("Signature of the video batch is not valid", status_code=401)
         return handle_invalid_usage(e)
     # Update database
     try:
@@ -352,7 +352,7 @@ Set video labels to positive, negative, or gold standard (only admin can use thi
 @app.route("/api/v1/set_labels", methods=["POST"])
 def set_labels():
     if request.json is None:
-        e = InvalidUsage("Missing json!", status_code=400)
+        e = InvalidUsage("Missing json", status_code=400)
         return handle_invalid_usage(e)
     if "data" not in request.json:
         e = InvalidUsage("Missing field: data", status_code=400)
@@ -371,7 +371,7 @@ def set_labels():
         return handle_invalid_usage(e)
     # Verify if the user is admin
     if user_jwt["client_type"] != 0:
-        e = InvalidUsage("Permission denied.", status_code=403)
+        e = InvalidUsage("Permission denied", status_code=403)
         return handle_invalid_usage(e)
     # Update database
     try:
@@ -445,11 +445,11 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False):
     if only_admin:
         # Verify if user_token is returned
         if user_jwt is None:
-            e = InvalidUsage("Missing fields: user_token.", status_code=400)
+            e = InvalidUsage("Missing fields: user_token", status_code=400)
             return handle_invalid_usage(e)
         # Verify if the user is admin
         if user_jwt["client_type"] != 0:
-            e = InvalidUsage("Permission denied.", status_code=403)
+            e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
     if user_id is None:
         q = get_video_query(labels, page_number, page_size)
@@ -459,7 +459,7 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False):
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
         return jsonify_videos(q.items, total=q.total, show_label="simple")
-    
+ 
 """
 Get video query from the database
 """
