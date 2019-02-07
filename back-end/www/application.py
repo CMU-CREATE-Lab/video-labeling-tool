@@ -1,4 +1,3 @@
-#TODO: implement a data analysis console and a content manage console for admin researchers
 #TODO: use https instead of http
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
@@ -349,8 +348,8 @@ def send_batch():
 """
 Set video labels to positive, negative, or gold standard (only admin can use this call)
 """
-@app.route("/api/v1/set_labels", methods=["POST"])
-def set_labels():
+@app.route("/api/v1/set_label_state", methods=["POST"])
+def set_label_state():
     if request.json is None:
         e = InvalidUsage("Missing json", status_code=400)
         return handle_invalid_usage(e)
@@ -416,6 +415,13 @@ Get videos with insufficient user-provided labels
 def get_partial_labels():
     # Do not include label state -1 because of too many unlabeled videos
     return get_video_labels([0b11, 0b100, 0b101], only_admin=True)
+
+"""
+Get videos that were discarded
+"""
+@app.route("/api/v1/get_bad_labels", methods=["POST"])
+def get_bad_labels():
+    return get_video_labels([0], only_admin=True)
 
 """
 Get video labels
@@ -578,10 +584,12 @@ def label_state_machine(s, label, client_type):
     undefined_labels = [0b101, 0b100, 0b11, -1]
     # Researchers will always override the state
     if client_type == 0:
-        if label == 1: next_s = 0b10111 # strong pos
-        elif label == 0: next_s = 0b10000 # strong neg
-        elif label == 11: next_s = 0b101111 # pos gold standard
-        elif label == 10: next_s = 0b100000 # neg gold standard
+        if label == 0b10111: next_s = 0b10111 # strong pos
+        elif label == 0b10000: next_s = 0b10000 # strong neg
+        elif label == 0b101111: next_s = 0b101111 # pos gold standard
+        elif label == 0b100000: next_s = 0b100000 # neg gold standard
+        elif label == 0: next_s = 0 # discard label
+        elif label == -1: next_s = -1 # reset label
     else:
         # Sanity check, can only use undefined labels (not terminal state)
         if s not in undefined_labels: return None

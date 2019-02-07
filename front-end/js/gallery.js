@@ -34,13 +34,9 @@
     "20": "Weak Neg",
     "19": "Weak Pos",
     "15": "Medium Pos",
-    "12": "Medium Neg"
-  };
-  var label_map = {
-    "11": "Gold Pos",
-    "10": "Gold Neg",
-    "1": "Strong Pos",
-    "0": "Strong Neg"
+    "12": "Medium Neg",
+    "-1": "No Data",
+    "0": "Bad Data"
   };
   var $set_label_confirm_dialog;
   var admin_marked_item = {};
@@ -112,7 +108,7 @@
           }];
           admin_marked_item["select"] = $desired_state_select;
           admin_marked_item["p"] = $label_state;
-          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_map[label_str] + "?");
+          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_state_map[label_str] + "?");
           $set_label_confirm_dialog.dialog("open");
         });
         $control.append($label_state);
@@ -127,12 +123,14 @@
 
   function createLabelStateSelect() {
     var html = "";
-    html += "<select>";
+    html += "<select class='custom-select'>";
     html += "<option value='default' selected disabled hidden>Set label</option>";
-    html += "<option value='11'>" + label_map["11"] + "</option>";
-    html += "<option value='10'>" + label_map["10"] + "</option>";
-    html += "<option value='1'>" + label_map["1"] + "</option>";
-    html += "<option value='0'>" + label_map["0"] + "</option>";
+    html += "<option value='47'>" + label_state_map["47"] + "</option>";
+    html += "<option value='32'>" + label_state_map["32"] + "</option>";
+    html += "<option value='23'>" + label_state_map["23"] + "</option>";
+    html += "<option value='16'>" + label_state_map["16"] + "</option>";
+    html += "<option value='0'>" + label_state_map["0"] + "</option>";
+    html += "<option value='-1'>" + label_state_map["-1"] + "</option>";
     html += "</select>";
     return $(html);
   }
@@ -191,6 +189,7 @@
     if (typeof user_id === "undefined" && is_admin) {
       $(".intro-text").hide();
       $(".admin-text").show();
+      $(".admin-control").css("display", "flex");
     }
     $page_nav = $("#page-navigator");
     $page_control = $("#page-control");
@@ -283,9 +282,9 @@
     });
   }
 
-  function setLabels(labels, callback) {
+  function setLabelState(labels, callback) {
     $.ajax({
-      url: api_url_root + "set_labels",
+      url: api_url_root + "set_label_state",
       type: "POST",
       data: JSON.stringify({
         "data": labels,
@@ -321,17 +320,17 @@
       selector: "#set-label-confirm-dialog",
       action_text: "Confirm",
       action_callback: function () {
-        setLabels(admin_marked_item["data"], {
+        setLabelState(admin_marked_item["data"], {
           "success": function () {
-            console.log("Set label successfully:");
+            console.log("Set label state successfully:");
             console.log(admin_marked_item["data"]);
             var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
-            var txt = v_id + ": " + safeGet(label_map[v_label], "Undefined");
+            var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
             admin_marked_item["p"].find("i").text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
           "error": function () {
-            console.log("Error when setting label:");
+            console.log("Error when setting label state:");
             console.log(admin_marked_item["data"]);
             admin_marked_item["p"].find("i").removeClass().addClass("custom-text-danger-dark-theme");
           },
@@ -354,7 +353,12 @@
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
-    user_id = getQueryParas()["user_id"];
+    var query_paras = getQueryParas();
+    user_id = query_paras["user_id"];
+    var method = query_paras["method"];
+    if (typeof method !== "undefined") {
+      api_url_path_get = method;
+    }
     if (typeof user_id !== "undefined") {
       api_url_path_get += "?user_id=" + user_id;
       $(".intro-text").hide();
