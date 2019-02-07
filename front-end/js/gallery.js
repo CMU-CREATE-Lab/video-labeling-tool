@@ -105,13 +105,14 @@
         var $desired_state_select = createLabelStateSelect();
         $desired_state_select.on("change", function () {
           var label_str = $desired_state_select.val();
+          var v_id = $(this).data("v")["id"];
           admin_marked_item["data"] = [{
-            video_id: v["id"],
+            video_id: v_id,
             label: parseInt(label_str)
           }];
           admin_marked_item["select"] = $desired_state_select;
           admin_marked_item["p"] = $label_state;
-          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v["id"] + ") to " + label_map[label_str] + "?");
+          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_map[label_str] + "?");
           $set_label_confirm_dialog.dialog("open");
         });
         $control.append($label_state);
@@ -143,7 +144,7 @@
         var s = v["label_state"];
         var label = safeGet(label_state_map[s], "Undefined")
         $i.text(v["id"] + ": " + label).addClass("custom-text-info-dark-theme");
-        $item.find("select").val("default");
+        $item.find("select").data("v", v).val("default");
       }
     } else {
       var $i = $item.find("i").removeClass();
