@@ -333,6 +333,8 @@
             if (typeof callback["error"] === "function") callback["error"](xhr);
           },
           abort: function (xhr) {
+            // need to store the token and return it back to the server when finished
+            video_token = data["video_token"];
             if (typeof callback["abort"] === "function") callback["abort"](xhr);
           }
         });
