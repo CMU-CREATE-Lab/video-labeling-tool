@@ -22,7 +22,8 @@
         selector: "#video-test-dialog",
         show_cancel_btn: false,
         width: 270,
-        show_close_button: false
+        show_close_button: false,
+        no_body_scroll: true
       });
       $("#play-video-button").on("click", function () {
         $("video").each(function () {
