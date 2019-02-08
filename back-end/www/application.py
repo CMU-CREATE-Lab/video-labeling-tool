@@ -38,6 +38,7 @@ google_signin_client_id = Path("../data/google_signin_client_id").read_text().st
 private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
+max_page_size = 1000 # the max page size allowed for getting videos
 
 """
 Initialize the application
@@ -470,6 +471,7 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False):
 Get video query from the database
 """
 def get_video_query(labels, page_number, page_size):
+    page_size = max_page_size if page_size > max_page_size else page_size
     q = None
     if len(labels) > 1:
         q = Video.query.filter(Video.label_state.in_(labels))
@@ -483,6 +485,7 @@ def get_video_query(labels, page_number, page_size):
 Get video query from the database by user id
 """
 def get_pos_video_query_by_user_id(user_id, page_number, page_size):
+    page_size = max_page_size if page_size > max_page_size else page_size
     return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
 
 """
