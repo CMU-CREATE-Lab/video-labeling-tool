@@ -71,12 +71,12 @@
       });
       google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
         if (is_signed_in) {
-          video_test_dialog.startVideoPlayTest(1000);
+          video_test_dialog.startVideoPlayTest(5000);
         } else {
           var $account_dialog = google_account_dialog.getDialog();
           $account_dialog.dialog("open");
           $account_dialog.one("dialogclose", function () {
-            video_test_dialog.startVideoPlayTest(1000);
+            video_test_dialog.startVideoPlayTest(5000);
           });
         }
       });
