@@ -225,7 +225,7 @@
           $(window).scrollTop(0);
           updateVideos(data);
           if (is_first_time) {
-            video_test_dialog.startVideoPlayTest(5000);
+            video_test_dialog.startVideoPlayTest(3000);
             is_first_time = false;
           }
         } else {
