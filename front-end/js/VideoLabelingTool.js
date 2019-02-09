@@ -170,7 +170,11 @@
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
-      var $vid = $("<video preload loop muted playsinline disableRemotePlayback></video>");
+      // "autoplay" is needed for iPhone Safari to work
+      // "preload" is ignored by mobile devices
+      // "disableRemotePlayback" prevents chrome casting
+      // "playsinline" prevents playing video fullscreen
+      var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
       $item.on("click", function () {
         toggleSelect($(this));
       });
@@ -196,7 +200,9 @@
         $item.data("id", v["id"]);
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
-          this.play(); // autoplay
+          if (this.paused) {
+            this.play(); // play if the autoplay tag fails
+          }
         });
         if (!$vid.complete) {
           var deferred = $.Deferred();

@@ -62,10 +62,16 @@
     if (is_first_time) {
       $next = $("#next");
       $("#start").on("click", function () {
-        nextBatch();
-        $next.on("click", function () {
+        // Safari on iPhone only allows displaying maximum 16 videos at once
+        // So we need to remove the videos on the first page
+        // The timeout is used for the browser to delete and free the memory used for video tags
+        $("video").remove();
+        setTimeout(function () {
           nextBatch();
-        });
+          $next.on("click", function () {
+            nextBatch();
+          });
+        }, 1000);
         $(".init-hidden").removeClass("init-hidden");
         $(".init-show").css("display", "none");
       });
