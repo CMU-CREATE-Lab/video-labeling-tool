@@ -17,7 +17,7 @@
   //
   // Create the class
   //
-  var Tracker = function (settings) {
+  var GoogleAnalyticsTracker = function (settings) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Variables
@@ -62,9 +62,9 @@
   // Register to window
   //
   if (window.edaplotjs) {
-    window.edaplotjs.Tracker = Tracker;
+    window.edaplotjs.GoogleAnalyticsTracker = GoogleAnalyticsTracker;
   } else {
     window.edaplotjs = {};
-    window.edaplotjs.Tracker = Tracker;
+    window.edaplotjs.GoogleAnalyticsTracker = GoogleAnalyticsTracker;
   }
 })();

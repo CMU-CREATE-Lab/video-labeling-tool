@@ -10,12 +10,12 @@ import re
 video_size = 180
 
 # Get video samples
-with open("../data/video_samples.json") as f:
+with open("../data/video_samples/1.json") as f:
     video_samples = json.load(f)
 
 # The sun set and rise time in Pittsburgh
 # Format: [[Jan_sunrise, Jan_sunset], [Feb_sunrise, Feb_sunset], ...]
-pittsburgh_sun_table = [(8,17), (8,17), (8,19), (7,19), (6,20), (6,20), (6,20), (7,20), (7,19), (7,18), (8,17), (8,17)]
+pittsburgh_sun_table = [(8,16), (8,17), (8,18), (7,19), (6,19), (6,20), (6,19), (7,19), (7,18), (8,17), (8,16), (8,16)]
 
 def request_json(url):
     r = requests.get(url)

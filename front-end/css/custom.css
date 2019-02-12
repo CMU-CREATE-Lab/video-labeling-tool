@@ -24,26 +24,27 @@ body,
   color: white !important;
 }
 
-.custom-button-flat {
-  font-size: 18px !important;
-  line-height: 18px !important;
-  padding: 17px !important;
-  border-radius: 56px !important;
-}
-
-.control-group {
-  margin-top: 10px !important;
-}
-
 .text {
   font-size: 18px;
 }
 
-.intro-text {
-  margin-top: 0 !important;
+.text-small-margin {
+  font-size: 18px;
 }
 
-.label-text {
+.user-text {
+  display: none;
+}
+
+.admin-text {
+  display: none;
+}
+
+.admin-control {
+  display: none;
+}
+
+.no-top-margin {
   margin-top: 0 !important;
 }
 
@@ -150,15 +151,19 @@ body,
 }
 
 .custom-text-info-dark-theme {
-  color: #3be4ff;
+  color: #3be4ff !important;
+}
+
+.custom-text-primary-dark-theme {
+  color: #41ff3b !important;
 }
 
 .custom-text-danger-dark-theme {
-  color: #ff5e5e;
+  color: #ff5e5e !important;
 }
 
 .gallery-no-data-text {
-  color: #3be4ff;
+  color: #3be4ff !important;
   text-align: center;
   flex: 1 0 100%;
   max-width: 100%;
@@ -167,7 +172,7 @@ body,
 }
 
 .gallery-error-text {
-  color: #ff5e5e;
+  color: #ff5e5e !important;
   text-align: center;
   flex: 1 0 100%;
   max-width: 100%;
@@ -177,6 +182,59 @@ body,
 
 .gallery {
   min-height: 150px;
+}
+
+.gallery a {
+  position: relative;
+}
+
+.gallery a>i {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: bold;
+  position: absolute;
+  bottom: 10px;
+  right: 17px;
+}
+
+.gallery a .label-control {
+  color: white;
+  text-align: left;
+}
+
+.gallery a .label-control p {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.gallery a .label-control i {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+}
+
+.custom-select {
+  margin: 5px 0;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+  height: 39px;
+  text-indent: 5px;
+}
+
+.custom-select:focus {
+  outline: none;
 }
 
 .gallery-videos {

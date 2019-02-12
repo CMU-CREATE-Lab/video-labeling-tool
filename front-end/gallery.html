@@ -18,7 +18,15 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="lib/pagination/pagination.js"></script>
   <script src="js/widgets.js"></script>
+  <script src="js/GoogleAnalyticsTracker.js"></script>
+  <script src="js/GoogleAccountDialog.js"></script>
+  <script src="js/VideoTestDialog.js"></script>
   <script src="js/gallery.js"></script>
+  <!-- Start for Google Sign-In -->
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <!-- End for Google Sign-In -->
 </head>
 
 <body>
@@ -43,18 +51,38 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p class="text intro-text">
-              We greatly appreciate the efforts taken by the community to find smoke emissions from monitoring cameras. These are the <span class="custom-text-info-dark-theme">smoke videos</span> labeled by using this tool.
+            <p class="text intro-text no-top-margin">
+              We greatly appreciate the efforts taken by the community to find smoke emissions from monitoring cameras.
+              These are the <span class="custom-text-info-dark-theme">smoke videos</span> labeled by using this tool.
             </p>
+            <p class="text user-text no-top-margin">
+              The following smoke videos were identified by you.
+              Symbol <span class="custom-text-info-dark-theme">"?"</span> on the bottom-right corner means that the video has not been confirmed by others.
+              Symbol <span class="custom-text-primary-dark-theme">"Y"</span> and <span class="custom-text-danger-dark-theme">"N"</span> means that others agreed or disagreed with your findings respectively.
+            </p>
+            <p class="text-small-margin admin-text no-top-margin">
+              You logged in as a <span class="custom-text-info-dark-theme">system administrator</span>.
+              The gallery is displayed in the admin mode.
+            </p>
+            <div class="control-group admin-control add-bottom-margin">
+              <a class="custom-button-flat" href="?method=get_pos_labels">Pos</a>
+              <a class="custom-button-flat" href="?method=get_neg_labels">Neg</a>
+              <a class="custom-button-flat" href="?method=get_pos_gold_labels">Gold Pos</a>
+              <a class="custom-button-flat" href="?method=get_neg_gold_labels">Gold Neg</a>
+              <a class="custom-button-flat" href="?method=get_partial_labels">Partial</a>
+              <a class="custom-button-flat" href="?method=get_bad_labels">Bad</a>
+            </div>
           </div>
         </div>
-        <div class="gallery"><div class="gallery-videos"></div></div>
+        <div class="gallery">
+          <div class="gallery-videos"></div>
+        </div>
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
-            <div id="page-control" class="control-group init-hidden">
-              <button id="page-back" class="custom-button-flat stretch-on-mobile" disabled><img src="img/back.png"><span>Back</span></button>
+            <div id="page-control" class="control-group add-top-margin init-hidden">
+              <button id="page-back" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/back.png"><span>Back</span></button>
               <div id="page-navigator" class="stretch-on-mobile"></div>
-              <button id="page-next" class="custom-button-flat stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
+              <button id="page-next" class="custom-button-flat large stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
             </div>
           </div>
         </div>
@@ -64,6 +92,9 @@
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
     <p>Videos on this page did not autoplay. Please enable it.</p>
     <button id="play-video-button" class="custom-button">Enable video autoplay</button>
+  </div>
+  <div id="set-label-confirm-dialog" title="Set Label" data-role="none">
+    <p></p>
   </div>
 </body>
 

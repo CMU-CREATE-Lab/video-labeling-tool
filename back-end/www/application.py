@@ -1,17 +1,13 @@
-"""
-GitHub: https://github.com/yenchiah/video-labeling-tool-back-end
-Version: v0.1
-"""
+#TODO: use https instead of http
+#TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
-#TODO: implement a data analysis console and a content manage console for admin researchers
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
 #TODO: implement the method for adding gold standards into the queried video batch
 #TODO: implement the check for gold standards, reject the submission if gold standards are wrongly labeled
 #TODO: store the number of gold standards in the Batch table and the accurracy of labeling them
 #TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
-#TODO: use https instead of http
 
 from flask import Flask, render_template, jsonify, request, abort, g, make_response
 from flask_cors import CORS
@@ -30,6 +26,8 @@ from flask_migrate import Migrate
 import logging
 import logging.handlers
 import os
+import json
+from urllib.parse import parse_qs
 
 """
 Config Parameters
@@ -40,6 +38,7 @@ google_signin_client_id = Path("../data/google_signin_client_id").read_text().st
 private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
+max_page_size = 1000 # the max page size allowed for getting videos
 
 """
 Initialize the application
@@ -159,8 +158,8 @@ class Label(db.Model):
     time = db.Column(db.Integer, nullable=False, default=get_current_time)
     # The user id in the User table (this information is duplicated in the batch->connnection, for fast query)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
-    # The batch id in the Batch table
-    batch_id = db.Column(db.Integer, db.ForeignKey("batch.id"), nullable=False)
+    # The batch id in the Batch table (null means that an admin changed the label)
+    batch_id = db.Column(db.Integer, db.ForeignKey("batch.id"))
 
     def __repr__(self):
         return ("<Label id=%r video_id=%r label=%r time=%r user_id=%r batch_id=%r>") % (self.id, self.video_id, self.label, self.time, self.user_id, self.batch_id)
@@ -209,6 +208,16 @@ video_schema = VideoSchema()
 videos_schema = VideoSchema(many=True)
 
 """
+The schema for the video table, used for jsonify without label_state
+"""
+class VideoSchemaNoLabel(ma.ModelSchema):
+    class Meta:
+        model = Video # the class for the model
+        fields = ("id", "url_part") # fields to expose
+video_schema_no_label = VideoSchemaNoLabel()
+videos_schema_no_label = VideoSchemaNoLabel(many=True)
+
+"""
 The class for handling errors, such as a bad request
 """
 class InvalidUsage(Exception):
@@ -248,22 +257,23 @@ For the client to login
 def login():
     client_id = None
     # Get client id
-    if "google_id_token" in request.json:
-        google_id_token = request.json["google_id_token"]
-        id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
-        if id_info["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
-            e = InvalidUsage("Wrong token issuer.", status_code=401)
-            return handle_invalid_usage(e)
-        client_id = "google.%s" % id_info["sub"]
-    else:
-        if "client_id" in request.json:
-            client_id = request.json["client_id"]
+    if request.json is not None:
+        if "google_id_token" in request.json:
+            google_id_token = request.json["google_id_token"]
+            id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
+            if id_info["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
+                e = InvalidUsage("Wrong token issuer", status_code=401)
+                return handle_invalid_usage(e)
+            client_id = "google.%s" % id_info["sub"]
+        else:
+            if "client_id" in request.json:
+                client_id = request.json["client_id"]
     # Get user id by client id, and issued an user jwt
     if client_id is not None:
         return_json = {"user_token": get_user_token_by_client_id(client_id)}
         return jsonify(return_json)
     else:
-        e = InvalidUsage("Missing field: google_id_token or client_id.", status_code=400)
+        e = InvalidUsage("Missing field: google_id_token or client_id", status_code=400)
         return handle_invalid_usage(e)
 
 """
@@ -271,130 +281,236 @@ For the client to get a batch of video clips
 """
 @app.route("/api/v1/get_batch", methods=["POST"])
 def get_batch():
-    if "user_token" in request.json:
-        # Decode user jwt
-        try:
-            user_jwt = decode_jwt(request.json["user_token"])
-            user_id = user_jwt["user_id"]
-        except jwt.InvalidSignatureError as ex:
-            e = InvalidUsage(ex.args[0], status_code=403)
-            return handle_invalid_usage(e)
-        except Exception as ex:
-            e = InvalidUsage(ex.args[0], status_code=401)
-            return handle_invalid_usage(e)
-        # Query videos (active learning or random sampling)
-        video_batch = query_video_batch()
-        if len(video_batch) < batch_size:
-            return make_response("", 204)
-        else:
-            batch = add_batch()
-            return jsonify_videos(video_batch, sign=True, batch_id=batch.id)
-    else:
+    if request.json is None:
+        e = InvalidUsage("Missing json", status_code=400)
+        return handle_invalid_usage(e)
+    if "user_token" not in request.json:
         e = InvalidUsage("Missing field: user_token", status_code=400)
         return handle_invalid_usage(e)
+    # Decode user jwt
+    try:
+        user_jwt = decode_jwt(request.json["user_token"])
+    except jwt.InvalidSignatureError as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    # Query videos (active learning or random sampling)
+    video_batch = query_video_batch(user_jwt["user_id"])
+    if len(video_batch) < batch_size:
+        return make_response("", 204)
+    else:
+        batch = add_batch()
+        return jsonify_videos(video_batch, sign=True, batch_id=batch.id)
 
 """
 For the client to send labels of a batch back to the server
 """
 @app.route("/api/v1/send_batch", methods=["POST"])
 def send_batch():
-    if "data" in request.json and "video_token" in request.json and "user_token" in request.json:
-        labels = request.json["data"]
-        # Decode user and video jwt
-        try:
-            video_jwt = decode_jwt(request.json["video_token"])
-            user_jwt = decode_jwt(request.json["user_token"])
-        except jwt.InvalidSignatureError as ex:
-            e = InvalidUsage(ex.args[0], status_code=403)
-            return handle_invalid_usage(e)
-        except Exception as ex:
-            e = InvalidUsage(ex.args[0], status_code=401)
-            return handle_invalid_usage(e)
-        # Verify video id list
-        original_v = video_jwt["video_id_list"]
-        returned_v = [v["video_id"] for v in labels]
-        if Counter(original_v) != Counter(returned_v):
-            e = InvalidUsage("Signature of the video batch is not valid.", status_code=403)
-            return handle_invalid_usage(e)
-        # Update database
-        try:
-            update_video_labels(labels, user_jwt["user_id"], user_jwt["connection_id"], video_jwt["batch_id"], user_jwt["client_type"])
-            return make_response("", 204)
-        except Exception as ex:
-            e = InvalidUsage(ex.args[0], status_code=400)
-            return handle_invalid_usage(e)
-    else:
-        e = InvalidUsage("Missing fields: data, video_token, and user_token.", status_code=400)
+    if request.json is None:
+        e = InvalidUsage("Missing json", status_code=400)
+        return handle_invalid_usage(e)
+    if "data" not in request.json:
+        e = InvalidUsage("Missing field: data", status_code=400)
+        return handle_invalid_usage(e)
+    if "user_token" not in request.json:
+        e = InvalidUsage("Missing field: user_token", status_code=400)
+        return handle_invalid_usage(e)
+    if "video_token" not in request.json:
+        e = InvalidUsage("Missing field: video_token", status_code=400)
+        return handle_invalid_usage(e)
+    # Decode user and video jwt
+    try:
+        video_jwt = decode_jwt(request.json["video_token"])
+        user_jwt = decode_jwt(request.json["user_token"])
+    except jwt.InvalidSignatureError as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    # Verify video id list
+    labels = request.json["data"]
+    original_v = video_jwt["video_id_list"]
+    returned_v = [v["video_id"] for v in labels]
+    if Counter(original_v) != Counter(returned_v):
+        e = InvalidUsage("Signature of the video batch is not valid", status_code=401)
+        return handle_invalid_usage(e)
+    # Update database
+    try:
+        update_labels(labels, user_jwt["user_id"], user_jwt["connection_id"], video_jwt["batch_id"], user_jwt["client_type"])
+        return make_response("", 204)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=400)
         return handle_invalid_usage(e)
 
 """
-Get videos with positive gold standard labels
+Set video labels to positive, negative, or gold standard (only admin can use this call)
 """
-@app.route("/api/v1/get_pos_gold_standard_labels", methods=["GET"])
-def get_pos_gold_standard_labels():
-    videos = Video.query.filter(Video.label_state==0b101111).all()
-    return jsonify_videos(videos)
-
-"""
-Get videos with negative gold standard labels
-"""
-@app.route("/api/v1/get_neg_gold_standard_labels", methods=["GET"])
-def get_neg_gold_standard_labels():
-    videos = Video.query.filter(Video.label_state==0b100000).all()
-    return jsonify_videos(videos)
+@app.route("/api/v1/set_label_state", methods=["POST"])
+def set_label_state():
+    if request.json is None:
+        e = InvalidUsage("Missing json", status_code=400)
+        return handle_invalid_usage(e)
+    if "data" not in request.json:
+        e = InvalidUsage("Missing field: data", status_code=400)
+        return handle_invalid_usage(e)
+    if "user_token" not in request.json:
+        e = InvalidUsage("Missing field: user_token", status_code=400)
+        return handle_invalid_usage(e)
+    # Decode user jwt
+    try:
+        user_jwt = decode_jwt(request.json["user_token"])
+    except jwt.InvalidSignatureError as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    # Verify if the user is admin
+    if user_jwt["client_type"] != 0:
+        e = InvalidUsage("Permission denied", status_code=403)
+        return handle_invalid_usage(e)
+    # Update database
+    try:
+        update_labels(request.json["data"], user_jwt["user_id"], None, None, user_jwt["client_type"])
+        return make_response("", 204)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=400)
+        return handle_invalid_usage(e)
 
 """
 Get videos with positive labels
 """
-@app.route("/api/v1/get_pos_labels", methods=["GET"])
+@app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
 def get_pos_labels():
-    user_id = request.args.get("user_id")
-    page_number = request.args.get("pageNumber", 1, type=int)
-    page_size = request.args.get("pageSize", 20, type=int)
-    if user_id is None:
-        q = Video.query.filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).paginate(page_number, page_size, False)
-    else:
-        q = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).filter(Video.label_state.in_((0b10111, 0b1111, 0b10011))).distinct().paginate(page_number, page_size, False)
-        #q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
-    return jsonify_videos(q.items, total=q.total)
+    return get_video_labels([0b10111, 0b1111, 0b10011, 0b101111], allow_user_id=True)
 
 """
 Get videos with negative labels
 """
-@app.route("/api/v1/get_neg_labels", methods=["GET"])
+@app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    videos = Video.query.filter(Video.label_state.in_((0b10000, 0b1100, 0b10100))).all()
-    return jsonify_videos(videos)
+    return get_video_labels([0b10000, 0b1100, 0b10100, 0b100000])
 
 """
-Get videos with discarded labels
+Get videos with positive gold standard labels (only admin can use this call)
 """
-@app.route("/api/v1/get_bad_labels", methods=["GET"])
-def get_bad_labels():
-    videos = Video.query.filter(Video.label_state==0).all()
-    return jsonify_videos(videos)
+@app.route("/api/v1/get_pos_gold_labels", methods=["POST"])
+def get_pos_gold_labels():
+    return get_video_labels([0b101111], only_admin=True)
 
 """
-Get videos with no labels or not enough labels
+Get videos with negative gold standard labels (only admin can use this call)
 """
-@app.route("/api/v1/get_no_labels", methods=["GET"])
-def get_no_labels():
+@app.route("/api/v1/get_neg_gold_labels", methods=["POST"])
+def get_neg_gold_labels():
+    return get_video_labels([0b100000], only_admin=True)
+
+"""
+Get videos with insufficient user-provided labels
+"""
+@app.route("/api/v1/get_partial_labels", methods=["POST"])
+def get_partial_labels():
     # Do not include label state -1 because of too many unlabeled videos
-    videos = Video.query.filter(Video.label_state.in_((0b11, 0b100, 0b101))).all()
-    return jsonify_videos(videos)
+    return get_video_labels([0b11, 0b100, 0b101], only_admin=True)
+
+"""
+Get videos that were discarded
+"""
+@app.route("/api/v1/get_bad_labels", methods=["POST"])
+def get_bad_labels():
+    return get_video_labels([0], only_admin=True)
+
+"""
+Get video labels
+"""
+def get_video_labels(labels, allow_user_id=False, only_admin=False):
+    user_id = request.args.get("user_id") if allow_user_id else None
+    page_number = request.args.get("pageNumber", 1, type=int)
+    page_size = request.args.get("pageSize", 16, type=int)
+    user_jwt = None
+    data = request.get_data()
+    if data is not None:
+        qs = parse_qs(data.decode("utf8"))
+        if "user_token" in qs:
+            # Decode user jwt
+            try:
+                user_jwt = decode_jwt(qs["user_token"][0])
+            except jwt.InvalidSignatureError as ex:
+                e = InvalidUsage(ex.args[0], status_code=401)
+                return handle_invalid_usage(e)
+            except Exception as ex:
+                e = InvalidUsage(ex.args[0], status_code=401)
+                return handle_invalid_usage(e)
+        if "pageNumber" in qs:
+            page_number = int(qs["pageNumber"][0])
+        if "pageSize" in qs:
+            page_size = int(qs["pageSize"][0])
+    if only_admin:
+        # Verify if user_token is returned
+        if user_jwt is None:
+            e = InvalidUsage("Missing fields: user_token", status_code=400)
+            return handle_invalid_usage(e)
+        # Verify if the user is admin
+        if user_jwt["client_type"] != 0:
+            e = InvalidUsage("Permission denied", status_code=403)
+            return handle_invalid_usage(e)
+    if user_id is None:
+        q = get_video_query(labels, page_number, page_size)
+        # Only return the label state if the user is an admin
+        show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
+        return jsonify_videos(q.items, total=q.total, show_label=show_label)
+    else:
+        q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
+        return jsonify_videos(q.items, total=q.total, show_label="simple")
+ 
+"""
+Get video query from the database
+"""
+def get_video_query(labels, page_number, page_size):
+    page_size = max_page_size if page_size > max_page_size else page_size
+    q = None
+    if len(labels) > 1:
+        q = Video.query.filter(Video.label_state.in_(labels))
+    if len(labels) == 1:
+        q = Video.query.filter(Video.label_state==labels[0])
+    if page_number is not None and page_size is not None:
+        q = q.paginate(page_number, page_size, False)
+    return q
+
+"""
+Get video query from the database by user id
+"""
+def get_pos_video_query_by_user_id(user_id, page_number, page_size):
+    page_size = max_page_size if page_size > max_page_size else page_size
+    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
 
 """
 Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, show_label=False):
     if len(videos) == 0: return make_response("", 204)
-    videos_json, errors = videos_schema.dump(videos)
+    if show_label == False:
+        videos_json, errors = videos_schema_no_label.dump(videos)
+    else:
+        videos_json, errors = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
         videos_json[i]["url_root"] = video_url_root
+        if show_label == "simple":
+            s = videos_json[i]["label_state"]
+            if s in [0b10011, 0b1111, 0b10111, 0b101111]:
+                videos_json[i]["label_state"] = 1
+            elif s in [0b10100, 0b1100, 0b10000, 0b100000]:
+                videos_json[i]["label_state"] = 0
+            else:
+                videos_json[i]["label_state"] = -1
         if sign:
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}
@@ -407,13 +523,14 @@ def jsonify_videos(videos, sign=False, batch_id=None, total=None):
 """
 Update the Video table when a new label is added
 """
-def update_video_labels(labels, user_id, connection_id, batch_id, client_type):
+def update_labels(labels, user_id, connection_id, batch_id, client_type):
     if len(labels) == 0: return
     # Record batch returned time
-    batch = Batch.query.filter(Batch.id==batch_id).first()
-    batch.return_time = get_current_time()
-    batch.connection_id = connection_id
-    log("Update batch: %r" % batch)
+    if batch_id is not None and connection_id is not None:
+        batch = Batch.query.filter(Batch.id==batch_id).first()
+        batch.return_time = get_current_time()
+        batch.connection_id = connection_id
+        log("Update batch: %r" % batch)
     # Search the video batch and hash videos by video_id
     video_batch = Video.query.filter(Video.id.in_((v["video_id"] for v in labels))).all()
     video_batch_hashed = {}
@@ -442,26 +559,26 @@ The second bit from the left indicates if the data has discord (1: has discord, 
 The rest of the bits indicates positve (1) or negative (0) labels
 For example, if a layperson labels 0, will attach "0" to the current state
 Another example, if an expert labels 1, will attach "11" to the current state
-    0b101111 : pos (gold standard) [both INITIAL and TERMINAL STATE]
-    0b100000 : neg (gold standard) [both INITIAL and TERMINAL STATE]
-    0b10111 : strong pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10100 : weak neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10011 : weak pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10000 : strong neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b101111 (47) : pos (gold standard) [both INITIAL and TERMINAL STATE]
+    0b100000 (32) : neg (gold standard) [both INITIAL and TERMINAL STATE]
+    0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
     0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10111
     0b1001 -> 0b11
     0b1010 -> 0b11
     0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10000
-    0b1111 : medium pos (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
-    0b1100 : medium neg (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
+    0b1111 (15) : medium pos (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
+    0b1100 (12) : medium neg (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
     0b111 : weak pos (has discord, verified by 1 layperson/amateur) -> 0b10011
     0b110 : weak neg (has discord, verified by 1 layperson/amateur) -> 0b10100
-    0b101 : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
-    0b100 : maybe neg (by 1 layperson/amateur) [TRANSITIONAL STATE]
-    0b11 : no data, has discord [TRANSITIONAL STATE]
+    0b101 (5) : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
+    0b100 (4) : maybe neg (by 1 layperson/amateur) [TRANSITIONAL STATE]
+    0b11 (3) : no data, has discord [TRANSITIONAL STATE]
     0b10 -> -1
-    0 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
     -1 : no data, no discord [INITIAL state]
+    -2 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
 Notation "->" means that the state is merged to another state
 For consistency, we always use -1 to indicate 0b10, the initial state that has no data
 """
@@ -470,8 +587,14 @@ def label_state_machine(s, label, client_type):
     undefined_labels = [0b101, 0b100, 0b11, -1]
     # Researchers will always override the state
     if client_type == 0:
-        if label == 1: next_s = 0b10111 # strong pos
+        if label == 0b10111: next_s = 0b10111 # strong pos
+        elif label == 0b10000: next_s = 0b10000 # strong neg
+        elif label == 0b101111: next_s = 0b101111 # pos gold standard
+        elif label == 0b100000: next_s = 0b100000 # neg gold standard
+        elif label == 1: next_s = 0b10111 # strong pos
         elif label == 0: next_s = 0b10000 # strong neg
+        elif label == -2: next_s = -2 # discard label
+        elif label == -1: next_s = -1 # reset label
     else:
         # Sanity check, can only use undefined labels (not terminal state)
         if s not in undefined_labels: return None
@@ -575,8 +698,11 @@ def add_batch(**kwargs):
 """
 Query a batch of videos for labeling by using active learning or random sampling
 """
-def query_video_batch():
-    q = Video.query.filter(Video.label_state.in_((-1, 0b11, 0b100, 0b101)))
+def query_video_batch(user_id):
+    # Get the video ids labeled by the user
+    v_ids = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).distinct().with_entities(Video.id).all()
+    # Exclude the videos that were labeled by the same user
+    q = Video.query.filter(and_(Video.label_state.in_((-1, 0b11, 0b100, 0b101)), Video.id.notin_([v[0] for v in v_ids])))
     return q.order_by(func.random()).limit(batch_size).all()
 
 """
@@ -666,7 +792,7 @@ def log_custom(msg, level="info"):
 Log info
 """
 def log(msg):
-    app.logger.info(msg)
+    app.logger.info("\n\n\t" + msg + "\n")
     if app.config["ENV"] == "production":
         log_custom(msg, level="info")
 
@@ -674,7 +800,7 @@ def log(msg):
 Log warning
 """
 def log_warning(msg):
-    app.logger.warning(msg)
+    app.logger.warning("\n\n\t" + msg + "\n")
     if app.config["ENV"] == "production":
         log_custom(msg, level="warning")
 
@@ -682,6 +808,6 @@ def log_warning(msg):
 Log error
 """
 def log_error(msg):
-    app.logger.error(msg)
+    app.logger.error("\n\n\t" + msg + "\n")
     if app.config["ENV"] == "production":
         log_custom(msg, level="error")

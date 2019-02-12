@@ -17,8 +17,10 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="js/widgets.js"></script>
-  <script src="js/Tracker.js"></script>
+  <script src="js/GoogleAnalyticsTracker.js"></script>
   <script src="js/VideoLabelingTool.js"></script>
+  <script src="js/GoogleAccountDialog.js"></script>
+  <script src="js/VideoTestDialog.js"></script>
   <script src="js/index.js"></script>
   <!-- Start for Google Sign-In -->
   <meta name="google-signin-scope" content="profile email">
@@ -50,7 +52,7 @@
       <div class="content-table flex-column">
         <div class="flex-row init-show">
           <div class="flex-item flex-column">
-            <p class="text intro-text">
+            <p class="text no-top-margin">
               This tool is developed by the <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> for <span class="custom-text-info-dark-theme">labeling smoke emissions</span> from a batch of short air quality monitoring videos.
               Here are examples that show <span class="custom-text-info-dark-theme">smoke</span>.
             </p>
@@ -58,22 +60,22 @@
         </div>
         <div class="gallery init-show">
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-01.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=1094.08&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-09-24.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=936.5&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-01.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=926.25&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-06-11.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=985&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
@@ -87,22 +89,22 @@
         </div>
         <div class="gallery init-show">
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-16.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=303.75&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-01.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=431.5&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-04-30.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=370.92&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-09-29.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=754.75&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
@@ -116,37 +118,37 @@
         </div>
         <div class="gallery init-show">
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-09-29.timemachine/&boundsLTRB=2319,884,3752,1893&width=177&height=177&frameTime=1017.25&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-11-02.timemachine/&boundsLTRB=2330,690,3730,2090&width=175&height=175&startFrame=4950&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-10-28.timemachine/&boundsLTRB=2330,690,3730,2090&width=175&height=175&startFrame=12679&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline>
+            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="http://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/shenango1/2015-11-02.timemachine/&boundsLTRB=2330,690,3730,2090&width=175&height=175&startFrame=7153&format=mp4&fps=12&tileFormat=mp4&nframes=24" type="video/mp4">
             </video>
           </a>
         </div>
         <div class="flex-row init-show">
           <div class="flex-item flex-column full-width">
-            <div class="control-group">
-              <button id="start" class="custom-button-flat stretch-on-mobile"><img src="img/play.png"><span>Start Labeling</span></button>
+            <div class="control-group add-top-margin">
+              <button id="start" class="custom-button-flat large stretch-on-mobile"><img src="img/play.png"><span>Start Labeling</span></button>
             </div>
           </div>
         </div>
         <div class="flex-row init-hidden">
           <div class="flex-item flex-column">
-            <p class="text label-text">
-              Select videos that have <span class="custom-text-info-dark-theme">smoke</span> by clicking.
+            <p class="text no-top-margin">
+              Select videos that have <span class="custom-text-info-dark-theme">smoke with opacity larger than 50%</span> by clicking.
               Click again to deselect.
               <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
               Several videos with known labels are randomly placed, and your scores are evaluated based on them.
@@ -156,9 +158,9 @@
         <div id="labeling-tool-container" class="init-hidden"></div>
         <div class="flex-row init-hidden">
           <div class="flex-item flex-column full-width">
-            <div class="control-group">
-              <button id="next" class="custom-button-flat stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
-              <a id="review" class="custom-button-flat stretch-on-mobile" href="" target="_blank"><img src="img/collection.png"><span>My Collection</span></a>
+            <div class="control-group add-top-margin">
+              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
+              <a id="review" class="custom-button-flat large stretch-on-mobile" href="" target="_blank"><img src="img/collection.png"><span>My Collection</span></a>
             </div>
           </div>
         </div>

@@ -170,7 +170,11 @@
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
-      var $vid = $("<video autoplay preload loop muted playsinline></video>");
+      // "autoplay" is needed for iPhone Safari to work
+      // "preload" is ignored by mobile devices
+      // "disableRemotePlayback" prevents chrome casting
+      // "playsinline" prevents playing video fullscreen
+      var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
       $item.on("click", function () {
         toggleSelect($(this));
       });
@@ -196,7 +200,9 @@
         $item.data("id", v["id"]);
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
-          this.play();
+          if (this.paused) {
+            this.play(); // play if the autoplay tag fails
+          }
         });
         if (!$vid.complete) {
           var deferred = $.Deferred();
@@ -216,7 +222,7 @@
           $item.addClass("force-hidden");
         }
       }
-      // Autoplay videos
+      // Load and show videos
       resolvePromises(deferreds, {
         success: function (data) {
           $tool.empty().append($tool_videos);
@@ -333,6 +339,8 @@
             if (typeof callback["error"] === "function") callback["error"](xhr);
           },
           abort: function (xhr) {
+            // need to store the token and return it back to the server when finished
+            video_token = data["video_token"];
             if (typeof callback["abort"] === "function") callback["abort"](xhr);
           }
         });
@@ -356,9 +364,9 @@
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
-    // Privileged methods
+    // Public methods
     //
-    var next = function (callback) {
+    this.next = function (callback) {
       callback = safeGet(callback, {});
       sendVideoBatch({
         success: function (data) {
@@ -372,12 +380,7 @@
         }
       });
     };
-    this.next = next;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Public methods
-    //
     this.userId = function () {
       return user_id;
     };

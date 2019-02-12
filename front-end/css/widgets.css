@@ -1,6 +1,6 @@
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
- * Version: v3.1
+ * Version: v3.4
  * This CSS file has widgets for building interactive web applications
  * Use this file with widgets.js
  * If you want to keep this template updated, avoid modifying this file
@@ -301,11 +301,12 @@
 }
 
 .custom-dialog-flat .ui-dialog-buttonpane .ui-dialog-buttonset .ui-button {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
   border: 1px solid #7d7d7d;
   background: #7d7d7d none;
   color: white;
   border-radius: 2px;
-  margin: 0 0 0 0.7em;
+  margin: 0 0 0 1em;
   outline: none;
 }
 
