@@ -10,7 +10,7 @@ import re
 video_size = 180
 
 # Get video samples
-with open("../data/video_samples.json") as f:
+with open("../data/video_samples/1.json") as f:
     video_samples = json.load(f)
 
 # The sun set and rise time in Pittsburgh
