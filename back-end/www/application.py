@@ -114,7 +114,9 @@ class Video(db.Model):
     # The thumbnail url query string part
     url_part = db.Column(db.String(768), unique=True, nullable=False)
     # The state of the label (also enable database indexing on this column for fast lookup)
+    # (label_state_admin is for admin reseacher, client type 0)
     label_state = db.Column(db.Integer, nullable=False, default=-1, index=True)
+    label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
 
@@ -562,16 +564,16 @@ For example, if a layperson labels 0, will attach "0" to the current state
 Another example, if an expert labels 1, will attach "11" to the current state
     0b101111 (47) : pos (gold standard) [both INITIAL and TERMINAL STATE]
     0b100000 (32) : neg (gold standard) [both INITIAL and TERMINAL STATE]
-    0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
+    0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
+    0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
+    0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10111
     0b1001 -> 0b11
     0b1010 -> 0b11
-    0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10000
-    0b1111 (15) : medium pos (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
-    0b1100 (12) : medium neg (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
+    0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert) -> 0b10000
+    0b1111 (15) : medium pos (has discord, verified by 1 expert) [TERMINAL STATE]
+    0b1100 (12) : medium neg (has discord, verified by 1 expert) [TERMINAL STATE]
     0b111 : weak pos (has discord, verified by 1 layperson/amateur) -> 0b10011
     0b110 : weak neg (has discord, verified by 1 layperson/amateur) -> 0b10100
     0b101 (5) : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
