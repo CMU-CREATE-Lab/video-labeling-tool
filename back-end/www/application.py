@@ -1,3 +1,4 @@
+#TODO: need to seperate researcher labels and citizen labels, for comparing the reliability (need for research)
 #TODO: use https instead of http
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?

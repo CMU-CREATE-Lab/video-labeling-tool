@@ -1,5 +1,6 @@
 /*
  * TODO: add a legend to indicate Y, N, and ? (instead of using text)
+ * TODO: add a text box to jump to a page
  * TODO: use different GA tracking ID for staging and production
  * TODO: add links back to the ecam webpage
  */
