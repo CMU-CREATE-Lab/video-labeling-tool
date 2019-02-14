@@ -11,7 +11,8 @@
  * - amateur mode: draw bounding boxes (BBOX) for smoke for each video
  * - expert mode: draw BBOX and provide smoke info (e.g., blue, black)
  * TODO: ask the user to enter a nick name at the begining for the ladder board
- * TODO: add an ladder board for showing nick names and scores
+ * TODO: add an ladder board for showing user id and scores
+ * TODO: in the account dialog, show the user id and client type
  */
 
 (function () {
