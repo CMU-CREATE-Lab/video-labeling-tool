@@ -300,7 +300,8 @@ def get_batch():
         e = InvalidUsage(ex.args[0], status_code=401)
         return handle_invalid_usage(e)
     # Query videos (active learning or random sampling)
-    video_batch = query_video_batch(user_jwt["user_id"])
+    use_admin_label_state = True if user_jwt["client_type"] == 0 else False
+    video_batch = query_video_batch(user_jwt["user_id"], use_admin_label_state=use_admin_label_state)
     if len(video_batch) < batch_size:
         return make_response("", 204)
     else:
@@ -723,11 +724,16 @@ def add_batch(**kwargs):
 """
 Query a batch of videos for labeling by using active learning or random sampling
 """
-def query_video_batch(user_id):
+def query_video_batch(user_id, use_admin_label_state=False):
     # Get the video ids labeled by the user
     v_ids = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).distinct().with_entities(Video.id).all()
     # Exclude the videos that were labeled by the same user
-    q = Video.query.filter(and_(Video.label_state.in_((-1, 0b11, 0b100, 0b101)), Video.id.notin_([v[0] for v in v_ids])))
+    undefined_labels = (-1, 0b11, 0b100, 0b101)
+    labeled_video_ids = [v[0] for v in v_ids]
+    if use_admin_label_state:
+        q = Video.query.filter(and_(Video.label_state_admin.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+    else:
+        q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
     return q.order_by(func.random()).limit(batch_size).all()
 
 """
