@@ -114,14 +114,14 @@ class Video(db.Model):
     # The thumbnail url query string part
     url_part = db.Column(db.String(768), unique=True, nullable=False)
     # The state of the label (also enable database indexing on this column for fast lookup)
-    # (label_state_admin is for admin reseacher, client type 0)
+    # (label_state_admin is for admin researcher, client type 0)
     label_state = db.Column(db.Integer, nullable=False, default=-1, index=True)
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state)
+        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin)
 
 """
 The class for the user table
@@ -213,12 +213,12 @@ videos_schema = VideoSchema(many=True)
 """
 The schema for the video table, used for jsonify without label_state
 """
-class VideoSchemaNoLabel(ma.ModelSchema):
+class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part") # fields to expose
-video_schema_no_label = VideoSchemaNoLabel()
-videos_schema_no_label = VideoSchemaNoLabel(many=True)
+        fields = ("id", "url_part", "label_state", "label_state_admin") # fields to expose
+video_schema_is_admin = VideoSchemaIsAdmin()
+videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
 """
 The class for handling errors, such as a bad request
@@ -387,50 +387,67 @@ def set_label_state():
 """
 Get videos with positive labels
 """
+pos_labels = [0b10111, 0b1111, 0b10011, 0b101111]
 @app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
 def get_pos_labels():
-    return get_video_labels([0b10111, 0b1111, 0b10011, 0b101111], allow_user_id=True)
+    return get_video_labels(pos_labels, allow_user_id=True)
+
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["POST"])
+def get_pos_labels_by_researcher():
+    return get_video_labels(pos_labels, use_admin_label_state=True)
 
 """
 Get videos with negative labels
 """
+neg_labels = [0b10000, 0b1100, 0b10100, 0b100000]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    return get_video_labels([0b10000, 0b1100, 0b10100, 0b100000])
+    return get_video_labels(neg_labels)
+
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
+def get_neg_labels_by_researcher():
+    return get_video_labels(neg_labels, use_admin_label_state=True)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
+Gold standard labels will only be set by researchers
 """
+pos_gold_labels = [0b101111]
 @app.route("/api/v1/get_pos_gold_labels", methods=["POST"])
 def get_pos_gold_labels():
-    return get_video_labels([0b101111], only_admin=True)
+    return get_video_labels(pos_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get videos with negative gold standard labels (only admin can use this call)
+Gold standard labels will only be set by researchers
 """
+neg_gold_labels = [0b100000]
 @app.route("/api/v1/get_neg_gold_labels", methods=["POST"])
 def get_neg_gold_labels():
-    return get_video_labels([0b100000], only_admin=True)
+    return get_video_labels(neg_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with insufficient user-provided labels
+Get videos with insufficient user-provided labels (only admin can use this call)
+Partial labels will only be set by citizens
 """
+partial_labels = [0b11, 0b100, 0b101] # Do not include label state -1 because of too many unlabeled videos
 @app.route("/api/v1/get_partial_labels", methods=["POST"])
 def get_partial_labels():
-    # Do not include label state -1 because of too many unlabeled videos
-    return get_video_labels([0b11, 0b100, 0b101], only_admin=True)
+    return get_video_labels(partial_labels, only_admin=True)
 
 """
-Get videos that were discarded
+Get videos that were discarded (only admin can use this call)
+Bad labels will only be set by researchers
 """
+bad_labels = [-2]
 @app.route("/api/v1/get_bad_labels", methods=["POST"])
 def get_bad_labels():
-    return get_video_labels([0], only_admin=True)
+    return get_video_labels(bad_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get video labels
 """
-def get_video_labels(labels, allow_user_id=False, only_admin=False):
+def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_label_state=False):
     user_id = request.args.get("user_id") if allow_user_id else None
     page_number = request.args.get("pageNumber", 1, type=int)
     page_size = request.args.get("pageSize", 16, type=int)
@@ -461,25 +478,30 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False):
         if user_jwt["client_type"] != 0:
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
+    is_admin = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
     if user_id is None:
-        q = get_video_query(labels, page_number, page_size)
-        # Only return the label state if the user is an admin
-        show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
-        return jsonify_videos(q.items, total=q.total, show_label=show_label)
+        q = get_video_query(labels, page_number, page_size, use_admin_label_state)
+        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
-        return jsonify_videos(q.items, total=q.total, show_label="simple")
+        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
  
 """
 Get video query from the database
 """
-def get_video_query(labels, page_number, page_size):
+def get_video_query(labels, page_number, page_size, use_admin_label_state):
     page_size = max_page_size if page_size > max_page_size else page_size
     q = None
     if len(labels) > 1:
-        q = Video.query.filter(Video.label_state.in_(labels))
+        if use_admin_label_state:
+            q = Video.query.filter(Video.label_state_admin.in_(labels))
+        else:
+            q = Video.query.filter(Video.label_state.in_(labels))
     if len(labels) == 1:
-        q = Video.query.filter(Video.label_state==labels[0])
+        if use_admin_label_state:
+            q = Video.query.filter(Video.label_state_admin==labels[0])
+        else:
+            q = Video.query.filter(Video.label_state==labels[0])
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
     return q
@@ -496,24 +518,16 @@ Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None, show_label=False):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False):
     if len(videos) == 0: return make_response("", 204)
-    if show_label == False:
-        videos_json, errors = videos_schema_no_label.dump(videos)
+    if is_admin:
+        videos_json, errors = videos_schema_is_admin.dump(videos)
     else:
         videos_json, errors = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
         videos_json[i]["url_root"] = video_url_root
-        if show_label == "simple":
-            s = videos_json[i]["label_state"]
-            if s in [0b10011, 0b1111, 0b10111, 0b101111]:
-                videos_json[i]["label_state"] = 1
-            elif s in [0b10100, 0b1100, 0b10000, 0b100000]:
-                videos_json[i]["label_state"] = 0
-            else:
-                videos_json[i]["label_state"] = -1
         if sign:
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}
@@ -545,9 +559,17 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
         v["batch_id"] = batch_id
         add_label(**v)
         video = video_batch_hashed[v["video_id"]]
-        next_s = label_state_machine(video.label_state, v["label"], client_type)
+        if client_type == 0: # admin researcher
+            next_s = label_state_machine(video.label_state_admin, v["label"], client_type)
+        else: # normal user
+            next_s = label_state_machine(video.label_state, v["label"], client_type)
         if next_s is not None:
-            video.label_state = next_s
+            if client_type == 0: # admin researcher
+                # Researchers should not override the labels provided by normal users
+                # Because we need to compare the reliability of the labels provided by normal users
+                video.label_state_admin = next_s
+            else: # normal user
+                video.label_state = next_s
             log("Update video: %r" % video)
         else:
             log_warning("No next state for video: %r" % video)
@@ -562,8 +584,8 @@ The second bit from the left indicates if the data has discord (1: has discord, 
 The rest of the bits indicates positve (1) or negative (0) labels
 For example, if a layperson labels 0, will attach "0" to the current state
 Another example, if an expert labels 1, will attach "11" to the current state
-    0b101111 (47) : pos (gold standard) [both INITIAL and TERMINAL STATE]
-    0b100000 (32) : neg (gold standard) [both INITIAL and TERMINAL STATE]
+    0b101111 (47) : pos (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
+    0b100000 (32) : neg (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
     0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
@@ -587,8 +609,7 @@ For consistency, we always use -1 to indicate 0b10, the initial state that has n
 """
 def label_state_machine(s, label, client_type):
     next_s = None
-    undefined_labels = [0b101, 0b100, 0b11, -1]
-    # Researchers will always override the state
+    # Researchers
     if client_type == 0:
         if label == 0b10111: next_s = 0b10111 # strong pos
         elif label == 0b10000: next_s = 0b10000 # strong neg
@@ -600,6 +621,7 @@ def label_state_machine(s, label, client_type):
         elif label == -1: next_s = -1 # reset label
     else:
         # Sanity check, can only use undefined labels (not terminal state)
+        undefined_labels = [0b101, 0b100, 0b11, -1]
         if s not in undefined_labels: return None
     # Experts, amateurs, and laypeople
     if client_type == 1: # experts

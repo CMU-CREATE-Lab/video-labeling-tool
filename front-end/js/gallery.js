@@ -36,8 +36,11 @@
     "19": "Weak Pos",
     "15": "Medium Pos",
     "12": "Medium Neg",
-    "-1": "No Data",
-    "0": "Bad Data"
+    "5": "Maybe Pos",
+    "4": "Maybe Neg",
+    "3": "Discord",
+    "-2": "Bad Data",
+    "-1": "No Data"
   };
   var $set_label_confirm_dialog;
   var admin_marked_item = {};
@@ -98,7 +101,7 @@
     if (typeof user_id === "undefined") {
       if (is_admin) {
         var $control = $("<div class='label-control'></div>");
-        var $label_state = $("<p class='text-small-margin'><i></i></p>");
+        var $label_state = $("<p class='text-small-margin'><i></i><i></i></p>");
         var $desired_state_select = createLabelStateSelect();
         $desired_state_select.on("change", function () {
           var label_str = $desired_state_select.val();
@@ -130,7 +133,7 @@
     html += "<option value='32'>" + label_state_map["32"] + "</option>";
     html += "<option value='23'>" + label_state_map["23"] + "</option>";
     html += "<option value='16'>" + label_state_map["16"] + "</option>";
-    html += "<option value='0'>" + label_state_map["0"] + "</option>";
+    html += "<option value='-2'>" + label_state_map["-2"] + "</option>";
     html += "<option value='-1'>" + label_state_map["-1"] + "</option>";
     html += "</select>";
     return $(html);
@@ -140,17 +143,18 @@
     if (typeof user_id === "undefined") {
       if (is_admin) {
         var $i = $item.find("i").removeClass();
-        var s = v["label_state"];
-        var label = safeGet(label_state_map[s], "Undefined")
-        $i.text(v["id"] + ": " + label).addClass("custom-text-info-dark-theme");
+        var label_admin = safeGet(label_state_map[v["label_state_admin"]], "Undefined");
+        var label = safeGet(label_state_map[v["label_state"]], "Undefined");
+        $($i.get(0)).text(v["id"] + ": " + label_admin).addClass("custom-text-info-dark-theme");
+        $($i.get(1)).text("Citizen: " + label).addClass("custom-text-info-dark-theme");
         $item.find("select").data("v", v).val("default");
       }
     } else {
       var $i = $item.find("i").removeClass();
       var s = v["label_state"];
-      if (s == 1) {
+      if ([19, 15, 23, 47].indexOf(s) != -1) {
         $i.text("Y").addClass("custom-text-primary-dark-theme");
-      } else if (s == 0) {
+      } else if ([20, 12, 16, 32].indexOf(s) != -1) {
         $i.text("N").addClass("custom-text-danger-dark-theme");
       } else {
         $i.text("?").addClass("custom-text-info-dark-theme");
@@ -328,12 +332,12 @@
             var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
             var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
-            admin_marked_item["p"].find("i").text(txt).removeClass().addClass("custom-text-primary-dark-theme");
+            $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
           "error": function () {
             console.log("Error when setting label state:");
             console.log(admin_marked_item["data"]);
-            admin_marked_item["p"].find("i").removeClass().addClass("custom-text-danger-dark-theme");
+            $(admin_marked_item["p"].find("i").get(0)).removeClass().addClass("custom-text-danger-dark-theme");
           },
           "complete": function () {
             admin_marked_item["select"].val("default");

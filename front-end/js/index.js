@@ -71,7 +71,7 @@
           $next.on("click", function () {
             nextBatch();
           });
-        }, 1000);
+        }, 1500);
         $(".init-hidden").removeClass("init-hidden");
         $(".init-show").css("display", "none");
       });

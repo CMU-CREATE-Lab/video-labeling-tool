@@ -220,6 +220,11 @@ body,
   font-style: normal;
   font-weight: normal;
   width: 100%;
+  display: block;
+}
+
+.gallery a .label-control i:last-child {
+  margin-top: 5px;
 }
 
 .custom-select {
