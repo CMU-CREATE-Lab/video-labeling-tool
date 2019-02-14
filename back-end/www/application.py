@@ -1,13 +1,12 @@
-#TODO: need to seperate researcher labels and citizen labels, for comparing the reliability (need for research)
 #TODO: use https instead of http
+#TODO: implement the method for adding gold standards into the queried video batch
+#TODO: implement the check for gold standards, reject the submission if gold standards are wrongly labeled
+#TODO: store the number of gold standards in the Batch table and the accurracy of labeling them
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
-#TODO: implement the method for adding gold standards into the queried video batch
-#TODO: implement the check for gold standards, reject the submission if gold standards are wrongly labeled
-#TODO: store the number of gold standards in the Batch table and the accurracy of labeling them
 #TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
 
 from flask import Flask, render_template, jsonify, request, abort, g, make_response
@@ -29,6 +28,7 @@ import logging.handlers
 import os
 import json
 from urllib.parse import parse_qs
+from random import shuffle
 
 """
 Config Parameters
@@ -40,6 +40,7 @@ private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
+gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
 
 """
 Initialize the application
@@ -732,9 +733,24 @@ def query_video_batch(user_id, use_admin_label_state=False):
     labeled_video_ids = [v[0] for v in v_ids]
     if use_admin_label_state:
         q = Video.query.filter(and_(Video.label_state_admin.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+        return q.order_by(func.random()).limit(batch_size).all()
     else:
-        q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
-    return q.order_by(func.random()).limit(batch_size).all()
+        if gold_standard_in_batch == 0:
+            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+            return q.order_by(func.random()).limit(batch_size).all()
+        else:
+            q_gold = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000)))
+            gold_v_ids = q_gold.with_entities(Video.id).all()
+            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids + gold_v_ids)))
+            gold = q_gold.order_by(func.random()).limit(gold_standard_in_batch).all()
+            unlabeled = q.order_by(func.random()).limit(batch_size - gold_standard_in_batch).all()
+            if (len(gold) != gold_standard_in_batch):
+                # This means that there are not enough or no gold standard videos
+                return make_response("", 204)
+            else:
+                videos = gold + unlabeled
+                shuffle(videos)
+                return videos
 
 """
 Get user token by using client id
