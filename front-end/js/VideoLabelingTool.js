@@ -1,18 +1,16 @@
 /*
+ * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
+ * TODO: add an ladder board for showing user id and scores
+ * TODO: in the account dialog, show the user id and client type
+ * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: if the user made too many bad batches, ask the user to retake the tutorial
  * TODO: remove google-signin-client_id meta name from the index.html
  * TODO: add a playback timeline bar to show the video playback time
- * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
- * TODO: show a bar (with badge) about how many videos are correctly labeled
- * - use gold standard videos to verify this (each batch has at least one)
  * TODO: allow users to share the badge with the achievement on social media
  * TODO: as users gain enough scores, advance them to the harder mode
  * - laypeople mode: select videos that have smoke
  * - amateur mode: draw bounding boxes (BBOX) for smoke for each video
  * - expert mode: draw BBOX and provide smoke info (e.g., blue, black)
- * TODO: ask the user to enter a nick name at the begining for the ladder board
- * TODO: add an ladder board for showing user id and scores
- * TODO: in the account dialog, show the user id and client type
  */
 
 (function () {
