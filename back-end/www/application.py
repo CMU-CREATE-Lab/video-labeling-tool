@@ -30,8 +30,7 @@ from random import shuffle
 """
 Config Parameters
 """
-#video_url_root = "http://thumbnails.cmucreatelab.org/thumbnail"
-video_url_root = "http://thumbnails-v2.createlab.org/thumbnail"
+video_url_root = "https://thumbnails-v2.createlab.org/thumbnail"
 google_signin_client_id = Path("../data/google_signin_client_id").read_text().strip()
 private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch

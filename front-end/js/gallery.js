@@ -71,9 +71,9 @@
       root_url = "http://localhost:5000/api/v1/";
     } else {
       if (is_staging >= 0) {
-        root_url = "http://staging.api.smoke.createlab.org/api/v1/";
+        root_url = "https://staging.api.smoke.createlab.org/api/v1/";
       } else {
-        root_url = "http://api.smoke.createlab.org/api/v1/";
+        root_url = "https://api.smoke.createlab.org/api/v1/";
       }
     }
     return root_url;

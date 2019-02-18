@@ -1,4 +1,5 @@
 /*
+ * TODO: move getRootApiUrl and other duplicate functions to util file
  * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
  * TODO: add an ladder board for showing user id and scores
  * TODO: in the account dialog, show the user id and client type
@@ -63,9 +64,9 @@
         root_url = "http://localhost:5000/api/v1/";
       } else {
         if (is_staging >= 0) {
-          root_url = "http://staging.api.smoke.createlab.org/api/v1/";
+          root_url = "https://staging.api.smoke.createlab.org/api/v1/";
         } else {
-          root_url = "http://api.smoke.createlab.org/api/v1/";
+          root_url = "https://api.smoke.createlab.org/api/v1/";
         }
       }
       return root_url;
