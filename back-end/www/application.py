@@ -402,7 +402,7 @@ pos_labels = [0b10111, 0b1111, 0b10011, 0b101111]
 def get_pos_labels():
     return get_video_labels(pos_labels, allow_user_id=True)
 
-@app.route("/api/v1/get_pos_labels_by_researcher", methods=["POST"])
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
 def get_pos_labels_by_researcher():
     return get_video_labels(pos_labels, use_admin_label_state=True)
 
@@ -414,7 +414,7 @@ neg_labels = [0b10000, 0b1100, 0b10100, 0b100000]
 def get_neg_labels():
     return get_video_labels(neg_labels)
 
-@app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
 def get_neg_labels_by_researcher():
     return get_video_labels(neg_labels, use_admin_label_state=True)
 
