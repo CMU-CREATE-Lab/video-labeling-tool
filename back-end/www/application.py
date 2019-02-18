@@ -812,8 +812,9 @@ def get_user_token_by_client_id(client_id):
         user = add_user(client_id=client_id) # create a new user if not found
     user_id = user.id
     client_type = user.client_type
+    user_score = user.score
     connection = add_connection(user_id=user_id, client_type=client_type)
-    return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time)
+    return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
 
 """
 Update client type by user id

@@ -40,6 +40,8 @@
     var video_token;
     var user_token;
     var this_obj = this;
+    var user_score;
+    var on_user_score_update = settings["on_user_score_update"];
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -349,6 +351,12 @@
 
     // When sending the current batch of video labels successfully, get a new batch of videos
     function onSendVideoBatchSuccess(data, callback) {
+      // Update the user score
+      if (typeof data !== "undefined" && data["data"]["score"]["user"] != null) {
+        user_score = data["data"]["score"]["user"];
+        if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+      }
+      // Get a new batch
       getVideoBatch({
         success: function (data) {
           onGetVideoBatchSuccess(data, callback);
@@ -392,7 +400,10 @@
       }, {
         success: function (data) {
           user_token = data["user_token"];
-          user_id = getJwtPayload(user_token)["user_id"];
+          var user_payload = getJwtPayload(user_token);
+          user_id = user_payload["user_id"];
+          user_score = user_payload["user_score"];
+          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {
@@ -409,13 +420,20 @@
       }, {
         success: function (data) {
           user_token = data["user_token"];
-          user_id = getJwtPayload(user_token)["user_id"];
+          var user_payload = getJwtPayload(user_token);
+          user_id = user_payload["user_id"];
+          user_score = user_payload["user_score"];
+          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {
           if (typeof callback["error"] === "function") callback["error"](xhr);
         }
       });
+    };
+
+    this.userScore = function () {
+      return user_score;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

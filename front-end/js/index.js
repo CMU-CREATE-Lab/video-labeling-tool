@@ -75,11 +75,11 @@
         $(".init-hidden").removeClass("init-hidden");
         $(".init-show").css("display", "none");
       });
+      var $account_dialog = google_account_dialog.getDialog();
       google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
         if (is_signed_in) {
           video_test_dialog.startVideoPlayTest(3000);
         } else {
-          var $account_dialog = google_account_dialog.getDialog();
           $account_dialog.dialog("open");
           $account_dialog.one("dialogclose", function () {
             video_test_dialog.startVideoPlayTest(3000);
@@ -91,7 +91,11 @@
   }
 
   function init() {
-    video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container");
+    video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container", {
+      on_user_score_update: function (score) {
+        google_account_dialog.updateUserScore(score);
+      }
+    });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
       sign_in_success: function (google_user) {
         video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
