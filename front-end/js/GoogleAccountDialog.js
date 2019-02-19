@@ -17,11 +17,12 @@
     var $guest_button;
     var $sign_in_text;
     var $hello_text;
+    var $user_name_text;
+    var $user_score_text;
     var widgets = new edaplotjs.Widgets();
     var sign_in_success = settings["sign_in_success"];
     var sign_out_success = settings["sign_out_success"];
     var no_ui = safeGet(settings["no_ui"], false);
-    var $user_score_text;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -45,6 +46,8 @@
     function initGoogleSignIn() {
       $sign_in_text = $("#sign-in-text");
       $hello_text = $("#hello-text");
+      $user_name_text = $("#user-name-text");
+      $user_score_text = $("#user-score-text");
       $google_sign_out_button = $("#google-sign-out-button");
       $google_sign_in_button = $("#google-sign-in-button");
       $guest_button = $("#guest-button");
@@ -98,10 +101,8 @@
       var profile = google_user.getBasicProfile();
       $guest_button.hide();
       $google_sign_out_button.show();
-      var $thank_you_text = $("<p></p>").text("Hi " + profile.getGivenName() + ", thank you for signing in with Google.");
-      $user_score_text = $("<span id='user-score-text'></span>");
-      var $user_info_text = $("<p>Your score (number of reliably labeled videos) is: </p>").append($user_score_text);
-      $hello_text.append($thank_you_text, $user_info_text).show();
+      $user_name_text.text(profile.getGivenName());
+      $hello_text.show();
       $sign_in_text.hide();
       $google_sign_in_button.hide();
       $account_dialog.dialog("close");
@@ -162,7 +163,11 @@
 
     this.updateUserScore = function (score) {
       if (typeof $user_score_text !== "undefined") {
-        $user_score_text.text(score);
+        if (typeof score !== "undefined") {
+          $user_score_text.text(score);
+        } else {
+          $user_score_text.text("(researcher)");
+        }
       }
     };
 

@@ -43,6 +43,7 @@
     var this_obj = this;
     var user_score;
     var on_user_score_update = settings["on_user_score_update"];
+    var is_admin;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -384,6 +385,7 @@
           var user_payload = getJwtPayload(user_token);
           user_id = user_payload["user_id"];
           user_score = user_payload["user_score"];
+          is_admin = user_payload["client_type"] == 0 ? true : false;
           if (typeof on_user_score_update === "function") on_user_score_update(user_score);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
@@ -404,6 +406,7 @@
           var user_payload = getJwtPayload(user_token);
           user_id = user_payload["user_id"];
           user_score = user_payload["user_score"];
+          is_admin = user_payload["client_type"] == 0 ? true : false;
           if (typeof on_user_score_update === "function") on_user_score_update(user_score);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
@@ -415,6 +418,10 @@
 
     this.userScore = function () {
       return user_score;
+    };
+
+    this.isAdmin = function () {
+      return is_admin;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
