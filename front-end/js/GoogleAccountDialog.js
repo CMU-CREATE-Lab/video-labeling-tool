@@ -9,6 +9,7 @@
     //
     // Variables
     //
+    var util = new edaplotjs.Util();
     settings = safeGet(settings, {});
     var $account_dialog;
     var $google_sign_out_button;
@@ -109,10 +110,8 @@
       }
     }
 
-    // Safely get the value from a variable, return a default value if undefined
     function safeGet(v, default_val) {
-      if (typeof default_val === "undefined") default_val = "";
-      return (typeof v === "undefined") ? default_val : v;
+      return util.safeGet(v, default_val);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,18 +1,16 @@
 /*
  * TODO: add a legend to indicate Y, N, and ? (instead of using text)
  * TODO: add a text box to jump to a page
- * TODO: use different GA tracking ID for staging and production
- * TODO: add links back to the ecam webpage
  */
 
 (function () {
   "use strict";
 
+  var util = new edaplotjs.Util();
+  var widgets = new edaplotjs.Widgets();
   var google_account_dialog;
   var video_test_dialog;
-  var ga_tracker;
-  var widgets = new edaplotjs.Widgets();
-  var api_url_root = getRootApiUrl();
+  var api_url_root = util.getRootApiUrl();
   var api_url_path_get = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
   var $gallery_error_text = $('<span class="gallery-error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
@@ -60,24 +58,6 @@
     });
     return vars;
   };
-
-  // Get the the root url of the API
-  function getRootApiUrl() {
-    var root_url;
-    var url_hostname = window.location.hostname;
-    var is_localhost = url_hostname.indexOf("localhost");
-    var is_staging = url_hostname.indexOf("staging");
-    if (is_localhost >= 0) {
-      root_url = "http://localhost:5000/api/v1/";
-    } else {
-      if (is_staging >= 0) {
-        root_url = "https://staging.api.smoke.createlab.org/api/v1/";
-      } else {
-        root_url = "https://api.smoke.createlab.org/api/v1/";
-      }
-    }
-    return root_url;
-  }
 
   // Get the parameters from the query string
   function getQueryParas() {
@@ -309,10 +289,8 @@
     });
   }
 
-  // Safely get the value from a variable, return a default value if undefined
   function safeGet(v, default_val) {
-    if (typeof default_val === "undefined") default_val = "";
-    return (typeof v === "undefined") ? default_val : v;
+    return util.safeGet(v, default_val);
   }
 
   // Read the payload in a JWT
@@ -373,8 +351,8 @@
       no_ui: true
     });
     initConfirmDialog();
-    ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-      tracker_id: "UA-10682694-25",
+    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+      tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
         google_account_dialog.silentSignInWithGoogle(function (is_signed_in, google_user) {
           if (is_signed_in) {

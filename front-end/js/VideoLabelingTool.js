@@ -1,8 +1,7 @@
 /*
- * TODO: move getRootApiUrl and other duplicate functions to util file
+ * TODO: wording check with Paul
  * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
  * TODO: add an ladder board for showing user id and scores
- * TODO: in the account dialog, show the user id and client type
  * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: if the user made too many bad batches, ask the user to retake the tutorial
  * TODO: remove google-signin-client_id meta name from the index.html
@@ -26,6 +25,7 @@
     //
     // Variables
     //
+    var util = new edaplotjs.Util();
     settings = safeGet(settings, {});
     var $container = $(container_selector);
     var $tool;
@@ -35,7 +35,7 @@
     var $error_text = $('<span class="error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
     var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
-    var api_url_root = getRootApiUrl();
+    var api_url_root = util.getRootApiUrl();
     var client_id = safeGet(settings["client_id"], getUniqueId());
     var user_id;
     var video_token;
@@ -52,24 +52,6 @@
       $tool = $('<div class="video-labeling-tool"></div>');
       $tool_videos = $('<div class="video-labeling-tool-videos"></div>');
       $container.append($tool.append($tool_videos));
-    }
-
-    // Get the the root url of the API
-    function getRootApiUrl() {
-      var root_url;
-      var url_hostname = window.location.hostname;
-      var is_localhost = url_hostname.indexOf("localhost");
-      var is_staging = url_hostname.indexOf("staging");
-      if (is_localhost >= 0) {
-        root_url = "http://localhost:5000/api/v1/";
-      } else {
-        if (is_staging >= 0) {
-          root_url = "https://staging.api.smoke.createlab.org/api/v1/";
-        } else {
-          root_url = "https://api.smoke.createlab.org/api/v1/";
-        }
-      }
-      return root_url;
     }
 
     // Get the user id from the server
@@ -280,10 +262,8 @@
       $tool.empty().append($loading_text);
     }
 
-    // Safely get the value from a variable, return a default value if undefined
     function safeGet(v, default_val) {
-      if (typeof default_val === "undefined") default_val = "";
-      return (typeof v === "undefined") ? default_val : v;
+      return util.safeGet(v, default_val);
     }
 
     // Read the payload in a JWT

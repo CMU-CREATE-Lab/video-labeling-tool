@@ -5,10 +5,10 @@
 (function () {
   "use strict";
 
+  var util = new edaplotjs.Util();
   var video_labeling_tool;
   var google_account_dialog;
   var video_test_dialog;
-  var ga_tracker;
   var $next;
   var counter = 0;
   var max_counter = 10;
@@ -121,8 +121,8 @@
       }
     });
     video_test_dialog = new edaplotjs.VideoTestDialog();
-    ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-      tracker_id: "UA-10682694-25",
+    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+      tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
         google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
           // If signed in, will be handled by the callback function of initGoogleSignIn()
