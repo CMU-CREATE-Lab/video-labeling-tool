@@ -133,9 +133,13 @@ body,
   box-sizing: border-box;
 }
 
-#sign-in-text,
+#sign-in-text {
+  margin: 0px !important;
+}
+
 #hello-text {
   margin: 0px !important;
+  display: none;
 }
 
 #user-score-text {
