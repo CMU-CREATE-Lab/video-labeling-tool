@@ -221,8 +221,8 @@
         // Handle UI
         var total_page = $page_nav.pagination("getTotalPage");
         if (typeof total_page !== "undefined" && !isNaN(total_page) && total_page != 1) {
-          if ($page_control.hasClass("init-hidden")) {
-            $page_control.removeClass("init-hidden");
+          if ($page_control.hasClass("force-hidden")) {
+            $page_control.removeClass("force-hidden");
           }
           var page_num = pagination["pageNumber"];
           if (page_num == 1) {
@@ -234,6 +234,10 @@
             $page_next.prop("disabled", true);
           } else {
             $page_next.prop("disabled", false);
+          }
+        } else {
+          if (!$page_control.hasClass("force-hidden")) {
+            $page_control.addClass("force-hidden");
           }
         }
       }
