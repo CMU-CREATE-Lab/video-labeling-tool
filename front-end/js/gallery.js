@@ -210,10 +210,7 @@
         if (typeof data !== "undefined" && data.length > 0) {
           $(window).scrollTop(0);
           updateVideos(data);
-          if (is_first_time) {
-            video_test_dialog.startVideoPlayTest(2000);
-            is_first_time = false;
-          }
+          video_test_dialog.startVideoPlayTest(1000);
         } else {
           $(window).scrollTop(0);
           showNoGalleryMsg();

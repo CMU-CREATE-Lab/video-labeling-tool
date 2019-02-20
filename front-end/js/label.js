@@ -33,6 +33,7 @@
     $(window).scrollTop(0);
     video_labeling_tool.next({
       success: function () {
+        video_test_dialog.startVideoPlayTest(1000);
         countDown();
       },
       abort: function () {
@@ -63,13 +64,8 @@
       nextBatch();
       var $account_dialog = google_account_dialog.getDialog();
       google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
-        if (is_signed_in) {
-          video_test_dialog.startVideoPlayTest(2000);
-        } else {
+        if (!is_signed_in) {
           $account_dialog.dialog("open");
-          $account_dialog.one("dialogclose", function () {
-            video_test_dialog.startVideoPlayTest(2000);
-          });
         }
       });
       is_first_time = false;
