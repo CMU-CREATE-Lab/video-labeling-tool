@@ -74,6 +74,7 @@
     $gallery.append($gallery_error_text);
   }
 
+  // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
   function createVideo(v) {
     var $item = $("<a class='flex-column'></a>");
     var $vid = $("<video autoplay loop muted playsinline disableRemotePlayback></video>");
@@ -210,7 +211,7 @@
           $(window).scrollTop(0);
           updateVideos(data);
           if (is_first_time) {
-            video_test_dialog.startVideoPlayTest(3000);
+            video_test_dialog.startVideoPlayTest(2000);
             is_first_time = false;
           }
         } else {

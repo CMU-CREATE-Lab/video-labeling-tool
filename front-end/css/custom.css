@@ -150,10 +150,6 @@ body,
   display: none;
 }
 
-.init-hidden {
-  display: none !important;
-}
-
 .force-hidden {
   display: none !important;
 }

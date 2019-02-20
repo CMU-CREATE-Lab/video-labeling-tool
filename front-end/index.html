@@ -9,7 +9,6 @@
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/VideoLabelingTool.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
@@ -19,15 +18,8 @@
   <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/GoogleAnalyticsTracker.js"></script>
-  <script src="js/VideoLabelingTool.js"></script>
-  <script src="js/GoogleAccountDialog.js"></script>
   <script src="js/VideoTestDialog.js"></script>
   <script src="js/index.js"></script>
-  <!-- Start for Google Sign-In -->
-  <meta name="google-signin-scope" content="profile email">
-  <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
-  <script src="https://apis.google.com/js/platform.js"></script>
-  <!-- End for Google Sign-In -->
 </head>
 
 <body>
@@ -43,7 +35,6 @@
         <div class="menu-items flex-row-center flex-item">
           <a href="index.html" class="menu-highlight">Overview</a>
           <a href="gallery.html">Gallery</a>
-          <a href="javascript:void(0)" id="account">Account</a>
         </div>
       </div>
     </div>
@@ -51,7 +42,7 @@
   <div class="content-container">
     <div class="content">
       <div class="content-table flex-column">
-        <div class="flex-row init-show">
+        <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text no-top-margin">
               This tool is developed by the <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> for <span class="custom-text-info-dark-theme">labeling smoke emissions</span> from a batch of short air quality monitoring videos.
@@ -59,7 +50,7 @@
             </p>
           </div>
         </div>
-        <div class="gallery init-show">
+        <div class="gallery">
           <a href="javascript:void(0)" class="flex-column">
             <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=9367&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
@@ -81,14 +72,14 @@
             </video>
           </a>
         </div>
-        <div class="flex-row init-show">
+        <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
               Here are examples that show <span class="custom-text-danger-dark-theme">mainly steam</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
             </p>
           </div>
         </div>
-        <div class="gallery init-show">
+        <div class="gallery">
           <a href="javascript:void(0)" class="flex-column">
             <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=4365,1074,4867,1576&width=180&height=180&startFrame=5774&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
@@ -110,14 +101,14 @@
             </video>
           </a>
         </div>
-        <div class="flex-row init-show">
+        <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
               Here are examples that show <span class="custom-text-danger-dark-theme">bad weather</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
             </p>
           </div>
         </div>
-        <div class="gallery init-show">
+        <div class="gallery">
           <a href="javascript:void(0)" class="flex-column">
             <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-02-02.timemachine/&boundsLTRB=763,1032,1265,1534&width=180&height=180&startFrame=4769&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
@@ -139,14 +130,14 @@
             </video>
           </a>
         </div>
-        <div class="flex-row init-show">
+        <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
               Here are examples that show <span class="custom-text-danger-dark-theme">low opacity smoke</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
             </p>
           </div>
         </div>
-        <div class="gallery init-show">
+        <div class="gallery">
           <a href="javascript:void(0)" class="flex-column">
             <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6304,964,6807,1467&width=180&height=180&startFrame=7718&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
@@ -168,45 +159,15 @@
             </video>
           </a>
         </div>
-        <div class="flex-row init-show">
+        <div class="flex-row">
           <div class="flex-item flex-column full-width">
             <div class="control-group add-top-margin">
-              <button id="start" class="custom-button-flat large stretch-on-mobile"><img src="img/play.png"><span>Start Labeling</span></button>
-            </div>
-          </div>
-        </div>
-        <div class="flex-row init-hidden">
-          <div class="flex-item flex-column">
-            <p class="text no-top-margin">
-              Each video is <span class="custom-text-info-dark-theme">3 seconds</span>.
-              Click to select videos that have <span class="custom-text-info-dark-theme">smoke with opacity larger than 50%</span>.
-              Click again to deselect.
-              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
-              Several videos with known answers are randomly placed, and your scores are evaluated based on them.
-            </p>
-          </div>
-        </div>
-        <div id="labeling-tool-container" class="init-hidden"></div>
-        <div class="flex-row init-hidden">
-          <div class="flex-item flex-column full-width">
-            <div class="control-group add-top-margin">
-              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
-              <a id="review" class="custom-button-flat large stretch-on-mobile" href="" target="_blank"><img src="img/collection.png"><span>My Collection</span></a>
+              <a id="start" class="custom-button-flat large stretch-on-mobile" href="label.html"><img src="img/play.png"><span>Start Labeling</span></a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
-    <p id="sign-in-text">Sign in to track your personal achievements.</p>
-    <div id="hello-text">
-      <p>Hi <span id="user-name-text"></span>, thank you for signing in with Google.</p>
-      <p>Your score (number of labeled videos) is: <span id="user-score-text"></span></p>
-    </div>
-    <div id="google-sign-in-button" class="g-signin2"></div>
-    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
-    <button id="guest-button" class="custom-button">Continue as guest</button>
   </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
     <p>Videos on this page did not autoplay. Please enable it.</p>

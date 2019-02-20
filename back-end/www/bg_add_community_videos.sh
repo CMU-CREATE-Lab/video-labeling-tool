@@ -1,4 +1,4 @@
-sudo screen -X quit
+sudo screen -x "add_videos"
 sudo rm screenlog.0
 
 # For python in conda env

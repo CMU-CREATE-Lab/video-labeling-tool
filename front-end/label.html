@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Smoke Labeling</title>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/VideoLabelingTool.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/Util.js"></script>
+  <script src="js/GoogleAnalyticsTracker.js"></script>
+  <script src="js/VideoLabelingTool.js"></script>
+  <script src="js/GoogleAccountDialog.js"></script>
+  <script src="js/VideoTestDialog.js"></script>
+  <script src="js/label.js"></script>
+  <!-- Start for Google Sign-In -->
+  <meta name="google-signin-scope" content="profile email">
+  <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
+  <script src="https://apis.google.com/js/platform.js"></script>
+  <!-- End for Google Sign-In -->
+</head>
+
+<body>
+  <div class="menu-container">
+    <div class="menu">
+      <div class="menu-table flex-row-space-between">
+        <div class="logo flex-row-center">
+          <a href="index.html">Smoke Labeling</a>
+        </div>
+        <a class="menu-button" tabindex="0" href="javascript:void(0)">
+          <img src="img/menu.png">
+        </a>
+        <div class="menu-items flex-row-center flex-item">
+          <a href="index.html" class="menu-highlight">Overview</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="javascript:void(0)" id="account">Account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-container">
+    <div class="content">
+      <div class="content-table flex-column">
+        <div class="flex-row">
+          <div class="flex-item flex-column">
+            <p class="text no-top-margin">
+              Each video is <span class="custom-text-info-dark-theme">3 seconds</span>.
+              Click to select videos that have <span class="custom-text-info-dark-theme">smoke with opacity larger than 50%</span>.
+              Click again to deselect.
+              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
+              Several videos with known answers are randomly placed, and your scores are evaluated based on them.
+            </p>
+          </div>
+        </div>
+        <div id="labeling-tool-container"></div>
+        <div class="flex-row">
+          <div class="flex-item flex-column full-width">
+            <div class="control-group add-top-margin">
+              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
+              <a id="review" class="custom-button-flat large stretch-on-mobile" href="" target="_blank"><img src="img/collection.png"><span>My Collection</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
+    <p id="sign-in-text">Sign in to track your personal achievements.</p>
+    <div id="hello-text"></div>
+    <div id="google-sign-in-button" class="g-signin2"></div>
+    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
+    <button id="guest-button" class="custom-button">Continue as guest</button>
+  </div>
+  <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
+    <p>Videos on this page did not autoplay. Please enable it.</p>
+    <button id="play-video-button" class="custom-button">Enable video autoplay</button>
+  </div>
+</body>
+
+</html>

@@ -153,6 +153,7 @@
     }
 
     // Create a video label element
+    // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
