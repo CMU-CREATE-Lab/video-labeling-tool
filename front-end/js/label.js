@@ -79,6 +79,9 @@
   function init() {
     video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container", {
       on_user_score_update: function (score) {
+        if (video_labeling_tool.isAdmin()) {
+          score = undefined;
+        }
         google_account_dialog.updateUserScore(score);
       }
     });
