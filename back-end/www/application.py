@@ -4,9 +4,6 @@
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
-#TODO: implement the method for adding gold standards into the queried video batch
-#TODO: implement the check for gold standards, reject the submission if gold standards are wrongly labeled
-#TODO: store the number of gold standards in the Batch table and the accurracy of labeling them
 #TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
 
 from flask import Flask, render_template, jsonify, request, abort, g, make_response
@@ -28,17 +25,18 @@ import logging.handlers
 import os
 import json
 from urllib.parse import parse_qs
+from random import shuffle
 
 """
 Config Parameters
 """
-#video_url_root = "http://thumbnails.cmucreatelab.org/thumbnail"
-video_url_root = "http://thumbnails-v2.createlab.org/thumbnail"
+video_url_root = "https://thumbnails-v2.createlab.org/thumbnail"
 google_signin_client_id = Path("../data/google_signin_client_id").read_text().strip()
 private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
+gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
 
 """
 Initialize the application
@@ -113,12 +111,14 @@ class Video(db.Model):
     # The thumbnail url query string part
     url_part = db.Column(db.String(768), unique=True, nullable=False)
     # The state of the label (also enable database indexing on this column for fast lookup)
+    # (label_state_admin is for admin researcher, client type 0)
     label_state = db.Column(db.Integer, nullable=False, default=-1, index=True)
+    label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state)
+        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin)
 
 """
 The class for the user table
@@ -138,12 +138,14 @@ class User(db.Model):
     client_type = db.Column(db.Integer, nullable=False, default=3)
     # The epochtime (in seconds) when the user was added
     register_time = db.Column(db.Integer, nullable=False, default=get_current_time)
+    # The score that the user obtained so far (number of labeled videos)
+    score = db.Column(db.Integer, nullable=False, default=0)
     # Relationships
     label = db.relationship("Label", backref=db.backref("user", lazy=True), lazy=True)
     connection = db.relationship("Connection", backref=db.backref("user", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<User id=%r client_id=%r client_type=%r register_time=%r>") % (self.id, self.client_id, self.client_type, self.register_time)
+        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score)
 
 """
 The class for the label history table
@@ -191,11 +193,16 @@ class Batch(db.Model):
     return_time = db.Column(db.Integer)
     # The connection id in the Connection table
     connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"))
+    # The score that the user obtained so far (number of labeled videos)
+    score = db.Column(db.Integer) # null means no data is returned by the user or the user is a reseacher
+    # The number of gold standards and unlabeled videos in this batch
+    num_unlabeled = db.Column(db.Integer, nullable=False, default=0)
+    num_gold_standard = db.Column(db.Integer, nullable=False, default=0)
     # Relationships
     label = db.relationship("Label", backref=db.backref("batch", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r>") % (self.id, self.request_time, self.return_time, self.connection_id)
+        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard)
 
 """
 The schema for the video table, used for jsonify
@@ -210,12 +217,12 @@ videos_schema = VideoSchema(many=True)
 """
 The schema for the video table, used for jsonify without label_state
 """
-class VideoSchemaNoLabel(ma.ModelSchema):
+class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part") # fields to expose
-video_schema_no_label = VideoSchemaNoLabel()
-videos_schema_no_label = VideoSchemaNoLabel(many=True)
+        fields = ("id", "url_part", "label_state", "label_state_admin") # fields to expose
+video_schema_is_admin = VideoSchemaIsAdmin()
+videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
 """
 The class for handling errors, such as a bad request
@@ -297,11 +304,15 @@ def get_batch():
         e = InvalidUsage(ex.args[0], status_code=401)
         return handle_invalid_usage(e)
     # Query videos (active learning or random sampling)
-    video_batch = query_video_batch(user_jwt["user_id"])
+    is_admin = True if user_jwt["client_type"] == 0 else False
+    video_batch = query_video_batch(user_jwt["user_id"], use_admin_label_state=is_admin)
     if len(video_batch) < batch_size:
         return make_response("", 204)
     else:
-        batch = add_batch()
+        if is_admin:
+            batch = add_batch(num_gold_standard=0, num_unlabeled=batch_size) # no gold standard for researcher
+        else:
+            batch = add_batch(num_gold_standard=gold_standard_in_batch, num_unlabeled=batch_size-gold_standard_in_batch)
         return jsonify_videos(video_batch, sign=True, batch_id=batch.id)
 
 """
@@ -340,8 +351,9 @@ def send_batch():
         return handle_invalid_usage(e)
     # Update database
     try:
-        update_labels(labels, user_jwt["user_id"], user_jwt["connection_id"], video_jwt["batch_id"], user_jwt["client_type"])
-        return make_response("", 204)
+        score = update_labels(labels, user_jwt["user_id"], user_jwt["connection_id"], video_jwt["batch_id"], user_jwt["client_type"])
+        return_json = {"data": {"score": score}}
+        return jsonify(return_json)
     except Exception as ex:
         e = InvalidUsage(ex.args[0], status_code=400)
         return handle_invalid_usage(e)
@@ -384,50 +396,67 @@ def set_label_state():
 """
 Get videos with positive labels
 """
+pos_labels = [0b10111, 0b1111, 0b10011, 0b101111]
 @app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
 def get_pos_labels():
-    return get_video_labels([0b10111, 0b1111, 0b10011, 0b101111], allow_user_id=True)
+    return get_video_labels(pos_labels, allow_user_id=True)
+
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
+def get_pos_labels_by_researcher():
+    return get_video_labels(pos_labels, use_admin_label_state=True)
 
 """
 Get videos with negative labels
 """
+neg_labels = [0b10000, 0b1100, 0b10100, 0b100000]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    return get_video_labels([0b10000, 0b1100, 0b10100, 0b100000])
+    return get_video_labels(neg_labels)
+
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
+def get_neg_labels_by_researcher():
+    return get_video_labels(neg_labels, use_admin_label_state=True)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
+Gold standard labels will only be set by researchers
 """
+pos_gold_labels = [0b101111]
 @app.route("/api/v1/get_pos_gold_labels", methods=["POST"])
 def get_pos_gold_labels():
-    return get_video_labels([0b101111], only_admin=True)
+    return get_video_labels(pos_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get videos with negative gold standard labels (only admin can use this call)
+Gold standard labels will only be set by researchers
 """
+neg_gold_labels = [0b100000]
 @app.route("/api/v1/get_neg_gold_labels", methods=["POST"])
 def get_neg_gold_labels():
-    return get_video_labels([0b100000], only_admin=True)
+    return get_video_labels(neg_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with insufficient user-provided labels
+Get videos with insufficient user-provided labels (only admin can use this call)
+Partial labels will only be set by citizens
 """
+partial_labels = [0b11, 0b100, 0b101] # Do not include label state -1 because of too many unlabeled videos
 @app.route("/api/v1/get_partial_labels", methods=["POST"])
 def get_partial_labels():
-    # Do not include label state -1 because of too many unlabeled videos
-    return get_video_labels([0b11, 0b100, 0b101], only_admin=True)
+    return get_video_labels(partial_labels, only_admin=True)
 
 """
-Get videos that were discarded
+Get videos that were discarded (only admin can use this call)
+Bad labels will only be set by researchers
 """
+bad_labels = [-2]
 @app.route("/api/v1/get_bad_labels", methods=["POST"])
 def get_bad_labels():
-    return get_video_labels([0], only_admin=True)
+    return get_video_labels(bad_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get video labels
 """
-def get_video_labels(labels, allow_user_id=False, only_admin=False):
+def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_label_state=False):
     user_id = request.args.get("user_id") if allow_user_id else None
     page_number = request.args.get("pageNumber", 1, type=int)
     page_size = request.args.get("pageSize", 16, type=int)
@@ -458,25 +487,30 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False):
         if user_jwt["client_type"] != 0:
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
+    is_admin = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
     if user_id is None:
-        q = get_video_query(labels, page_number, page_size)
-        # Only return the label state if the user is an admin
-        show_label = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
-        return jsonify_videos(q.items, total=q.total, show_label=show_label)
+        q = get_video_query(labels, page_number, page_size, use_admin_label_state)
+        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
-        return jsonify_videos(q.items, total=q.total, show_label="simple")
+        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
  
 """
 Get video query from the database
 """
-def get_video_query(labels, page_number, page_size):
+def get_video_query(labels, page_number, page_size, use_admin_label_state):
     page_size = max_page_size if page_size > max_page_size else page_size
     q = None
     if len(labels) > 1:
-        q = Video.query.filter(Video.label_state.in_(labels))
+        if use_admin_label_state:
+            q = Video.query.filter(Video.label_state_admin.in_(labels))
+        else:
+            q = Video.query.filter(Video.label_state.in_(labels))
     if len(labels) == 1:
-        q = Video.query.filter(Video.label_state==labels[0])
+        if use_admin_label_state:
+            q = Video.query.filter(Video.label_state_admin==labels[0])
+        else:
+            q = Video.query.filter(Video.label_state==labels[0])
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
     return q
@@ -493,24 +527,16 @@ Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None, show_label=False):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False):
     if len(videos) == 0: return make_response("", 204)
-    if show_label == False:
-        videos_json, errors = videos_schema_no_label.dump(videos)
+    if is_admin:
+        videos_json, errors = videos_schema_is_admin.dump(videos)
     else:
         videos_json, errors = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
         videos_json[i]["url_root"] = video_url_root
-        if show_label == "simple":
-            s = videos_json[i]["label_state"]
-            if s in [0b10011, 0b1111, 0b10111, 0b101111]:
-                videos_json[i]["label_state"] = 1
-            elif s in [0b10100, 0b1100, 0b10000, 0b100000]:
-                videos_json[i]["label_state"] = 0
-            else:
-                videos_json[i]["label_state"] = -1
         if sign:
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}
@@ -521,35 +547,81 @@ def jsonify_videos(videos, sign=False, batch_id=None, total=None, show_label=Fal
     return jsonify(return_json)
 
 """
-Update the Video table when a new label is added
+Compute the score of a video batch
+"""
+def compute_video_batch_score(video_batch_hashed, labels):
+    score = 0
+    correct_labeled_gold_standards = 0
+    for v in labels:
+        video = video_batch_hashed[v["video_id"]]
+        label_state_admin = video.label_state_admin
+        s = v["label"]
+        if label_state_admin == 0b101111: # gold positive
+            if s == 1:
+                correct_labeled_gold_standards += 1
+        elif label_state_admin == 0b100000: # gold negative
+            if s == 0:
+                correct_labeled_gold_standards += 1
+        else:
+            score += 1
+    if correct_labeled_gold_standards < gold_standard_in_batch:
+        return 0
+    else:
+        return score
+
+"""
+Update the Video table when a new label is added, return the score of the batch
 """
 def update_labels(labels, user_id, connection_id, batch_id, client_type):
     if len(labels) == 0: return
-    # Record batch returned time
-    if batch_id is not None and connection_id is not None:
-        batch = Batch.query.filter(Batch.id==batch_id).first()
-        batch.return_time = get_current_time()
-        batch.connection_id = connection_id
-        log("Update batch: %r" % batch)
     # Search the video batch and hash videos by video_id
     video_batch = Video.query.filter(Video.id.in_((v["video_id"] for v in labels))).all()
     video_batch_hashed = {}
     for video in video_batch:
         video_batch_hashed[video.id] = video
+    # Update batch data
+    batch_score = None
+    user_score = None
+    if batch_id is not None and connection_id is not None:
+        batch = Batch.query.filter(Batch.id==batch_id).first()
+        batch.return_time = get_current_time()
+        batch.connection_id = connection_id
+        if client_type != 0: # do not update the score for reseacher
+            batch_score = compute_video_batch_score(video_batch_hashed, labels)
+            batch.score = batch_score
+        log("Update batch: %r" % batch)
     # Add labeling history and update the video label state
-    for v in labels:
-        v["user_id"] = user_id
-        v["batch_id"] = batch_id
-        add_label(**v)
-        video = video_batch_hashed[v["video_id"]]
-        next_s = label_state_machine(video.label_state, v["label"], client_type)
-        if next_s is not None:
-            video.label_state = next_s
-            log("Update video: %r" % video)
-        else:
-            log_warning("No next state for video: %r" % video)
+    # If the batch score is 0, do not update the label history since this batch is not reliable
+    if batch_score != 0:
+        # Update user score
+        if client_type != 0: # do not update the score for reseacher
+            user = User.query.filter(User.id==user_id).first()
+            user_score = user.score + batch_score
+            user.score = user_score
+            log("Update user: %r" % user)
+        # Update labels
+        for v in labels:
+            v["user_id"] = user_id
+            v["batch_id"] = batch_id
+            add_label(**v)
+            video = video_batch_hashed[v["video_id"]]
+            if client_type == 0: # admin researcher
+                next_s = label_state_machine(video.label_state_admin, v["label"], client_type)
+            else: # normal user
+                next_s = label_state_machine(video.label_state, v["label"], client_type)
+            if next_s is not None:
+                if client_type == 0: # admin researcher
+                    # Researchers should not override the labels provided by normal users
+                    # Because we need to compare the reliability of the labels provided by normal users
+                    video.label_state_admin = next_s
+                else: # normal user
+                    video.label_state = next_s
+                log("Update video: %r" % video)
+            else:
+                log_warning("No next state for video: %r" % video)
     # Update database
     update_db()
+    return {"batch": batch_score, "user": user_score}
 
 """
 A finite state machine to infer the new label state based on current label state and some inputs
@@ -559,18 +631,18 @@ The second bit from the left indicates if the data has discord (1: has discord, 
 The rest of the bits indicates positve (1) or negative (0) labels
 For example, if a layperson labels 0, will attach "0" to the current state
 Another example, if an expert labels 1, will attach "11" to the current state
-    0b101111 (47) : pos (gold standard) [both INITIAL and TERMINAL STATE]
-    0b100000 (32) : neg (gold standard) [both INITIAL and TERMINAL STATE]
-    0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
-    0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert/researcher) [TERMINAL STATE]
+    0b101111 (47) : pos (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
+    0b100000 (32) : neg (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
+    0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
+    0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
+    0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
+    0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10111
     0b1001 -> 0b11
     0b1010 -> 0b11
-    0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10000
-    0b1111 (15) : medium pos (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
-    0b1100 (12) : medium neg (has discord, verified by 1 expert/researcher) [TERMINAL STATE]
+    0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert) -> 0b10000
+    0b1111 (15) : medium pos (has discord, verified by 1 expert) [TERMINAL STATE]
+    0b1100 (12) : medium neg (has discord, verified by 1 expert) [TERMINAL STATE]
     0b111 : weak pos (has discord, verified by 1 layperson/amateur) -> 0b10011
     0b110 : weak neg (has discord, verified by 1 layperson/amateur) -> 0b10100
     0b101 (5) : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
@@ -584,8 +656,7 @@ For consistency, we always use -1 to indicate 0b10, the initial state that has n
 """
 def label_state_machine(s, label, client_type):
     next_s = None
-    undefined_labels = [0b101, 0b100, 0b11, -1]
-    # Researchers will always override the state
+    # Researchers
     if client_type == 0:
         if label == 0b10111: next_s = 0b10111 # strong pos
         elif label == 0b10000: next_s = 0b10000 # strong neg
@@ -597,6 +668,7 @@ def label_state_machine(s, label, client_type):
         elif label == -1: next_s = -1 # reset label
     else:
         # Sanity check, can only use undefined labels (not terminal state)
+        undefined_labels = [0b101, 0b100, 0b11, -1]
         if s not in undefined_labels: return None
     # Experts, amateurs, and laypeople
     if client_type == 1: # experts
@@ -698,12 +770,37 @@ def add_batch(**kwargs):
 """
 Query a batch of videos for labeling by using active learning or random sampling
 """
-def query_video_batch(user_id):
-    # Get the video ids labeled by the user
+def query_video_batch(user_id, use_admin_label_state=False):
+    # Get the video ids labeled by the user before
     v_ids = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).distinct().with_entities(Video.id).all()
-    # Exclude the videos that were labeled by the same user
-    q = Video.query.filter(and_(Video.label_state.in_((-1, 0b11, 0b100, 0b101)), Video.id.notin_([v[0] for v in v_ids])))
-    return q.order_by(func.random()).limit(batch_size).all()
+    undefined_labels = (-1, 0b11, 0b100, 0b101)
+    labeled_video_ids = [v[0] for v in v_ids]
+    if use_admin_label_state:
+        # Exclude the videos that were labeled by the same user
+        q = Video.query.filter(and_(Video.label_state_admin.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+        return q.order_by(func.random()).limit(batch_size).all()
+    else:
+        if gold_standard_in_batch == 0:
+            # For admin researcher, do not add gold standards
+            # Exclude the videos that were labeled by the same user
+            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+            return q.order_by(func.random()).limit(batch_size).all()
+        else:
+            q_gold = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000)))
+            q_gold_pos = q_gold.filter(Video.label_state_admin==0b101111)
+            gold_v_ids = q_gold.with_entities(Video.id).all()
+            # Exclude videos that were labeled by the same user, also the gold standards
+            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids + gold_v_ids)))
+            gold_pos = q_gold_pos.order_by(func.random()).limit(1).all() # use at least on gold pos to prevent spamming
+            gold = q_gold.order_by(func.random()).limit(gold_standard_in_batch - 1).all()
+            unlabeled = q.order_by(func.random()).limit(batch_size - gold_standard_in_batch).all()
+            if (len(gold) != gold_standard_in_batch - 1):
+                # This means that there are not enough or no gold standard videos
+                return make_response("", 204)
+            else:
+                videos = gold + unlabeled + gold_pos
+                shuffle(videos)
+                return videos
 
 """
 Get user token by using client id
@@ -714,8 +811,9 @@ def get_user_token_by_client_id(client_id):
         user = add_user(client_id=client_id) # create a new user if not found
     user_id = user.id
     client_type = user.client_type
+    user_score = user.score
     connection = add_connection(user_id=user_id, client_type=client_type)
-    return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time)
+    return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
 
 """
 Update client type by user id

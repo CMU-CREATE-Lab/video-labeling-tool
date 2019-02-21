@@ -9,6 +9,7 @@
     //
     // Variables
     //
+    var util = new edaplotjs.Util();
     settings = safeGet(settings, {});
     var $account_dialog;
     var $google_sign_out_button;
@@ -16,6 +17,8 @@
     var $guest_button;
     var $sign_in_text;
     var $hello_text;
+    var $user_name_text;
+    var $user_score_text;
     var widgets = new edaplotjs.Widgets();
     var sign_in_success = settings["sign_in_success"];
     var sign_out_success = settings["sign_out_success"];
@@ -43,6 +46,8 @@
     function initGoogleSignIn() {
       $sign_in_text = $("#sign-in-text");
       $hello_text = $("#hello-text");
+      $user_name_text = $("#user-name-text");
+      $user_score_text = $("#user-score-text");
       $google_sign_out_button = $("#google-sign-out-button");
       $google_sign_in_button = $("#google-sign-in-button");
       $guest_button = $("#guest-button");
@@ -96,7 +101,8 @@
       var profile = google_user.getBasicProfile();
       $guest_button.hide();
       $google_sign_out_button.show();
-      $hello_text.text("Hi " + profile.getGivenName() + ", thank you for signing in with Google.").show();
+      $user_name_text.text(profile.getGivenName());
+      $hello_text.show();
       $sign_in_text.hide();
       $google_sign_in_button.hide();
       $account_dialog.dialog("close");
@@ -105,10 +111,8 @@
       }
     }
 
-    // Safely get the value from a variable, return a default value if undefined
     function safeGet(v, default_val) {
-      if (typeof default_val === "undefined") default_val = "";
-      return (typeof v === "undefined") ? default_val : v;
+      return util.safeGet(v, default_val);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,6 +159,16 @@
 
     this.getDialog = function () {
       return $account_dialog;
+    };
+
+    this.updateUserScore = function (score) {
+      if (typeof $user_score_text !== "undefined") {
+        if (typeof score !== "undefined") {
+          $user_score_text.text(score);
+        } else {
+          $user_score_text.text("(researcher)");
+        }
+      }
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

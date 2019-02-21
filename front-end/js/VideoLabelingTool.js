@@ -1,16 +1,16 @@
 /*
+ * TODO: wording check with Paul
+ * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
+ * TODO: add a ladder board for showing user id and scores
+ * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
+ * TODO: if the user made too many bad batches, ask the user to retake the tutorial
  * TODO: remove google-signin-client_id meta name from the index.html
  * TODO: add a playback timeline bar to show the video playback time
- * TODO: if the labels are rejected (due to poor quality), need to let user know
- * TODO: show a bar (with badge) about how many videos are correctly labeled
- * - use gold standard videos to verify this (each batch has at least one)
  * TODO: allow users to share the badge with the achievement on social media
  * TODO: as users gain enough scores, advance them to the harder mode
  * - laypeople mode: select videos that have smoke
  * - amateur mode: draw bounding boxes (BBOX) for smoke for each video
  * - expert mode: draw BBOX and provide smoke info (e.g., blue, black)
- * TODO: ask the user to enter a nick name at the begining for the ladder board
- * TODO: add an ladder board for showing nick names and scores
  */
 
 (function () {
@@ -25,6 +25,7 @@
     //
     // Variables
     //
+    var util = new edaplotjs.Util();
     settings = safeGet(settings, {});
     var $container = $(container_selector);
     var $tool;
@@ -34,12 +35,15 @@
     var $error_text = $('<span class="error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
     var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
-    var api_url_root = getRootApiUrl();
+    var api_url_root = util.getRootApiUrl();
     var client_id = safeGet(settings["client_id"], getUniqueId());
     var user_id;
     var video_token;
     var user_token;
     var this_obj = this;
+    var user_score;
+    var on_user_score_update = settings["on_user_score_update"];
+    var is_admin;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -49,24 +53,6 @@
       $tool = $('<div class="video-labeling-tool"></div>');
       $tool_videos = $('<div class="video-labeling-tool-videos"></div>');
       $container.append($tool.append($tool_videos));
-    }
-
-    // Get the the root url of the API
-    function getRootApiUrl() {
-      var root_url;
-      var url_hostname = window.location.hostname;
-      var is_localhost = url_hostname.indexOf("localhost");
-      var is_staging = url_hostname.indexOf("staging");
-      if (is_localhost >= 0) {
-        root_url = "http://localhost:5000/api/v1/";
-      } else {
-        if (is_staging >= 0) {
-          root_url = "http://staging.api.smoke.createlab.org/api/v1/";
-        } else {
-          root_url = "http://api.smoke.createlab.org/api/v1/";
-        }
-      }
-      return root_url;
     }
 
     // Get the user id from the server
@@ -167,6 +153,7 @@
     }
 
     // Create a video label element
+    // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
@@ -277,10 +264,8 @@
       $tool.empty().append($loading_text);
     }
 
-    // Safely get the value from a variable, return a default value if undefined
     function safeGet(v, default_val) {
-      if (typeof default_val === "undefined") default_val = "";
-      return (typeof v === "undefined") ? default_val : v;
+      return util.safeGet(v, default_val);
     }
 
     // Read the payload in a JWT
@@ -349,6 +334,12 @@
 
     // When sending the current batch of video labels successfully, get a new batch of videos
     function onSendVideoBatchSuccess(data, callback) {
+      // Update the user score
+      if (typeof data !== "undefined" && data["data"]["score"]["user"] != null) {
+        user_score = data["data"]["score"]["user"];
+        if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+      }
+      // Get a new batch
       getVideoBatch({
         success: function (data) {
           onGetVideoBatchSuccess(data, callback);
@@ -392,7 +383,11 @@
       }, {
         success: function (data) {
           user_token = data["user_token"];
-          user_id = getJwtPayload(user_token)["user_id"];
+          var user_payload = getJwtPayload(user_token);
+          user_id = user_payload["user_id"];
+          user_score = user_payload["user_score"];
+          is_admin = user_payload["client_type"] == 0 ? true : false;
+          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {
@@ -409,13 +404,25 @@
       }, {
         success: function (data) {
           user_token = data["user_token"];
-          user_id = getJwtPayload(user_token)["user_id"];
+          var user_payload = getJwtPayload(user_token);
+          user_id = user_payload["user_id"];
+          user_score = user_payload["user_score"];
+          is_admin = user_payload["client_type"] == 0 ? true : false;
+          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {
           if (typeof callback["error"] === "function") callback["error"](xhr);
         }
       });
+    };
+
+    this.userScore = function () {
+      return user_score;
+    };
+
+    this.isAdmin = function () {
+      return is_admin;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

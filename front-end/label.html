@@ -6,23 +6,23 @@
   <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="lib/pagination/pagination.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/VideoLabelingTool.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-  <script src="lib/pagination/pagination.js"></script>
   <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/GoogleAnalyticsTracker.js"></script>
+  <script src="js/VideoLabelingTool.js"></script>
   <script src="js/GoogleAccountDialog.js"></script>
   <script src="js/VideoTestDialog.js"></script>
-  <script src="js/gallery.js"></script>
+  <script src="js/label.js"></script>
   <!-- Start for Google Sign-In -->
   <meta name="google-signin-scope" content="profile email">
   <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
@@ -41,8 +41,9 @@
           <img src="img/menu.png">
         </a>
         <div class="menu-items flex-row-center flex-item">
-          <a href="index.html">Overview</a>
-          <a href="gallery.html" class="menu-highlight">Gallery</a>
+          <a href="index.html" class="menu-highlight">Overview</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="javascript:void(0)" id="account">Account</a>
         </div>
       </div>
     </div>
@@ -52,52 +53,40 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p class="text intro-text no-top-margin">
-              We greatly appreciate the efforts taken by the community to find smoke emissions from monitoring cameras.
-              These are the <span class="custom-text-info-dark-theme">smoke videos</span> labeled by using this tool.
+            <p class="text no-top-margin">
+              Each video is <span class="custom-text-info-dark-theme">3 seconds</span>.
+              Click to select videos that have <span class="custom-text-info-dark-theme">smoke with opacity larger than 50%</span>.
+              Click again to deselect.
+              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
+              Several videos with known answers are randomly placed, and your scores are evaluated based on them.
             </p>
-            <p class="text user-text no-top-margin">
-              The following smoke videos were identified by you.
-              Symbol <span class="custom-text-info-dark-theme">"?"</span> on the bottom-right corner means that the video has not been confirmed by others.
-              Symbol <span class="custom-text-primary-dark-theme">"Y"</span> and <span class="custom-text-danger-dark-theme">"N"</span> means that others agreed or disagreed with your findings respectively.
-            </p>
-            <p class="text-small-margin admin-text no-top-margin">
-              You logged in as a <span class="custom-text-info-dark-theme">system administrator</span>.
-              The gallery is displayed in the admin mode.
-            </p>
-            <div class="control-group admin-control add-bottom-margin">
-              <a class="custom-button-flat" href="?method=get_pos_labels">P</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels">N</a>
-              <a class="custom-button-flat" href="?method=get_partial_labels">?</a>
-              <a class="custom-button-flat" href="?method=get_pos_labels_by_researcher">P (admin)</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels_by_researcher">N (admin)</a>
-              <a class="custom-button-flat" href="?method=get_pos_gold_labels">Gold P</a>
-              <a class="custom-button-flat" href="?method=get_neg_gold_labels">Gold N</a>
-              <a class="custom-button-flat" href="?method=get_bad_labels">Bad</a>
-            </div>
           </div>
         </div>
-        <div class="gallery">
-          <div class="gallery-videos"></div>
-        </div>
+        <div id="labeling-tool-container"></div>
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
-            <div id="page-control" class="control-group add-top-margin force-hidden">
-              <button id="page-back" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/back.png"><span>Back</span></button>
-              <div id="page-navigator" class="stretch-on-mobile"></div>
-              <button id="page-next" class="custom-button-flat large stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
+            <div class="control-group add-top-margin">
+              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
+              <a id="review" class="custom-button-flat large stretch-on-mobile" href="" target="_blank"><img src="img/collection.png"><span>My Collection</span></a>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
+    <p id="sign-in-text">Sign in to track your personal achievements.</p>
+    <div id="hello-text">
+      <p>Hi <span id="user-name-text"></span>, thank you for signing in with Google.</p>
+      <p>Your score (number of labeled videos) is: <span id="user-score-text"></span></p>
+    </div>
+    <div id="google-sign-in-button" class="g-signin2"></div>
+    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
+    <button id="guest-button" class="custom-button">Continue as guest</button>
+  </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
     <p>Videos on this page did not autoplay. Please enable it.</p>
     <button id="play-video-button" class="custom-button">Enable video autoplay</button>
-  </div>
-  <div id="set-label-confirm-dialog" title="Set Label" data-role="none">
-    <p></p>
   </div>
 </body>
 

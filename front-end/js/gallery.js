@@ -1,17 +1,16 @@
 /*
- * TODO: use different GA tracking ID for staging and production
- * TODO: add links back to the ecam webpage
- * TODO: an admin mode for only reseachers (client_type=0) to edit the label state
+ * TODO: add a legend to indicate Y, N, and ? (instead of using text)
+ * TODO: add a text box to jump to a page
  */
 
 (function () {
   "use strict";
 
+  var util = new edaplotjs.Util();
+  var widgets = new edaplotjs.Widgets();
   var google_account_dialog;
   var video_test_dialog;
-  var ga_tracker;
-  var widgets = new edaplotjs.Widgets();
-  var api_url_root = getRootApiUrl();
+  var api_url_root = util.getRootApiUrl();
   var api_url_path_get = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
   var $gallery_error_text = $('<span class="gallery-error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
@@ -35,11 +34,15 @@
     "19": "Weak Pos",
     "15": "Medium Pos",
     "12": "Medium Neg",
-    "-1": "No Data",
-    "0": "Bad Data"
+    "5": "Maybe Pos",
+    "4": "Maybe Neg",
+    "3": "Discord",
+    "-2": "Bad Data",
+    "-1": "No Data"
   };
   var $set_label_confirm_dialog;
   var admin_marked_item = {};
+  var is_video_autoplay_tested = false;
 
   function unpackVars(str) {
     var vars = {};
@@ -57,24 +60,6 @@
     return vars;
   };
 
-  // Get the the root url of the API
-  function getRootApiUrl() {
-    var root_url;
-    var url_hostname = window.location.hostname;
-    var is_localhost = url_hostname.indexOf("localhost");
-    var is_staging = url_hostname.indexOf("staging");
-    if (is_localhost >= 0) {
-      root_url = "http://localhost:5000/api/v1/";
-    } else {
-      if (is_staging >= 0) {
-        root_url = "http://staging.api.smoke.createlab.org/api/v1/";
-      } else {
-        root_url = "http://api.smoke.createlab.org/api/v1/";
-      }
-    }
-    return root_url;
-  }
-
   // Get the parameters from the query string
   function getQueryParas() {
     return unpackVars(window.location.search);
@@ -90,6 +75,7 @@
     $gallery.append($gallery_error_text);
   }
 
+  // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
   function createVideo(v) {
     var $item = $("<a class='flex-column'></a>");
     var $vid = $("<video autoplay loop muted playsinline disableRemotePlayback></video>");
@@ -97,7 +83,7 @@
     if (typeof user_id === "undefined") {
       if (is_admin) {
         var $control = $("<div class='label-control'></div>");
-        var $label_state = $("<p class='text-small-margin'><i></i></p>");
+        var $label_state = $("<p class='text-small-margin'><i></i><i></i></p>");
         var $desired_state_select = createLabelStateSelect();
         $desired_state_select.on("change", function () {
           var label_str = $desired_state_select.val();
@@ -129,7 +115,7 @@
     html += "<option value='32'>" + label_state_map["32"] + "</option>";
     html += "<option value='23'>" + label_state_map["23"] + "</option>";
     html += "<option value='16'>" + label_state_map["16"] + "</option>";
-    html += "<option value='0'>" + label_state_map["0"] + "</option>";
+    html += "<option value='-2'>" + label_state_map["-2"] + "</option>";
     html += "<option value='-1'>" + label_state_map["-1"] + "</option>";
     html += "</select>";
     return $(html);
@@ -139,17 +125,18 @@
     if (typeof user_id === "undefined") {
       if (is_admin) {
         var $i = $item.find("i").removeClass();
-        var s = v["label_state"];
-        var label = safeGet(label_state_map[s], "Undefined")
-        $i.text(v["id"] + ": " + label).addClass("custom-text-info-dark-theme");
+        var label_admin = safeGet(label_state_map[v["label_state_admin"]], "Undefined");
+        var label = safeGet(label_state_map[v["label_state"]], "Undefined");
+        $($i.get(0)).text(v["id"] + ": " + label_admin).addClass("custom-text-info-dark-theme");
+        $($i.get(1)).text("Citizen: " + label).addClass("custom-text-info-dark-theme");
         $item.find("select").data("v", v).val("default");
       }
     } else {
       var $i = $item.find("i").removeClass();
       var s = v["label_state"];
-      if (s == 1) {
+      if ([19, 15, 23, 47].indexOf(s) != -1) {
         $i.text("Y").addClass("custom-text-primary-dark-theme");
-      } else if (s == 0) {
+      } else if ([20, 12, 16, 32].indexOf(s) != -1) {
         $i.text("N").addClass("custom-text-danger-dark-theme");
       } else {
         $i.text("?").addClass("custom-text-info-dark-theme");
@@ -224,9 +211,9 @@
         if (typeof data !== "undefined" && data.length > 0) {
           $(window).scrollTop(0);
           updateVideos(data);
-          if (is_first_time) {
-            video_test_dialog.startVideoPlayTest(3000);
-            is_first_time = false;
+          if (!is_video_autoplay_tested) {
+            video_test_dialog.startVideoPlayTest(1000);
+            is_video_autoplay_tested = true;
           }
         } else {
           $(window).scrollTop(0);
@@ -235,8 +222,8 @@
         // Handle UI
         var total_page = $page_nav.pagination("getTotalPage");
         if (typeof total_page !== "undefined" && !isNaN(total_page) && total_page != 1) {
-          if ($page_control.hasClass("init-hidden")) {
-            $page_control.removeClass("init-hidden");
+          if ($page_control.hasClass("force-hidden")) {
+            $page_control.removeClass("force-hidden");
           }
           var page_num = pagination["pageNumber"];
           if (page_num == 1) {
@@ -248,6 +235,10 @@
             $page_next.prop("disabled", true);
           } else {
             $page_next.prop("disabled", false);
+          }
+        } else {
+          if (!$page_control.hasClass("force-hidden")) {
+            $page_control.addClass("force-hidden");
           }
         }
       }
@@ -304,10 +295,8 @@
     });
   }
 
-  // Safely get the value from a variable, return a default value if undefined
   function safeGet(v, default_val) {
-    if (typeof default_val === "undefined") default_val = "";
-    return (typeof v === "undefined") ? default_val : v;
+    return util.safeGet(v, default_val);
   }
 
   // Read the payload in a JWT
@@ -327,12 +316,12 @@
             var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
             var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
-            admin_marked_item["p"].find("i").text(txt).removeClass().addClass("custom-text-primary-dark-theme");
+            $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
           "error": function () {
             console.log("Error when setting label state:");
             console.log(admin_marked_item["data"]);
-            admin_marked_item["p"].find("i").removeClass().addClass("custom-text-danger-dark-theme");
+            $(admin_marked_item["p"].find("i").get(0)).removeClass().addClass("custom-text-danger-dark-theme");
           },
           "complete": function () {
             admin_marked_item["select"].val("default");
@@ -368,8 +357,8 @@
       no_ui: true
     });
     initConfirmDialog();
-    ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-      tracker_id: "UA-10682694-25",
+    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+      tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
         google_account_dialog.silentSignInWithGoogle(function (is_signed_in, google_user) {
           if (is_signed_in) {
