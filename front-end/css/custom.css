@@ -313,14 +313,7 @@ body,
   }
 }
 
-@media screen and (min-width: 500px) and (max-width: 700px) {
-  .gallery a {
-    flex: 1 0 33.3% !important;
-    max-width: 33.3% !important;
-  }
-}
-
-@media screen and (min-width: 300px) and (max-width: 500px) {
+@media screen and (min-width: 300px) and (max-width: 700px) {
   .gallery a {
     flex: 1 0 50% !important;
     max-width: 50% !important;

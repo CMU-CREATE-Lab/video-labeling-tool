@@ -42,6 +42,7 @@
   };
   var $set_label_confirm_dialog;
   var admin_marked_item = {};
+  var is_video_autoplay_tested = false;
 
   function unpackVars(str) {
     var vars = {};
@@ -210,7 +211,10 @@
         if (typeof data !== "undefined" && data.length > 0) {
           $(window).scrollTop(0);
           updateVideos(data);
-          video_test_dialog.startVideoPlayTest(1000);
+          if (!is_video_autoplay_tested) {
+            video_test_dialog.startVideoPlayTest(1000);
+            is_video_autoplay_tested = true;
+          }
         } else {
           $(window).scrollTop(0);
           showNoGalleryMsg();

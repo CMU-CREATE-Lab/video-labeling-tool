@@ -10,6 +10,7 @@
   var max_counter = 10;
   var count_down_duration = 500; // in milliseconds
   var is_first_time = true;
+  var is_video_autoplay_tested = false;
 
   function countDown() {
     if (counter == 0) {
@@ -33,7 +34,10 @@
     $(window).scrollTop(0);
     video_labeling_tool.next({
       success: function () {
-        video_test_dialog.startVideoPlayTest(1000);
+        if (!is_video_autoplay_tested) {
+          video_test_dialog.startVideoPlayTest(1000);
+          is_video_autoplay_tested = true;
+        }
         countDown();
       },
       abort: function () {
