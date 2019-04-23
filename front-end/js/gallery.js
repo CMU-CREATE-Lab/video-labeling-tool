@@ -21,7 +21,6 @@
   var $page_back;
   var $page_next;
   var $page_control;
-  var is_first_time = true;
   var user_id;
   var is_admin = false;
   var user_token;

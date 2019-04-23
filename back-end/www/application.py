@@ -1,4 +1,8 @@
-#TODO: use https instead of http
+#TODO: remove gold standard videos from get_pos_labels and get_neg_labels
+#TODO: for expert level users, allow them to download the json file
+#TODO: for expert level users, allow them to use the admin gallery panel without changing the label state
+#TODO: change get_pos_labels_by_researcher and get_neg_labels_by_researcher to only admin can use the call
+#TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
 #      (need to encode client type in the user token, and check if this matches the database record)
