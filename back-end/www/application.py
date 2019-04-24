@@ -222,7 +222,7 @@ The schema for the video table, used for jsonify without label_state
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin") # fields to expose
+        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time") # fields to expose
 video_schema_is_admin = VideoSchemaIsAdmin()
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
@@ -430,18 +430,18 @@ def get_neg_gold_labels():
     return get_video_labels(neg_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with positive labels and gold standard labels (only admin can use this call)
+Get videos with positive labels, exclude gold standard labels (only admin can use this call)
 """
 @app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
 def get_pos_labels_by_researcher():
-    return get_video_labels(pos_labels+pos_gold_labels, only_admin=True, use_admin_label_state=True)
+    return get_video_labels(pos_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with negative labels and gold standard labels (only admin can use this call)
+Get videos with negative labels, exclude gold standard labels (only admin can use this call)
 """
 @app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
 def get_neg_labels_by_researcher():
-    return get_video_labels(neg_labels+neg_gold_labels, only_admin=True, use_admin_label_state=True)
+    return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get videos with insufficient user-provided labels (only admin can use this call)
@@ -460,6 +460,13 @@ bad_labels = [-2]
 @app.route("/api/v1/get_bad_labels", methods=["POST"])
 def get_bad_labels():
     return get_video_labels(bad_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get all data (only admin can use this call)
+"""
+@app.route("/api/v1/get_all_labels", methods=["POST"])
+def get_all_labels():
+    return get_video_labels(None, only_admin=True, use_admin_label_state=True)
 
 """
 Get video labels
@@ -497,8 +504,11 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
             return handle_invalid_usage(e)
     is_admin = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
     if user_id is None:
-        q = get_video_query(labels, page_number, page_size, use_admin_label_state)
-        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
+        if labels is None and is_admin:
+            return jsonify_videos(Video.query.all(), is_admin=True)
+        else:
+            q = get_video_query(labels, page_number, page_size, use_admin_label_state)
+            return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
         return jsonify_videos(q.items, total=q.total, is_admin=is_admin)

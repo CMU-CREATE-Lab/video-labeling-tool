@@ -60,7 +60,7 @@
     // Get the user id from the server
     function login(post_json, callback) {
       callback = safeGet(callback, {});
-      postJSON(api_url_root + "login", JSON.stringify(post_json), {
+      util.postJSON(api_url_root + "login", JSON.stringify(post_json), {
         success: function (data) {
           if (typeof callback["success"] === "function") callback["success"](data);
         },
@@ -76,7 +76,7 @@
     // Get the json file that contains image links
     function getVideoBatch(callback) {
       callback = safeGet(callback, {});
-      postJSON(api_url_root + "get_batch", JSON.stringify({
+      util.postJSON(api_url_root + "get_batch", JSON.stringify({
         user_token: user_token,
       }), {
         success: function (data) {
@@ -114,7 +114,7 @@
       if (labels.length == 0) {
         if (typeof callback["success"] === "function") callback["success"]();
       } else {
-        postJSON(api_url_root + "send_batch", JSON.stringify({
+        util.postJSON(api_url_root + "send_batch", JSON.stringify({
           video_token: video_token,
           user_token: user_token,
           data: labels
@@ -273,24 +273,6 @@
     // Read the payload in a JWT
     function getJwtPayload(jwt) {
       return JSON.parse(window.atob(jwt.split('.')[1]));
-    }
-
-    // Post JSON
-    function postJSON(url, data, callback) {
-      callback = safeGet(callback, {});
-      $.ajax({
-        url: url,
-        type: "POST",
-        data: data,
-        contentType: "application/json",
-        dataType: "json",
-        success: function (data) {
-          if (typeof callback["success"] === "function") callback["success"](data);
-        },
-        error: function (xhr) {
-          if (typeof callback["error"] === "function") callback["error"](xhr);
-        }
-      });
     }
 
     // Generate a unique id

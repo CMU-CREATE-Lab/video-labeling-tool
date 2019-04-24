@@ -67,6 +67,23 @@
       return ga_id;
     };
 
+    // Post JSON
+    this.postJSON = function (url, data, callback) {
+      callback = safeGet(callback, {});
+      $.ajax({
+        url: url,
+        type: "POST",
+        data: data,
+        contentType: "application/json",
+        dataType: "json",
+        success: function (data) {
+          if (typeof callback["success"] === "function") callback["success"](data);
+        },
+        error: function (xhr) {
+          if (typeof callback["error"] === "function") callback["error"](xhr);
+        }
+      });
+    };
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Constructor

@@ -338,6 +338,39 @@
     });
   }
 
+  function initDownloadButton() {
+    $("#download-data").on("click", function () {
+      var $download = $(this);
+      $download.prop("disabled", true);
+      $.ajax({
+        url: api_url_root + "get_all_labels",
+        type: "POST",
+        data: {
+          user_token: user_token
+        },
+        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        dataType: "json",
+        success: function (data) {
+          // Download data
+          var blob = new Blob([JSON.stringify(data)], {
+            type: "application/json"
+          });
+          var link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = "video_labels.json";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          // Reset button
+          $download.prop("disabled", false);
+        },
+        error: function (xhr) {
+          console.error("Error when getting video json!", xhr);
+        }
+      });
+    });
+  }
+
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
@@ -352,6 +385,7 @@
       $(".intro-text").hide();
       $(".user-text").show();
     };
+    initDownloadButton();
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
       no_ui: true
     });
