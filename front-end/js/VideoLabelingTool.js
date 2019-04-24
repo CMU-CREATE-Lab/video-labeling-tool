@@ -11,8 +11,8 @@
  * TODO: allow users to share the badge with the achievement on social media
  * TODO: as users gain enough scores, advance them to the harder mode
  * - laypeople mode: select videos that have smoke
- * - amateur mode: draw bounding boxes (BBOX) for smoke for each video
- * - expert mode: draw BBOX and provide smoke info (e.g., blue, black)
+ * - amateur mode: select smoke opacity (low, medium, high)
+ * - expert mode: crop images to a region
  */
 
 (function () {
