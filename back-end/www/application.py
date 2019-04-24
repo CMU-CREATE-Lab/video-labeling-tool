@@ -1,7 +1,5 @@
-#TODO: remove gold standard videos from get_pos_labels and get_neg_labels
 #TODO: for expert level users, allow them to download the json file
 #TODO: for expert level users, allow them to use the admin gallery panel without changing the label state
-#TODO: change get_pos_labels_by_researcher and get_neg_labels_by_researcher to only admin can use the call
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
@@ -400,26 +398,18 @@ def set_label_state():
 """
 Get videos with positive labels
 """
-pos_labels = [0b10111, 0b1111, 0b10011, 0b101111]
+pos_labels = [0b10111, 0b1111, 0b10011]
 @app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
 def get_pos_labels():
     return get_video_labels(pos_labels, allow_user_id=True)
 
-@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
-def get_pos_labels_by_researcher():
-    return get_video_labels(pos_labels, use_admin_label_state=True)
-
 """
 Get videos with negative labels
 """
-neg_labels = [0b10000, 0b1100, 0b10100, 0b100000]
+neg_labels = [0b10000, 0b1100, 0b10100]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
     return get_video_labels(neg_labels)
-
-@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
-def get_neg_labels_by_researcher():
-    return get_video_labels(neg_labels, use_admin_label_state=True)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
@@ -438,6 +428,20 @@ neg_gold_labels = [0b100000]
 @app.route("/api/v1/get_neg_gold_labels", methods=["POST"])
 def get_neg_gold_labels():
     return get_video_labels(neg_gold_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get videos with positive labels and gold standard labels (only admin can use this call)
+"""
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
+def get_pos_labels_by_researcher():
+    return get_video_labels(pos_labels+pos_gold_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get videos with negative labels and gold standard labels (only admin can use this call)
+"""
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
+def get_neg_labels_by_researcher():
+    return get_video_labels(neg_labels+neg_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get videos with insufficient user-provided labels (only admin can use this call)
@@ -509,22 +513,25 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
         if use_admin_label_state:
             q = Video.query.filter(Video.label_state_admin.in_(labels))
         else:
-            q = Video.query.filter(Video.label_state.in_(labels))
+            # Exclude gold standards for normal request
+            q = Video.query.filter(and_(Video.label_state.in_(labels), Video.label_state_admin.notin_((0b101111, 0b100000))))
     if len(labels) == 1:
         if use_admin_label_state:
             q = Video.query.filter(Video.label_state_admin==labels[0])
         else:
-            q = Video.query.filter(Video.label_state==labels[0])
+            # Exclude gold standards for normal request
+            q = Video.query.filter(and_(Video.label_state==labels[0], Video.label_state_admin.notin_((0b101111, 0b100000))))
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
     return q
 
 """
 Get video query from the database by user id
+(exclude gold standards)
 """
 def get_pos_video_query_by_user_id(user_id, page_number, page_size):
     page_size = max_page_size if page_size > max_page_size else page_size
-    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
+    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
 
 """
 Jsonify videos
