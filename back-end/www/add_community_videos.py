@@ -8,9 +8,10 @@ from urllib.parse import urlparse, parse_qs
 import re
 
 video_size = 180
+videos_path = "../data/video_samples/2.json"
 
 # Get video samples
-with open("../data/video_samples/1.json") as f:
+with open(videos_path) as f:
     video_samples = json.load(f)
 
 # The sun set and rise time in Pittsburgh
@@ -167,7 +168,7 @@ def get_datetime_str_from_url(url):
     m = re.search("\d+-\d+-\d+\.timemachine", url)
     return m.group(0).split(".")[0]
 
-def add_videos(dt_map):
+def add_videos():
     for k in video_samples:
         for url in video_samples[k]:
             if url == "": continue
@@ -212,16 +213,21 @@ def add_videos_sampling(dt_map, n_sf=1, n_b=50):
                         print(video)
 
 def main():
-    cam_data = request_json("https://breathecam.cmucreatelab.org/camera_findings")
-    dt_map = parse_cam_data(cam_data)
-    for k in dt_map:
-        print("==============================")
-        print(k)
-        dt_map_k = dt_map[k]
-        for m in sorted(dt_map_k):
-            print(m)
-    print("==============================")
-    add_videos(dt_map)
+    # Add videos from the camera_findings url
+    #cam_data = request_json("https://breathecam.cmucreatelab.org/camera_findings")
+    #dt_map = parse_cam_data(cam_data)
+    #print(dt_map)
+    #for k in dt_map:
+    #    print("==============================")
+    #    print(k)
+    #    dt_map_k = dt_map[k]
+    #    for m in sorted(dt_map_k):
+    #        print(m)
+    #print("==============================")
+    #add_videos_sampling(dt_map)
+
+    # Add videos from a curated list
+    add_videos()
     print("END")
 
 if __name__ == "__main__":
