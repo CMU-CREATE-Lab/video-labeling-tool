@@ -1,5 +1,3 @@
-#TODO: for expert level users, allow them to download the json file
-#TODO: for expert level users, allow them to use the admin gallery panel without changing the label state
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: add a Gallery table to document the history that a user views videos
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
@@ -361,7 +359,7 @@ def send_batch():
         return handle_invalid_usage(e)
 
 """
-Set video labels to positive, negative, or gold standard (only admin can use this call)
+Set video labels to positive, negative, or gold standard (only researcher can use this call)
 """
 @app.route("/api/v1/set_label_state", methods=["POST"])
 def set_label_state():
@@ -383,7 +381,7 @@ def set_label_state():
     except Exception as ex:
         e = InvalidUsage(ex.args[0], status_code=401)
         return handle_invalid_usage(e)
-    # Verify if the user is admin
+    # Verify if the user is a researcher
     if user_jwt["client_type"] != 0:
         e = InvalidUsage("Permission denied", status_code=403)
         return handle_invalid_usage(e)
@@ -498,11 +496,11 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
         if user_jwt is None:
             e = InvalidUsage("Missing fields: user_token", status_code=400)
             return handle_invalid_usage(e)
-        # Verify if the user is admin
-        if user_jwt["client_type"] != 0:
+        # Verify if the user is researcher or expert (they are considered admins in this case)
+        if user_jwt["client_type"] != 0 and user_jwt["client_type"] != 1:
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
-    is_admin = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
+    is_admin = True if user_jwt is not None and (user_jwt["client_type"] == 0 or user_jwt["client_type"] == 1) else False
     if user_id is None:
         if labels is None and is_admin:
             return jsonify_videos(Video.query.all(), is_admin=True)
