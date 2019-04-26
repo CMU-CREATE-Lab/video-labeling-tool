@@ -277,8 +277,13 @@ def login():
                 client_id = request.json["client_id"]
     # Get user id by client id, and issued an user jwt
     if client_id is not None:
-        return_json = {"user_token": get_user_token_by_client_id(client_id)}
-        return jsonify(return_json)
+        user_token = get_user_token_by_client_id(client_id)
+        if user_token is None:
+            e = InvalidUsage("Permission denied", status_code=403)
+            return handle_invalid_usage(e)
+        else:
+            return_json = {"user_token": user_token}
+            return jsonify(return_json)
     else:
         e = InvalidUsage("Missing field: google_id_token or client_id", status_code=400)
         return handle_invalid_usage(e)
@@ -832,7 +837,10 @@ def get_user_token_by_client_id(client_id):
     client_type = user.client_type
     user_score = user.score
     connection = add_connection(user_id=user_id, client_type=client_type)
-    return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
+    if client_type == -1:
+        return None # a blacklisted user does not get the token
+    else:
+        return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
 
 """
 Update client type by user id
