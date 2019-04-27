@@ -1,6 +1,5 @@
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
-#TODO: add a Gallery table to document the history that a user views videos
-#TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
+#TODO: how to promote the client to a different rank when it is changed? invalidate the user token? (need to add a table to record the promotion history)
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
@@ -116,6 +115,7 @@ class Video(db.Model):
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
+    view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
         return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin)
@@ -177,11 +177,14 @@ class Connection(db.Model):
     client_type = db.Column(db.Integer, nullable=False)
     # The user id in the User table (the user who connected to the server)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    # Current score of the user
+    user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
     # Relationships
     batch = db.relationship("Batch", backref=db.backref("connection", lazy=True), lazy=True)
+    view = db.relationship("View", backref=db.backref("connection", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Connection id=%r time=%r client_type=%r user_id=%r>") % (self.id, self.time, self.client_type, self.user_id)
+        return ("<Connection id=%r time=%r client_type=%r user_id=%r user_score=%r>") % (self.id, self.time, self.client_type, self.user_id, self.user_score)
 
 """
 The class for the issued video batch history table (for tracking video batches)
@@ -193,16 +196,35 @@ class Batch(db.Model):
     return_time = db.Column(db.Integer)
     # The connection id in the Connection table
     connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"))
-    # The score that the user obtained so far (number of labeled videos)
+    # The score that the user obtained in this Batch (number of labeled videos)
     score = db.Column(db.Integer) # null means no data is returned by the user or the user is a reseacher
     # The number of gold standards and unlabeled videos in this batch
     num_unlabeled = db.Column(db.Integer, nullable=False, default=0)
     num_gold_standard = db.Column(db.Integer, nullable=False, default=0)
+    # Current score of the user
+    user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
     # Relationships
     label = db.relationship("Label", backref=db.backref("batch", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard)
+        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r user_score=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard, self.user_score)
+
+"""
+The table for tracking viewed videos
+"""
+class View(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # The connection id in the Connection table
+    connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"), nullable=False)
+    # The video id in the Video table
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
+    # The query type to get the videos
+    # 0: query by label state
+    # 1: query by user id
+    query_type = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return ("<View id=%r connection_id=%r video_id=%r query_type=%r>") % (self.id, self.connection_id, self.video_id, self.query_type)
 
 """
 The schema for the video table, used for jsonify
@@ -511,11 +533,23 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
             return jsonify_videos(Video.query.all(), is_admin=True)
         else:
             q = get_video_query(labels, page_number, page_size, use_admin_label_state)
+            if user_jwt["client_type"] != 0: # ignore researcher
+                add_video_views(q.items, user_jwt, query_type=0)
             return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
+        if user_jwt["client_type"] != 0: # ignore researcher
+            add_video_views(q.items, user_jwt, query_type=1)
         return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
- 
+
+"""
+Update the View table
+"""
+def add_video_views(videos, user_jwt, query_type=None):
+    if query_type is None: return
+    for v in videos:
+        add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
+
 """
 Get video query from the database
 """
@@ -603,9 +637,10 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
     video_batch_hashed = {}
     for video in video_batch:
         video_batch_hashed[video.id] = video
+    # Find the user
+    user = User.query.filter(User.id==user_id).first()
     # Update batch data
     batch_score = None
-    user_score = None
     if batch_id is not None and connection_id is not None:
         batch = Batch.query.filter(Batch.id==batch_id).first()
         batch.return_time = get_current_time()
@@ -613,13 +648,14 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
         if client_type != 0: # do not update the score for reseacher
             batch_score = compute_video_batch_score(video_batch_hashed, labels)
             batch.score = batch_score
+            batch.user_score = user.score
         log("Update batch: %r" % batch)
     # Add labeling history and update the video label state
     # If the batch score is 0, do not update the label history since this batch is not reliable
+    user_score = None
     if batch_score != 0:
         # Update user score
         if client_type != 0: # do not update the score for reseacher
-            user = User.query.filter(User.id==user_id).first()
             user_score = user.score + batch_score
             user.score = user_score
             log("Update user: %r" % user)
@@ -792,6 +828,14 @@ def add_batch(**kwargs):
     return batch
 
 """
+Add a video view record to the database
+"""
+def add_view(**kwargs):
+    view = add_row(View(**kwargs))
+    log("Add view: %r" % view)
+    return view
+
+"""
 Query a batch of videos for labeling by using active learning or random sampling
 """
 def query_video_batch(user_id, use_admin_label_state=False):
@@ -836,7 +880,7 @@ def get_user_token_by_client_id(client_id):
     user_id = user.id
     client_type = user.client_type
     user_score = user.score
-    connection = add_connection(user_id=user_id, client_type=client_type)
+    connection = add_connection(user_id=user_id, client_type=client_type, user_score=user_score)
     if client_type == -1:
         return None # a blacklisted user does not get the token
     else:
