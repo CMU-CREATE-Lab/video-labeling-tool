@@ -84,10 +84,12 @@
         }
       });
     };
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Constructor
-    //
+
+    // Generate a unique id
+    this.getUniqueId = function () {
+      // The prefix "uuid" is used for identifying that the client id is generated from this function
+      return "uuid." + new Date().getTime() + "." + Math.random().toString(36).substring(2);
+    };
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////

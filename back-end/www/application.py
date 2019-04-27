@@ -340,7 +340,7 @@ def get_batch():
             batch = add_batch(num_gold_standard=0, num_unlabeled=batch_size) # no gold standard for researcher
         else:
             batch = add_batch(num_gold_standard=gold_standard_in_batch, num_unlabeled=batch_size-gold_standard_in_batch)
-        return jsonify_videos(video_batch, sign=True, batch_id=batch.id)
+        return jsonify_videos(video_batch, sign=True, batch_id=batch.id, user_id=user_jwt["user_id"])
 
 """
 For the client to send labels of a batch back to the server
@@ -369,11 +369,11 @@ def send_batch():
     except Exception as ex:
         e = InvalidUsage(ex.args[0], status_code=401)
         return handle_invalid_usage(e)
-    # Verify video id list
+    # Verify video id list and user_id
     labels = request.json["data"]
     original_v = video_jwt["video_id_list"]
     returned_v = [v["video_id"] for v in labels]
-    if Counter(original_v) != Counter(returned_v):
+    if Counter(original_v) != Counter(returned_v) or video_jwt["user_id"] != user_jwt["user_id"]:
         e = InvalidUsage("Signature of the video batch is not valid", status_code=401)
         return handle_invalid_usage(e)
     # Update database
@@ -585,7 +585,7 @@ Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None):
     if len(videos) == 0: return make_response("", 204)
     if is_admin:
         videos_json, errors = videos_schema_is_admin.dump(videos)
@@ -599,7 +599,7 @@ def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}
     if sign:
-        return_json["video_token"] = encode_video_jwt(video_id_list=video_id_list, batch_id=batch_id)
+        return_json["video_token"] = encode_video_jwt(video_id_list=video_id_list, batch_id=batch_id, user_id=user_id)
     if total is not None:
         return_json["total"] = total
     return jsonify(return_json)

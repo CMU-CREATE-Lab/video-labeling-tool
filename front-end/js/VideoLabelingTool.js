@@ -38,7 +38,6 @@
     var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
     var api_url_root = util.getRootApiUrl();
-    var client_id = safeGet(settings["client_id"], getUniqueId());
     var user_id;
     var video_token;
     var user_token;
@@ -107,11 +106,13 @@
     }
 
     // Set a batch of labeled video clips back to the server
-    function sendVideoBatch(callback) {
+    function sendVideoBatch(callback, options) {
       callback = safeGet(callback, {});
+      options = safeGet(options, {});
+      var ignore_labels = safeGet(options["ignore_labels"], false);
       var labels = collectAndRemoveLabels();
       showLoadingMsg();
-      if (labels.length == 0) {
+      if (labels.length == 0 || ignore_labels) {
         if (typeof callback["success"] === "function") callback["success"]();
       } else {
         util.postJSON(api_url_root + "send_batch", JSON.stringify({
@@ -275,12 +276,6 @@
       return JSON.parse(window.atob(jwt.split('.')[1]));
     }
 
-    // Generate a unique id
-    function getUniqueId() {
-      // The prefix "uuid" is used for identifying that the client id is generated from this function
-      return "uuid." + new Date().getTime() + "." + Math.random().toString(36).substring(2);
-    }
-
     // Resolve promises and call back
     function resolvePromises(promises, callback) {
       callback = safeGet(callback, {});
@@ -300,7 +295,7 @@
       } else {
         updateVideos(data["data"], {
           success: function () {
-            // need to store the token and return it back to the server when finished
+            // Need to store the token and return it back to the server when finished
             video_token = data["video_token"];
             if (typeof callback["success"] === "function") callback["success"]();
           },
@@ -308,7 +303,7 @@
             if (typeof callback["error"] === "function") callback["error"](xhr);
           },
           abort: function (xhr) {
-            // need to store the token and return it back to the server when finished
+            // Need to store the token and return it back to the server when finished
             video_token = data["video_token"];
             if (typeof callback["abort"] === "function") callback["abort"](xhr);
           }
@@ -341,7 +336,7 @@
     //
     // Public methods
     //
-    this.next = function (callback) {
+    this.next = function (callback, options) {
       callback = safeGet(callback, {});
       sendVideoBatch({
         success: function (data) {
@@ -353,7 +348,7 @@
         abort: function (xhr) {
           onSendVideoBatchSuccess(xhr.responseJSON, callback);
         }
-      });
+      }, options);
     };
 
     this.userId = function () {
@@ -382,9 +377,8 @@
 
     this.updateUserIdByClientId = function (new_client_id, callback) {
       callback = safeGet(callback, {});
-      client_id = safeGet(new_client_id, client_id);
       login({
-        client_id: client_id
+        client_id: safeGet(new_client_id, util.getUniqueId())
       }, {
         success: function (data) {
           user_token = data["user_token"];
