@@ -1,7 +1,9 @@
 /*
  * TODO: wording check with Paul
+ * TODO: add a link back to time machine viewer on the labeling page (also gallery page)
+ * TODO: design user feedback system after labeling a batch (e.g., inform performance, correct or wrong labels for gold standards)
  * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
- * TODO: add a ladder board for showing user id and scores
+ * TODO: add a leaderboard for showing user id and scores
  * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: if the user made too many bad batches, ask the user to retake the tutorial
  * TODO: remove google-signin-client_id meta name from the index.html
@@ -9,8 +11,8 @@
  * TODO: allow users to share the badge with the achievement on social media
  * TODO: as users gain enough scores, advance them to the harder mode
  * - laypeople mode: select videos that have smoke
- * - amateur mode: draw bounding boxes (BBOX) for smoke for each video
- * - expert mode: draw BBOX and provide smoke info (e.g., blue, black)
+ * - amateur mode: select smoke opacity (low, medium, high)
+ * - expert mode: crop images to a region
  */
 
 (function () {
@@ -36,7 +38,6 @@
     var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
     var api_url_root = util.getRootApiUrl();
-    var client_id = safeGet(settings["client_id"], getUniqueId());
     var user_id;
     var video_token;
     var user_token;
@@ -58,7 +59,7 @@
     // Get the user id from the server
     function login(post_json, callback) {
       callback = safeGet(callback, {});
-      postJSON(api_url_root + "login", JSON.stringify(post_json), {
+      util.postJSON(api_url_root + "login", JSON.stringify(post_json), {
         success: function (data) {
           if (typeof callback["success"] === "function") callback["success"](data);
         },
@@ -74,7 +75,7 @@
     // Get the json file that contains image links
     function getVideoBatch(callback) {
       callback = safeGet(callback, {});
-      postJSON(api_url_root + "get_batch", JSON.stringify({
+      util.postJSON(api_url_root + "get_batch", JSON.stringify({
         user_token: user_token,
       }), {
         success: function (data) {
@@ -105,14 +106,16 @@
     }
 
     // Set a batch of labeled video clips back to the server
-    function sendVideoBatch(callback) {
+    function sendVideoBatch(callback, options) {
       callback = safeGet(callback, {});
+      options = safeGet(options, {});
+      var ignore_labels = safeGet(options["ignore_labels"], false);
       var labels = collectAndRemoveLabels();
       showLoadingMsg();
-      if (labels.length == 0) {
+      if (labels.length == 0 || ignore_labels) {
         if (typeof callback["success"] === "function") callback["success"]();
       } else {
-        postJSON(api_url_root + "send_batch", JSON.stringify({
+        util.postJSON(api_url_root + "send_batch", JSON.stringify({
           video_token: video_token,
           user_token: user_token,
           data: labels
@@ -273,30 +276,6 @@
       return JSON.parse(window.atob(jwt.split('.')[1]));
     }
 
-    // Post JSON
-    function postJSON(url, data, callback) {
-      callback = safeGet(callback, {});
-      $.ajax({
-        url: url,
-        type: "POST",
-        data: data,
-        contentType: "application/json",
-        dataType: "json",
-        success: function (data) {
-          if (typeof callback["success"] === "function") callback["success"](data);
-        },
-        error: function (xhr) {
-          if (typeof callback["error"] === "function") callback["error"](xhr);
-        }
-      });
-    }
-
-    // Generate a unique id
-    function getUniqueId() {
-      // The prefix "uuid" is used for identifying that the client id is generated from this function
-      return "uuid." + new Date().getTime() + "." + Math.random().toString(36).substring(2);
-    }
-
     // Resolve promises and call back
     function resolvePromises(promises, callback) {
       callback = safeGet(callback, {});
@@ -316,7 +295,7 @@
       } else {
         updateVideos(data["data"], {
           success: function () {
-            // need to store the token and return it back to the server when finished
+            // Need to store the token and return it back to the server when finished
             video_token = data["video_token"];
             if (typeof callback["success"] === "function") callback["success"]();
           },
@@ -324,7 +303,7 @@
             if (typeof callback["error"] === "function") callback["error"](xhr);
           },
           abort: function (xhr) {
-            // need to store the token and return it back to the server when finished
+            // Need to store the token and return it back to the server when finished
             video_token = data["video_token"];
             if (typeof callback["abort"] === "function") callback["abort"](xhr);
           }
@@ -357,7 +336,7 @@
     //
     // Public methods
     //
-    this.next = function (callback) {
+    this.next = function (callback, options) {
       callback = safeGet(callback, {});
       sendVideoBatch({
         success: function (data) {
@@ -369,7 +348,7 @@
         abort: function (xhr) {
           onSendVideoBatchSuccess(xhr.responseJSON, callback);
         }
-      });
+      }, options);
     };
 
     this.userId = function () {
@@ -398,9 +377,8 @@
 
     this.updateUserIdByClientId = function (new_client_id, callback) {
       callback = safeGet(callback, {});
-      client_id = safeGet(new_client_id, client_id);
       login({
-        client_id: client_id
+        client_id: safeGet(new_client_id, util.getUniqueId())
       }, {
         success: function (data) {
           user_token = data["user_token"];

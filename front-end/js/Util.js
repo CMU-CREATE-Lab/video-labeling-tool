@@ -67,10 +67,29 @@
       return ga_id;
     };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Constructor
-    //
+    // Post JSON
+    this.postJSON = function (url, data, callback) {
+      callback = safeGet(callback, {});
+      $.ajax({
+        url: url,
+        type: "POST",
+        data: data,
+        contentType: "application/json",
+        dataType: "json",
+        success: function (data) {
+          if (typeof callback["success"] === "function") callback["success"](data);
+        },
+        error: function (xhr) {
+          if (typeof callback["error"] === "function") callback["error"](xhr);
+        }
+      });
+    };
+
+    // Generate a unique id
+    this.getUniqueId = function () {
+      // The prefix "uuid" is used for identifying that the client id is generated from this function
+      return "uuid." + new Date().getTime() + "." + Math.random().toString(36).substring(2);
+    };
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////

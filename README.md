@@ -203,7 +203,7 @@ sudo vim /etc/apache2/sites-available/[BACK_END_DOMAIN].conf
 # Add the following lines to this file
 <VirtualHost *:80>
   ServerName [BACK_END_DOMAIN]
-  Header always set Access-Control-Allow-Origin "[FRONT_END_DOMAIN]"
+  Header always set Access-Control-Allow-Origin "http://[FRONT_END_DOMAIN]"
   Header set Access-Control-Allow-Headers "Content-Type"
   Header set Cache-Control "max-age=60, public, must-revalidate"
   ProxyPreserveHost On
@@ -247,3 +247,114 @@ cd /etc/apache2/sites-enabled/
 sudo ln -s ../sites-available/[FRONT_END_DOMAIN].conf
 sudo systemctl restart apache2
 ```
+
+# Setup https (instead of using http)
+Go to https://certbot.eff.org/ and follow the instructions to install Certbot on the Ubuntu server. Then run the following to enable Apache2 mods.
+```sh
+sudo a2enmod headers
+sudo a2enmod rewrite
+sudo a2enmod ssl
+```
+Give permissions so that the Certbot and apache can modify the website.
+```sh
+cd /var/www/
+sudo mkdir html # only run this if the html directory did not exist
+sudo chmod 775 html
+sudo chgrp www-data html
+sudo chgrp www-data smoke-detection
+```
+Run the Certbot.
+```sh
+sudo certbot --apache certonly
+```
+Copy the directories that point to the SSL certificate and the SSL certificate key in the terminal provided by the certbot. For example:
+```sh
+/etc/letsencrypt/live/[...]/fullchain.pem
+/etc/letsencrypt/live/[...]/privkey.pem
+```
+Edit apache configuration file for the back-end. Note the "https" before the FRONT_END_DOMAIN, not http.
+```sh
+sudo vim /etc/apache2/sites-available/[BACK_END_DOMAIN].conf
+# Add the following lines to this file
+<VirtualHost *:443>
+  ServerName [BACK_END_DOMAIN]
+  # Enable https ssl support
+  SSLEngine On
+  # The following line enables cors
+  Header always set Access-Control-Allow-Origin "https://[FRONT_END_DOMAIN]"
+  Header set Access-Control-Allow-Headers "Content-Type"
+  # The following line forces the browser to break the cache
+  Header set Cache-Control "max-age=60, public, must-revalidate"
+  # Reverse proxy to the uwsgi server
+  ProxyPreserveHost On
+  ProxyRequests Off
+  ProxyVia Off
+  ProxyPass / http://127.0.0.1:8080/
+  ProxyPassReverse / http://127.0.0.1:8080/
+  # APACHE_LOG_DIR is /var/log/apache2/
+  ErrorLog ${APACHE_LOG_DIR}/[BACK_END_DOMAIN].error.log
+  CustomLog ${APACHE_LOG_DIR}/[BACK_END_DOMAIN].access.log combined
+  # Add ssl
+  SSLCertificateFile /etc/letsencrypt/live/[...]/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/[...]/privkey.pem
+  Include /etc/letsencrypt/options-ssl-apache.conf
+</VirtualHost>
+
+<VirtualHost *:80>
+  ServerName [BACK_END_DOMAIN]
+  # Enable the url rewriting
+  RewriteEngine on
+  # Redirect http to https
+  RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent] 
+</VirtualHost>
+```
+Edit apache configuration file for the front-end.
+```sh
+sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
+# Add the following lines to this file
+<VirtualHost *:443>
+  ServerName [FRONT_END_DOMAIN]
+  DocumentRoot /[PATH]/video-labeling-tool/front-end
+  # Enable https ssl support
+  SSLEngine On
+  # The following line enables cors
+  Header always set Access-Control-Allow-Origin "*"
+  # The following line forces the browser to break the cache
+  Header set Cache-Control "max-age=60, public, must-revalidate"
+  <Directory "/[PATH]/video-labeling-tool/front-end">
+    Options FollowSymLinks
+    AllowOverride None
+    Require all granted
+  </Directory>
+  # APACHE_LOG_DIR is /var/log/apache2/
+  ErrorLog ${APACHE_LOG_DIR}/[FRONT_END_DOMAIN].error.log
+  CustomLog ${APACHE_LOG_DIR}/[FRONT_END_DOMAIN].access.log combined
+  # Add ssl
+  SSLCertificateFile /etc/letsencrypt/live/[...]/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/[...]/privkey.pem
+  Include /etc/letsencrypt/options-ssl-apache.conf
+</VirtualHost>
+
+<VirtualHost *:80>
+  ServerName [FRONT_END_DOMAIN]
+  # Enable the url rewriting
+  RewriteEngine on
+  # Redirect http to https
+  RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent] 
+</VirtualHost>
+```
+Restart apache server.
+```sh
+sudo /etc/init.d/apache2 restart
+```
+Set a cron job to renew the SSL certificate automatically.
+```sh
+sudo bash
+crontab -e
+```
+Add the following to the crontab.
+```sh
+# Renew our SSL certificate
+0 0 1 * * /opt/certbot-auto renew --no-self-upgrade >>/var/log/certbot.log
+```
+Then type "exit" in the terminal to exit the bash mode. Also remember to go to the Google API console and add https domains to the authorized JavaScript origins for the OAuth client (the Google Login API). All http urls in the front-end code (e.g., API urls, video urls) also need to be replaced with the https version.

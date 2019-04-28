@@ -87,6 +87,7 @@
     function renderGoogleSignInButton() {
       gapi.signin2.render("google-sign-in-button", {
         scope: "profile email",
+        prompt: "select_account",
         width: 231,
         height: 46,
         longtitle: true,

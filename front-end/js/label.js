@@ -11,6 +11,7 @@
   var count_down_duration = 500; // in milliseconds
   var is_first_time = true;
   var is_video_autoplay_tested = false;
+  var ga_tracker;
 
   function countDown() {
     if (counter == 0) {
@@ -29,7 +30,7 @@
     }, count_down_duration);
   }
 
-  function nextBatch() {
+  function nextBatch(ignore_labels) {
     $next.prop("disabled", true);
     $(window).scrollTop(0);
     video_labeling_tool.next({
@@ -43,6 +44,8 @@
       abort: function () {
         $next.prop("disabled", false);
       }
+    }, {
+      ignore_labels: ignore_labels
     });
   }
 
@@ -73,6 +76,11 @@
         }
       });
       is_first_time = false;
+    } else {
+      // Each video batch is signed with the user id
+      // So we need to load a new batch after the user id changes
+      // Otherwise the server will return an invalid signature error
+      nextBatch(true);
     }
   }
 
@@ -98,7 +106,7 @@
         });
       },
       sign_out_success: function () {
-        video_labeling_tool.updateUserIdByClientId({
+        video_labeling_tool.updateUserIdByClientId(ga_tracker.getClientId(), {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
           },
@@ -110,7 +118,7 @@
       }
     });
     video_test_dialog = new edaplotjs.VideoTestDialog();
-    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+    ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
         google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {

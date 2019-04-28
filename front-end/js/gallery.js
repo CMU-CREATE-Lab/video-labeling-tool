@@ -21,9 +21,9 @@
   var $page_back;
   var $page_next;
   var $page_control;
-  var is_first_time = true;
   var user_id;
   var is_admin = false;
+  var is_researcher = false;
   var user_token;
   var label_state_map = {
     "47": "Gold Pos",
@@ -82,23 +82,28 @@
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
+        // Add the display of label states
         var $control = $("<div class='label-control'></div>");
         var $label_state = $("<p class='text-small-margin'><i></i><i></i></p>");
-        var $desired_state_select = createLabelStateSelect();
-        $desired_state_select.on("change", function () {
-          var label_str = $desired_state_select.val();
-          var v_id = $(this).data("v")["id"];
-          admin_marked_item["data"] = [{
-            video_id: v_id,
-            label: parseInt(label_str)
-          }];
-          admin_marked_item["select"] = $desired_state_select;
-          admin_marked_item["p"] = $label_state;
-          $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_state_map[label_str] + "?");
-          $set_label_confirm_dialog.dialog("open");
-        });
         $control.append($label_state);
-        $control.append($desired_state_select);
+        // Add the function for setting label states
+        if (is_researcher) {
+          var $desired_state_select = createLabelStateSelect();
+          $desired_state_select.on("change", function () {
+            var label_str = $desired_state_select.val();
+            var v_id = $(this).data("v")["id"];
+            admin_marked_item["data"] = [{
+              video_id: v_id,
+              label: parseInt(label_str)
+            }];
+            admin_marked_item["select"] = $desired_state_select;
+            admin_marked_item["p"] = $label_state;
+            $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_state_map[label_str] + "?");
+            $set_label_confirm_dialog.dialog("open");
+          });
+          $control.append($desired_state_select);
+        }
+        // Append UI
         $item.append($control);
       }
     } else {
@@ -339,6 +344,39 @@
     });
   }
 
+  function initDownloadButton() {
+    $("#download-data").on("click", function () {
+      var $download = $(this);
+      $download.prop("disabled", true);
+      $.ajax({
+        url: api_url_root + "get_all_labels",
+        type: "POST",
+        data: {
+          user_token: user_token
+        },
+        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+        dataType: "json",
+        success: function (data) {
+          // Download data
+          var blob = new Blob([JSON.stringify(data)], {
+            type: "application/json"
+          });
+          var link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = "video_labels.json";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          // Reset button
+          $download.prop("disabled", false);
+        },
+        error: function (xhr) {
+          console.error("Error when getting video json!", xhr);
+        }
+      });
+    });
+  }
+
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
@@ -353,6 +391,7 @@
       $(".intro-text").hide();
       $(".user-text").show();
     };
+    initDownloadButton();
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
       no_ui: true
     });
@@ -367,7 +406,9 @@
             }, {
               success: function (data) {
                 user_token = data["user_token"];
-                is_admin = getJwtPayload(user_token)["client_type"] == 0 ? true : false;
+                var client_type = getJwtPayload(user_token)["client_type"];
+                is_admin = (client_type == 0 || client_type == 1) ? true : false;
+                is_researcher = client_type == 0 ? true : false;
               },
               complete: function () {
                 initPagination();
@@ -379,7 +420,9 @@
             }, {
               success: function (data) {
                 user_token = data["user_token"];
-                is_admin = getJwtPayload(user_token)["client_type"] == 0 ? true : false;
+                var client_type = getJwtPayload(user_token)["client_type"];
+                is_admin = (client_type == 0 || client_type == 1) ? true : false;
+                is_researcher = client_type == 0 ? true : false;
               },
               complete: function () {
                 initPagination();

@@ -1,6 +1,5 @@
-#TODO: use https instead of http
-#TODO: add a Gallery table to document the history that a user views videos
-#TODO: how to promote the client to a different rank when it is changed? invalidate the user token?
+#TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
+#TODO: how to promote the client to a different rank when it is changed? invalidate the user token? (need to add a table to record the promotion history)
 #      (need to encode client type in the user token, and check if this matches the database record)
 #      (for a user that did not login via google, always treat them as laypeople)
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
@@ -116,6 +115,7 @@ class Video(db.Model):
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
+    view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
         return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin)
@@ -177,11 +177,14 @@ class Connection(db.Model):
     client_type = db.Column(db.Integer, nullable=False)
     # The user id in the User table (the user who connected to the server)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    # Current score of the user
+    user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
     # Relationships
     batch = db.relationship("Batch", backref=db.backref("connection", lazy=True), lazy=True)
+    view = db.relationship("View", backref=db.backref("connection", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Connection id=%r time=%r client_type=%r user_id=%r>") % (self.id, self.time, self.client_type, self.user_id)
+        return ("<Connection id=%r time=%r client_type=%r user_id=%r user_score=%r>") % (self.id, self.time, self.client_type, self.user_id, self.user_score)
 
 """
 The class for the issued video batch history table (for tracking video batches)
@@ -193,16 +196,35 @@ class Batch(db.Model):
     return_time = db.Column(db.Integer)
     # The connection id in the Connection table
     connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"))
-    # The score that the user obtained so far (number of labeled videos)
+    # The score that the user obtained in this Batch (number of labeled videos)
     score = db.Column(db.Integer) # null means no data is returned by the user or the user is a reseacher
     # The number of gold standards and unlabeled videos in this batch
     num_unlabeled = db.Column(db.Integer, nullable=False, default=0)
     num_gold_standard = db.Column(db.Integer, nullable=False, default=0)
+    # Current score of the user
+    user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
     # Relationships
     label = db.relationship("Label", backref=db.backref("batch", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard)
+        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r user_score=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard, self.user_score)
+
+"""
+The table for tracking viewed videos
+"""
+class View(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # The connection id in the Connection table
+    connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"), nullable=False)
+    # The video id in the Video table
+    video_id = db.Column(db.Integer, db.ForeignKey("video.id"), nullable=False)
+    # The query type to get the videos
+    # 0: query by label state
+    # 1: query by user id
+    query_type = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self):
+        return ("<View id=%r connection_id=%r video_id=%r query_type=%r>") % (self.id, self.connection_id, self.video_id, self.query_type)
 
 """
 The schema for the video table, used for jsonify
@@ -220,7 +242,7 @@ The schema for the video table, used for jsonify without label_state
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin") # fields to expose
+        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time") # fields to expose
 video_schema_is_admin = VideoSchemaIsAdmin()
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
@@ -277,8 +299,13 @@ def login():
                 client_id = request.json["client_id"]
     # Get user id by client id, and issued an user jwt
     if client_id is not None:
-        return_json = {"user_token": get_user_token_by_client_id(client_id)}
-        return jsonify(return_json)
+        user_token = get_user_token_by_client_id(client_id)
+        if user_token is None:
+            e = InvalidUsage("Permission denied", status_code=403)
+            return handle_invalid_usage(e)
+        else:
+            return_json = {"user_token": user_token}
+            return jsonify(return_json)
     else:
         e = InvalidUsage("Missing field: google_id_token or client_id", status_code=400)
         return handle_invalid_usage(e)
@@ -313,7 +340,7 @@ def get_batch():
             batch = add_batch(num_gold_standard=0, num_unlabeled=batch_size) # no gold standard for researcher
         else:
             batch = add_batch(num_gold_standard=gold_standard_in_batch, num_unlabeled=batch_size-gold_standard_in_batch)
-        return jsonify_videos(video_batch, sign=True, batch_id=batch.id)
+        return jsonify_videos(video_batch, sign=True, batch_id=batch.id, user_id=user_jwt["user_id"])
 
 """
 For the client to send labels of a batch back to the server
@@ -342,11 +369,11 @@ def send_batch():
     except Exception as ex:
         e = InvalidUsage(ex.args[0], status_code=401)
         return handle_invalid_usage(e)
-    # Verify video id list
+    # Verify video id list and user_id
     labels = request.json["data"]
     original_v = video_jwt["video_id_list"]
     returned_v = [v["video_id"] for v in labels]
-    if Counter(original_v) != Counter(returned_v):
+    if Counter(original_v) != Counter(returned_v) or video_jwt["user_id"] != user_jwt["user_id"]:
         e = InvalidUsage("Signature of the video batch is not valid", status_code=401)
         return handle_invalid_usage(e)
     # Update database
@@ -359,7 +386,7 @@ def send_batch():
         return handle_invalid_usage(e)
 
 """
-Set video labels to positive, negative, or gold standard (only admin can use this call)
+Set video labels to positive, negative, or gold standard (only researcher can use this call)
 """
 @app.route("/api/v1/set_label_state", methods=["POST"])
 def set_label_state():
@@ -381,7 +408,7 @@ def set_label_state():
     except Exception as ex:
         e = InvalidUsage(ex.args[0], status_code=401)
         return handle_invalid_usage(e)
-    # Verify if the user is admin
+    # Verify if the user is a researcher
     if user_jwt["client_type"] != 0:
         e = InvalidUsage("Permission denied", status_code=403)
         return handle_invalid_usage(e)
@@ -396,26 +423,18 @@ def set_label_state():
 """
 Get videos with positive labels
 """
-pos_labels = [0b10111, 0b1111, 0b10011, 0b101111]
+pos_labels = [0b10111, 0b1111, 0b10011]
 @app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
 def get_pos_labels():
     return get_video_labels(pos_labels, allow_user_id=True)
 
-@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
-def get_pos_labels_by_researcher():
-    return get_video_labels(pos_labels, use_admin_label_state=True)
-
 """
 Get videos with negative labels
 """
-neg_labels = [0b10000, 0b1100, 0b10100, 0b100000]
+neg_labels = [0b10000, 0b1100, 0b10100]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
     return get_video_labels(neg_labels)
-
-@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
-def get_neg_labels_by_researcher():
-    return get_video_labels(neg_labels, use_admin_label_state=True)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
@@ -436,6 +455,20 @@ def get_neg_gold_labels():
     return get_video_labels(neg_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
+Get videos with positive labels, exclude gold standard labels (only admin can use this call)
+"""
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
+def get_pos_labels_by_researcher():
+    return get_video_labels(pos_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get videos with negative labels, exclude gold standard labels (only admin can use this call)
+"""
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
+def get_neg_labels_by_researcher():
+    return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
+
+"""
 Get videos with insufficient user-provided labels (only admin can use this call)
 Partial labels will only be set by citizens
 """
@@ -452,6 +485,13 @@ bad_labels = [-2]
 @app.route("/api/v1/get_bad_labels", methods=["POST"])
 def get_bad_labels():
     return get_video_labels(bad_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get all data (only admin can use this call)
+"""
+@app.route("/api/v1/get_all_labels", methods=["POST"])
+def get_all_labels():
+    return get_video_labels(None, only_admin=True, use_admin_label_state=True)
 
 """
 Get video labels
@@ -483,18 +523,33 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
         if user_jwt is None:
             e = InvalidUsage("Missing fields: user_token", status_code=400)
             return handle_invalid_usage(e)
-        # Verify if the user is admin
-        if user_jwt["client_type"] != 0:
+        # Verify if the user is researcher or expert (they are considered admins in this case)
+        if user_jwt["client_type"] != 0 and user_jwt["client_type"] != 1:
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
-    is_admin = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
+    is_admin = True if user_jwt is not None and (user_jwt["client_type"] == 0 or user_jwt["client_type"] == 1) else False
     if user_id is None:
-        q = get_video_query(labels, page_number, page_size, use_admin_label_state)
-        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
+        if labels is None and is_admin:
+            return jsonify_videos(Video.query.all(), is_admin=True)
+        else:
+            q = get_video_query(labels, page_number, page_size, use_admin_label_state)
+            if user_jwt["client_type"] != 0: # ignore researcher
+                add_video_views(q.items, user_jwt, query_type=0)
+            return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
+        if user_jwt["client_type"] != 0: # ignore researcher
+            add_video_views(q.items, user_jwt, query_type=1)
         return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
- 
+
+"""
+Update the View table
+"""
+def add_video_views(videos, user_jwt, query_type=None):
+    if query_type is None: return
+    for v in videos:
+        add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
+
 """
 Get video query from the database
 """
@@ -505,29 +560,32 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
         if use_admin_label_state:
             q = Video.query.filter(Video.label_state_admin.in_(labels))
         else:
-            q = Video.query.filter(Video.label_state.in_(labels))
+            # Exclude gold standards for normal request
+            q = Video.query.filter(and_(Video.label_state.in_(labels), Video.label_state_admin.notin_((0b101111, 0b100000))))
     if len(labels) == 1:
         if use_admin_label_state:
             q = Video.query.filter(Video.label_state_admin==labels[0])
         else:
-            q = Video.query.filter(Video.label_state==labels[0])
+            # Exclude gold standards for normal request
+            q = Video.query.filter(and_(Video.label_state==labels[0], Video.label_state_admin.notin_((0b101111, 0b100000))))
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
     return q
 
 """
 Get video query from the database by user id
+(exclude gold standards)
 """
 def get_pos_video_query_by_user_id(user_id, page_number, page_size):
     page_size = max_page_size if page_size > max_page_size else page_size
-    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).distinct().paginate(page_number, page_size, False)
+    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
 
 """
 Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None):
     if len(videos) == 0: return make_response("", 204)
     if is_admin:
         videos_json, errors = videos_schema_is_admin.dump(videos)
@@ -541,7 +599,7 @@ def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}
     if sign:
-        return_json["video_token"] = encode_video_jwt(video_id_list=video_id_list, batch_id=batch_id)
+        return_json["video_token"] = encode_video_jwt(video_id_list=video_id_list, batch_id=batch_id, user_id=user_id)
     if total is not None:
         return_json["total"] = total
     return jsonify(return_json)
@@ -579,9 +637,10 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
     video_batch_hashed = {}
     for video in video_batch:
         video_batch_hashed[video.id] = video
+    # Find the user
+    user = User.query.filter(User.id==user_id).first()
     # Update batch data
     batch_score = None
-    user_score = None
     if batch_id is not None and connection_id is not None:
         batch = Batch.query.filter(Batch.id==batch_id).first()
         batch.return_time = get_current_time()
@@ -589,13 +648,14 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
         if client_type != 0: # do not update the score for reseacher
             batch_score = compute_video_batch_score(video_batch_hashed, labels)
             batch.score = batch_score
+            batch.user_score = user.score
         log("Update batch: %r" % batch)
     # Add labeling history and update the video label state
     # If the batch score is 0, do not update the label history since this batch is not reliable
+    user_score = None
     if batch_score != 0:
         # Update user score
         if client_type != 0: # do not update the score for reseacher
-            user = User.query.filter(User.id==user_id).first()
             user_score = user.score + batch_score
             user.score = user_score
             log("Update user: %r" % user)
@@ -768,6 +828,14 @@ def add_batch(**kwargs):
     return batch
 
 """
+Add a video view record to the database
+"""
+def add_view(**kwargs):
+    view = add_row(View(**kwargs))
+    log("Add view: %r" % view)
+    return view
+
+"""
 Query a batch of videos for labeling by using active learning or random sampling
 """
 def query_video_batch(user_id, use_admin_label_state=False):
@@ -812,8 +880,11 @@ def get_user_token_by_client_id(client_id):
     user_id = user.id
     client_type = user.client_type
     user_score = user.score
-    connection = add_connection(user_id=user_id, client_type=client_type)
-    return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
+    connection = add_connection(user_id=user_id, client_type=client_type, user_score=user_score)
+    if client_type == -1:
+        return None # a blacklisted user does not get the token
+    else:
+        return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
 
 """
 Update client type by user id
