@@ -537,7 +537,7 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
                 add_video_views(q.items, user_jwt, query_type=0)
             return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
-        q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
+        q = get_pos_video_query_by_user_id(user_id, page_number, page_size, user_jwt["client_type"])
         if user_jwt["client_type"] != 0: # ignore researcher
             add_video_views(q.items, user_jwt, query_type=1)
         return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
@@ -576,9 +576,13 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
 Get video query from the database by user id
 (exclude gold standards)
 """
-def get_pos_video_query_by_user_id(user_id, page_number, page_size):
+def get_pos_video_query_by_user_id(user_id, page_number, page_size, client_type):
     page_size = max_page_size if page_size > max_page_size else page_size
-    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
+    if client_type == 0: # researcher
+        q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
+    else:
+        q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
+    return q.from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
 
 """
 Jsonify videos
