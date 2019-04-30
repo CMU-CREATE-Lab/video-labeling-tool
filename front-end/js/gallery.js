@@ -208,8 +208,8 @@
       pageSize: 16,
       showPageNumbers: false,
       showNavigator: true,
-      showGoInput: false,
-      showGoButton: false,
+      showGoInput: true,
+      showGoButton: true,
       showPrevious: false,
       showNext: false,
       callback: function (data, pagination) {
