@@ -242,7 +242,7 @@ The schema for the video table, used for jsonify without label_state
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time") # fields to expose
+        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name") # fields to expose
 video_schema_is_admin = VideoSchemaIsAdmin()
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
