@@ -255,7 +255,7 @@ sudo a2enmod headers
 sudo a2enmod rewrite
 sudo a2enmod ssl
 ```
-Give permissions so that the Certbot and apache can modify the website.
+Give permissions so that the Certbot and apache can modify the website. This assumes that the cloned repository is placed under the /var/www/ directory.
 ```sh
 cd /var/www/
 sudo mkdir html # only run this if the html directory did not exist
