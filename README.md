@@ -126,6 +126,30 @@ Run server in the conda environment for development purpose.
 sh development.sh
 ```
 
+# Dump and import existing mysql database
+This section assumes that you want to dump the production database to a file and import it to the development database. First, SSH to the production server and dump the database to the /tmp/ directory.
+```sh
+ssh [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]
+sudo mysqldump -u root -p video_labeling_tool_production >/tmp/video_labeling_tool_production.out
+exit
+```
+SSH to the development server and get the dumped database file from the production server.
+```sh
+ssh [USER_NAME_DEVELOPMENT]@[SERVER_ADDRESS_DEVELOPMENT]
+rsync -av [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]:/tmp/video_labeling_tool_production.out /tmp/
+
+# For specifying a port number
+rsync -av -e "ssh -p [PORT_NUMBER]" [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]:/tmp/video_labeling_tool_production.out /tmp/
+```
+Import the dumped production database file to the development database.
+```sh
+sudo mysql -u root -p
+drop database video_labeling_tool_development;
+create database video_labeling_tool_development;
+exit
+sudo mysql -u root -p video_labeling_tool_development </tmp/video_labeling_tool_production.out
+```
+
 # Deploy back-end using uwsgi
 Install [uwsgi](https://uwsgi-docs.readthedocs.io/en/latest/) using conda.
 ```sh
