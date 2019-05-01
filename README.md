@@ -265,6 +265,21 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   CustomLog ${APACHE_LOG_DIR}/[FRONT_END_DOMAIN].access.log combined
 </VirtualHost>
 ```
+Use the following if you only want to access the server from an IP address with a port. Remember to tell the apache server to listen to the port number.
+```sh
+sudo vim /etc/apache2/sites-available/video-labeling-tool-front-end.conf
+# Add the following lines to this file
+<VirtualHost *:8080>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /[PATH]/video-labeling-tool/front-end
+  ErrorLog ${APACHE_LOG_DIR}/video-labeling-tool-front-end.error.log
+  CustomLog ${APACHE_LOG_DIR}/video-labeling-tool-front-end.access.log combined
+</VirtualHost>
+
+sudo vim /etc/apache2/ports.conf
+# Add the following lines to this file
+Listen 8080
+```
 Create a symlink of the virtual host and restart apache.
 ```sh
 cd /etc/apache2/sites-enabled/
