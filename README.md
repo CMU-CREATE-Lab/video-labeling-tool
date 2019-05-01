@@ -49,9 +49,9 @@ drop database video_labeling_tool_production;
 drop database video_labeling_tool_development;
 ```
 # Setup back-end
-Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/docs/user-guide/getting-started.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
+Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
 ```sh
-wget https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh
+wget https://repo.continuum.io/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh
 sudo sh Miniconda3-4.5.11-Linux-x86_64.sh -b -p /opt/miniconda3
 
 sudo vim /etc/bash.bashrc
