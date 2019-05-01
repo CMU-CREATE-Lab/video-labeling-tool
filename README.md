@@ -81,7 +81,7 @@ conda install pip
 which pip # make sure this is the pip inside the video-labeling-tool environment
 sh video-labeling-tool/back-end/install_packages.sh
 ```
-Create a text file with name "google_signin_client_id" in the "back-end/data/" directory to store the client ID. For detailed documentation about how to obtain the client ID, refer to the [Google Sign-In API](https://developers.google.com/identity/sign-in/web/sign-in).
+Create a text file with name "google_signin_client_id" in the "back-end/data/" directory to store the client ID. For detailed documentation about how to obtain the client ID, refer to the [Google Sign-In API](https://developers.google.com/identity/sign-in/web/sign-in). In the Google Cloud Console, remember to go to "APIs & Services" -> "Credentials" add the desired domain names to the "Authorized JavaScript origins" in the OAuth client.
 ```sh
 sudo vim video-labeling-tool/back-end/data/google_signin_client_id
 # Add the following line to this file, obtained from the Google Sign-In API
