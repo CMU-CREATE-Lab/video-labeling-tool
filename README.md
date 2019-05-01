@@ -255,13 +255,13 @@ sudo a2enmod headers
 sudo a2enmod rewrite
 sudo a2enmod ssl
 ```
-Give permissions so that the Certbot and apache can modify the website. This assumes that the cloned repository is placed under the /var/www/ directory.
+Give permissions so that the Certbot and apache can modify the website. This assumes that the cloned repository is placed under the /var/www/ directory. Replace [CLONED_REPOSITORY] with your directory name, such as video-labeling-tool.
 ```sh
 cd /var/www/
 sudo mkdir html # only run this if the html directory did not exist
 sudo chmod 775 html
 sudo chgrp www-data html
-sudo chgrp www-data smoke-detection
+sudo chgrp www-data [CLONED_REPOSITORY]
 ```
 Run the Certbot.
 ```sh
