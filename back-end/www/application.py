@@ -223,9 +223,11 @@ class View(db.Model):
     # 0: query by label state
     # 1: query by user id
     query_type = db.Column(db.Integer, nullable=False)
+    # The epochtime (in seconds) when the view is added
+    time = db.Column(db.Integer, default=get_current_time)
 
     def __repr__(self):
-        return ("<View id=%r connection_id=%r video_id=%r query_type=%r>") % (self.id, self.connection_id, self.video_id, self.query_type)
+        return ("<View id=%r connection_id=%r video_id=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.video_id, self.query_type, self.time)
 
 """
 The schema for the video table, used for jsonify
