@@ -458,14 +458,14 @@ def get_neg_gold_labels():
 """
 Get videos with positive labels, exclude gold standard labels (only admin can use this call)
 """
-@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["POST"])
 def get_pos_labels_by_researcher():
     return get_video_labels(pos_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get videos with negative labels, exclude gold standard labels (only admin can use this call)
 """
-@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
 def get_neg_labels_by_researcher():
     return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
 
@@ -492,7 +492,7 @@ Get all data (only admin can use this call)
 """
 @app.route("/api/v1/get_all_labels", methods=["POST"])
 def get_all_labels():
-    return get_video_labels(None, only_admin=True, use_admin_label_state=True)
+    return get_video_labels(None, only_admin=True)
 
 """
 Get video labels
