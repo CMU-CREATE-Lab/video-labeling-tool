@@ -1,3 +1,4 @@
+#TODO: add a special login function for the client to download the user token for scrapping purposes
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token? (need to add a table to record the promotion history)
 #      (need to encode client type in the user token, and check if this matches the database record)
@@ -533,12 +534,12 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
             return jsonify_videos(Video.query.all(), is_admin=True)
         else:
             q = get_video_query(labels, page_number, page_size, use_admin_label_state)
-            if user_jwt["client_type"] != 0: # ignore researcher
+            if user_jwt is not None and user_jwt["client_type"] != 0: # ignore researcher
                 add_video_views(q.items, user_jwt, query_type=0)
             return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size, user_jwt["client_type"])
-        if user_jwt["client_type"] != 0: # ignore researcher
+        if user_jwt is not None and user_jwt["client_type"] != 0: # ignore researcher
             add_video_views(q.items, user_jwt, query_type=1)
         return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
 
@@ -888,6 +889,8 @@ def get_user_token_by_client_id(client_id):
     if client_type == -1:
         return None # a blacklisted user does not get the token
     else:
+        # Field user_score is for the client to display the user score when loggin in
+        # Field connection_id is for updating the batch information when the client sends labels back
         return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
 
 """

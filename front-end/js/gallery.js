@@ -1,6 +1,6 @@
 /*
+ * TODO: add a button for admins (researchers + experts) to download user token for scrapping data
  * TODO: add a legend to indicate Y, N, and ? (instead of using text)
- * TODO: add a text box to jump to a page
  */
 
 (function () {
