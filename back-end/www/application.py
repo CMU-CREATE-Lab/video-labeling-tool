@@ -251,7 +251,7 @@ The schema for the video table, used for jsonify
 class VideoSchema(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state") # fields to expose
+        fields = ("id", "url_part") # fields to expose
 video_schema = VideoSchema()
 videos_schema = VideoSchema(many=True)
 
@@ -567,7 +567,8 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size, user_jwt["client_type"])
         if user_jwt is not None and user_jwt["client_type"] != 0: # ignore researcher
             add_video_views(q.items, user_jwt, query_type=1)
-        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
+        # We need to set is_admin to True here because we want to show user agreements in the data
+        return jsonify_videos(q.items, total=q.total, is_admin=True)
 
 """
 Update the View table
