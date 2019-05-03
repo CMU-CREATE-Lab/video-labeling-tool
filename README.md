@@ -401,3 +401,78 @@ Add the following to the crontab.
 0 0 1 * * /opt/certbot-auto renew --no-self-upgrade >>/var/log/certbot.log
 ```
 Then type "exit" in the terminal to exit the bash mode. Also remember to go to the Google API console and add https domains to the authorized JavaScript origins for the OAuth client (the Google Login API). All http urls in the front-end code (e.g., API urls, video urls) also need to be replaced with the https version.
+
+# API
+The following code examples assusme that the root url is http://localhost:5000.
+## /api/v1/login
+Log in to the system.
+- Available methods: POST
+- Required fields (either google_id_token or client_id):
+  - "google_id_token", from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
+  - "client_id", from Google Analytics id or randomly generated uuid
+- Returned data:
+  - "user_token", user token for the front-end client
+  - "user_token_for_other_app", user token for other applications
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/login",
+  type: "POST",
+  data: JSON.stringify({google_id_token: gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+
+$.ajax({
+  url: "http://localhost:5000/api/v1/login",
+  type: "POST",
+  data: JSON.stringify({client_id: "uuid_for_testing"}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+## /api/v1/get_batch
+Get a batch of videos. If the client type is not researcher, gold standards (with known labels) will be randomly placed to evaluate the label quality.
+- Available methods: POST
+- Required fields:
+  - "user_token", from /api/v1/login
+- Returned data:
+  - "data": video metadata
+  - "video_token", video token for verification when sending the labels back to the server
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_batch",
+  type: "POST",
+  data: JSON.stringify({user_token: "your_user_token"}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+## /api/v1/send_batch
+Send a batch of labels back to the server.
+- Available methods: POST
+- Required fields:
+  - "data", a list of json with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
+  - "user_token", from /api/v1/login
+  - "video_token", from /api/v1/get_batch
+- Returned data:
+  - "data", scores for the current user (null for no changes) and the labeled batch (0 for poor labeling quality)
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/send_batch",
+  type: "POST",
+  data: JSON.stringify({"video_token":"your_video_token","user_token":"your_user_token","data":[{"video_id":1,"label":0},{"video_id":2,"label":1},{"video_id":3,"label":1},{"video_id":4,"label":0},{"video_id":5,"label":0},{"video_id":6,"label":0},{"video_id":16151,"label":0},{"video_id":7,"label":1},{"video_id":8,"label":0},{"video_id":9,"label":0},{"video_id":10,"label":0},{"video_id":11,"label":0},{"video_id":12,"label":0},{"video_id":13,"label":1},{"video_id":14,"label":1},{"video_id":15,"label":0}]}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
