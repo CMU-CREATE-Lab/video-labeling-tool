@@ -1,4 +1,5 @@
 #TODO: add a special login function for the client to download the user token for scrapping purposes
+#TODO: log the content of POST methods to the log file for production
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token? (need to add a table to record the promotion history)
 #      (need to encode client type in the user token, and check if this matches the database record)
@@ -26,6 +27,7 @@ import os
 import json
 from urllib.parse import parse_qs
 from random import shuffle
+from flask.logging import default_handler
 
 """
 Config Parameters
@@ -37,6 +39,23 @@ batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
 gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
+
+"""
+Set Formatter
+"""
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        record.url = request.url
+        record.method = request.method
+        record.agent = request.user_agent.string
+        record.data = request.get_data()
+        if request.headers.getlist("X-Forwarded-For"):
+            record.ip = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+            record.ip = request.remote_addr
+        return super().format(record)
+formatter = RequestFormatter("[%(asctime)s] [%(ip)s] [%(url)s] [%(agent)s] [%(method)s] [%(data)s] %(levelname)s:\n\n\t%(message)s\n")
+default_handler.setFormatter(formatter)
 
 """
 Initialize the application
@@ -57,7 +76,6 @@ if app.config["ENV"] == "production":
     dir_name = os.path.dirname(custom_log_path)
     if dir_name != "" and not os.path.exists(dir_name):
         os.makedirs(dir_name) # create directory if it does not exist
-    formatter = logging.Formatter("[%(asctime)s] [%(ip)s] [%(agent)s] [%(path)s] [%(method)s] %(levelname)s:\n\n\t%(message)s\n")
     handler = logging.handlers.RotatingFileHandler(custom_log_path, mode="a", maxBytes=100000000, backupCount=200)
     handler.setFormatter(formatter)
     logger = logging.getLogger("video_labeling_tool")
@@ -302,12 +320,12 @@ def login():
                 client_id = request.json["client_id"]
     # Get user id by client id, and issued an user jwt
     if client_id is not None:
-        user_token = get_user_token_by_client_id(client_id)
+        user_token, user_token_for_other_app = get_user_token_by_client_id(client_id)
         if user_token is None:
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
         else:
-            return_json = {"user_token": user_token}
+            return_json = {"user_token": user_token, "user_token_for_other_app": user_token_for_other_app}
             return jsonify(return_json)
     else:
         e = InvalidUsage("Missing field: google_id_token or client_id", status_code=400)
@@ -497,6 +515,14 @@ def get_all_labels():
     return get_video_labels(None, only_admin=True)
 
 """
+Log after each request
+"""
+@app.after_request
+def after_request(response):
+    log(response)
+    return response
+
+"""
 Get video labels
 """
 def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_label_state=False):
@@ -551,7 +577,10 @@ Update the View table
 def add_video_views(videos, user_jwt, query_type=None):
     if query_type is None: return
     for v in videos:
-        add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
+        # If connection_id is -1, this means that the connection is from other app, not the current app
+        # We do not want to add this case to the view table
+        if user_jwt["connection_id"] != -1:
+            add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
 
 """
 Get video query from the database
@@ -888,12 +917,17 @@ def get_user_token_by_client_id(client_id):
     client_type = user.client_type
     user_score = user.score
     connection = add_connection(user_id=user_id, client_type=client_type, user_score=user_score)
+    ct = connection.time
+    cid = connection.id
     if client_type == -1:
-        return None # a blacklisted user does not get the token
+        return (None, None) # a blacklisted user does not get the token
     else:
         # Field user_score is for the client to display the user score when loggin in
         # Field connection_id is for updating the batch information when the client sends labels back
-        return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
+        user_token = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=cid, iat=ct, user_score=user_score)
+        # This is the token for other app to access video labels from API calls
+        user_token_for_other_app = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=-1, iat=ct)
+        return (user_token, user_token_for_other_app)
 
 """
 Update client type by user id
@@ -952,17 +986,12 @@ Custom logs
 """
 def log_custom(msg, level="info"):
     try:
-        d = {"method": request.method, "path": request.full_path, "agent": request.user_agent.string}
-        if request.headers.getlist("X-Forwarded-For"):
-            d["ip"] = request.headers.getlist("X-Forwarded-For")[0]
-        else:
-            d["ip"] = request.remote_addr
         if level == "info":
-            logger.info(msg, extra=d)
+            logger.info(msg)
         elif level == "warning":
-            logger.warning(msg, extra=d)
+            logger.warning(msg)
         elif level == "error":
-            logger.error(msg, extra=d)
+            logger.error(msg)
     except Exception as ex:
         pass
 
@@ -970,7 +999,7 @@ def log_custom(msg, level="info"):
 Log info
 """
 def log(msg):
-    app.logger.info("\n\n\t" + msg + "\n")
+    app.logger.info(msg)
     if app.config["ENV"] == "production":
         log_custom(msg, level="info")
 
@@ -978,7 +1007,7 @@ def log(msg):
 Log warning
 """
 def log_warning(msg):
-    app.logger.warning("\n\n\t" + msg + "\n")
+    app.logger.warning(msg)
     if app.config["ENV"] == "production":
         log_custom(msg, level="warning")
 
@@ -986,6 +1015,6 @@ def log_warning(msg):
 Log error
 """
 def log_error(msg):
-    app.logger.error("\n\n\t" + msg + "\n")
+    app.logger.error(msg)
     if app.config["ENV"] == "production":
         log_custom(msg, level="error")

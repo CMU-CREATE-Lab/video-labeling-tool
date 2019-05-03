@@ -91,6 +91,19 @@
       // The prefix "uuid" is used for identifying that the client id is generated from this function
       return "uuid." + new Date().getTime() + "." + Math.random().toString(36).substring(2);
     };
+
+    // Download json data as a file
+    this.downloadJSON = function (data, file_name) {
+      var blob = new Blob([JSON.stringify(data)], {
+        type: "application/json"
+      });
+      var link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
