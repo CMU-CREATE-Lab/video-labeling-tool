@@ -408,11 +408,11 @@ The following code examples assusme that the root url is http://localhost:5000.
 Log in to the system.
 - Available methods: POST
 - Required fields (either google_id_token or client_id):
-  - "google_id_token", from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
-  - "client_id", from Google Analytics id or randomly generated uuid
+  - "google_id_token": from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
+  - "client_id": from Google Analytics id or randomly generated uuid
 - Returned data:
-  - "user_token", user token for the front-end client
-  - "user_token_for_other_app", user token for other applications
+  - "user_token": user token for the front-end client
+  - "user_token_for_other_app": user token for other applications
 ```JavaScript
 // jQuery examples
 $.ajax({
@@ -439,10 +439,10 @@ $.ajax({
 Get a batch of videos. If the client type is not researcher, gold standards (with known labels) will be randomly placed to evaluate the label quality.
 - Available methods: POST
 - Required fields:
-  - "user_token", from /api/v1/login
+  - "user_token": from /api/v1/login
 - Returned data:
   - "data": video metadata
-  - "video_token", video token for verification when sending the labels back to the server
+  - "video_token": video token for verification when sending the labels back to the server
 ```JavaScript
 // jQuery examples
 $.ajax({
@@ -459,11 +459,11 @@ $.ajax({
 Send a batch of labels back to the server.
 - Available methods: POST
 - Required fields:
-  - "data", a list of json with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
-  - "user_token", from /api/v1/login
-  - "video_token", from /api/v1/get_batch
+  - "data": a list of json with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
+  - "user_token": from /api/v1/login
+  - "video_token": from /api/v1/get_batch
 - Returned data:
-  - "data", scores for the current user (null for no changes) and the labeled batch (0 for poor labeling quality)
+  - "data": scores for the current user (null for no changes) and the labeled batch (0 for poor labeling quality)
 ```JavaScript
 // jQuery examples
 $.ajax({
