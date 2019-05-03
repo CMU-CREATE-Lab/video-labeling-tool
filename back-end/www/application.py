@@ -1,5 +1,3 @@
-#TODO: add a special login function for the client to download the user token for scrapping purposes
-#TODO: log the content of POST methods to the log file for production
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: how to promote the client to a different rank when it is changed? invalidate the user token? (need to add a table to record the promotion history)
 #      (need to encode client type in the user token, and check if this matches the database record)
