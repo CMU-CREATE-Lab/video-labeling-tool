@@ -596,7 +596,6 @@ This call is only available for researchers or experts (client type 0 or 1) with
   - "user_token": from /api/v1/login or the gallery page
 - Returned fields:
   - "data": a list of video metadata
-  - "total": the total number of queried videos, can be larger than the page size
 ```JavaScript
 // jQuery examples
 $.ajax({
