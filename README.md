@@ -7,6 +7,11 @@ A tool for labeling video clips (both front-end and back-end). The back-end depe
 - [Install MySQL](#install-mysql)
 - [Setup back-end](#setup-back-end)
 - [API calls](#api-calls)
+- [Dump and import MySQL database](#dump-and-import-mysql)
+- [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
+- [Connect uwsgi to apache](#connect-uwsgi-to-apache)
+- [Setup front-end on apache](#setup-front-end-on-apache)
+- [Setup https (instead of using http)](#setup-https)
 
 # <a name="install-mysql"></a>Install MySQL
 Install and start mysql database. This assumes that Ubuntu is installed. A tutorial can be found on [this blog](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04).
@@ -136,7 +141,7 @@ Run server in the conda environment for development purpose.
 sh development.sh
 ```
 
-# Dump and import existing mysql database
+# <a name="dump-and-import-mysql"></a>Dump and import MySQL database
 This section assumes that you want to dump the production database to a file and import it to the development database. First, SSH to the production server and dump the database to the /tmp/ directory.
 ```sh
 ssh [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]
@@ -160,7 +165,7 @@ exit
 sudo mysql -u root -p video_labeling_tool_development </tmp/video_labeling_tool_production.out
 ```
 
-# Deploy back-end using uwsgi
+# <a name="deploy-back-end-using-uwsgi"></a>Deploy back-end using uwsgi
 Install [uwsgi](https://uwsgi-docs.readthedocs.io/en/latest/) using conda.
 ```sh
 conda activate video-labeling-tool
@@ -217,7 +222,7 @@ curl localhost:8080
 # Should get the "Hello World!" message
 ```
 
-# Connect uwsgi to apache
+# <a name="connect-uwsgi-to-apache"></a>Connect uwsgi to apache
 Obtain domains from providers such as [Google Domains](https://domains.google/) or [Namecheap](https://www.namecheap.com/) for both the back-end and the front-end. Point these domain names to the domain of the Ubuntu machine. Then install apache2 and enable mods.
 ```sh
 sudo apt-get install apache2
@@ -256,7 +261,7 @@ sudo ln -s ../sites-available/[BACK_END_DOMAIN].conf
 sudo systemctl restart apache2
 ```
 
-# Setup front-end on apache
+# <a name="setup-front-end-on-apache"></a>Setup front-end on apache
 Create an apache virtual host. Replace [FRONT_END_DOMAIN] with your domain name for the front-end. Replace [PATH] with the path to the cloned repository.
 ```sh
 sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
@@ -297,7 +302,7 @@ sudo ln -s ../sites-available/[FRONT_END_DOMAIN].conf
 sudo systemctl restart apache2
 ```
 
-# Setup https (instead of using http)
+# <a name="setup-https"></a>Setup https (instead of using http)
 Go to https://certbot.eff.org/ and follow the instructions to install Certbot on the Ubuntu server. Then run the following to enable Apache2 mods.
 ```sh
 sudo a2enmod headers
