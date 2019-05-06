@@ -506,7 +506,8 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### /api/v1/get_pos_labels, /api/v1/get_neg_labels
+### /api/v1/get_pos_labels
+### /api/v1/get_neg_labels
 Get videos with positive or negative labels. For /api/v1/get_pos_labels, you can also query videos that were labeled positive by a user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
 - Available methods: GET, POST
 - Optional fields:
