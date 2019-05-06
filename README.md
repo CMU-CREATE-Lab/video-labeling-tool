@@ -570,6 +570,7 @@ This call is only available for researchers or experts (client type 0 or 1) with
 - Returned fields:
   - "data": a list of video metadata
   - "total": the total number of queried videos, can be larger than the page size
+```JavaScript
 // jQuery examples
 $.ajax({
   url: "http://localhost:5000/api/v1/get_pos_gold_labels",
@@ -596,6 +597,7 @@ This call is only available for researchers or experts (client type 0 or 1) with
 - Returned fields:
   - "data": a list of video metadata
   - "total": the total number of queried videos, can be larger than the page size
+```JavaScript
 // jQuery examples
 $.ajax({
   url: "http://localhost:5000/api/v1/get_all_labels",
