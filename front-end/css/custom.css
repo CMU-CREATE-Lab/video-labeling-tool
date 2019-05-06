@@ -260,6 +260,14 @@ body,
 
 .paginationjs.paginationjs-custom {
   font-size: 18px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: stretch;
+  box-sizing: border-box;
+  margin: 10px 0 10px 0;
 }
 
 .paginationjs.paginationjs-custom .paginationjs-pages li>a {
@@ -276,12 +284,7 @@ body,
 
 .paginationjs.paginationjs-custom .paginationjs-go-input {
   font-size: 18px;
-}
-
-.paginationjs.paginationjs-custom .paginationjs-go-input>input[type=text] {
-  width: 44px;
-  height: 44px;
-  font-size: 18px;
+  margin-left: 0;
 }
 
 .paginationjs.paginationjs-custom .paginationjs-go-button {
@@ -289,16 +292,69 @@ body,
 }
 
 .paginationjs.paginationjs-custom .paginationjs-go-button>input[type=button] {
-  min-width: 50px;
-  height: 46px;
-  line-height: 44px;
+  width: 50px;
+  height: 60px;
+  line-height: 60px;
   padding: 0 12px;
   font-size: 18px;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  text-align: center;
+  outline: none;
+  cursor: pointer;
+  box-shadow: none;
+  text-decoration: none;
+  color: black;
+  border: 1px solid #777777;
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  margin-left: 5px;
+}
+
+.paginationjs.paginationjs-custom .paginationjs-go-input>input[type=text] {
+  width: 70px;
+  height: 60px;
+  line-height: 60px;
+  padding: 0 12px;
+  font-size: 18px;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  text-align: center;
+  outline: none;
+  cursor: pointer;
+  box-shadow: none;
+  text-decoration: none;
+  color: black;
+  border: 1px solid #777777;
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .paginationjs.paginationjs-custom .paginationjs-nav {
-  height: 46px;
-  line-height: 46px;
+  height: 60px;
+  line-height: 60px;
   font-size: 18px;
   color: #ffffff;
   margin-left: 0px;
@@ -324,15 +380,5 @@ body,
   .gallery a {
     flex: 1 0 100% !important;
     max-width: 100% !important;
-  }
-}
-
-@media screen and (max-width: 500px) {
-  .stretch-on-mobile .paginationjs-nav {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    flex: 1 0 100%;
-    max-width: 100%;
-    width: 100%;
   }
 }

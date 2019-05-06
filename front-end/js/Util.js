@@ -37,8 +37,9 @@
       var url_hostname = window.location.hostname;
       var is_localhost = url_hostname.indexOf("localhost");
       var is_staging = url_hostname.indexOf("staging");
-      if (is_localhost >= 0) {
-        root_url = "http://localhost:5000/api/v1/";
+      var is_testing = url_hostname.indexOf("192.168");
+      if (is_localhost >= 0 || is_testing >= 0) {
+        root_url = "http://" + url_hostname + ":5000/api/v1/";
       } else {
         if (is_staging >= 0) {
           root_url = "https://staging.api.smoke.createlab.org/api/v1/";
@@ -89,6 +90,19 @@
     this.getUniqueId = function () {
       // The prefix "uuid" is used for identifying that the client id is generated from this function
       return "uuid." + new Date().getTime() + "." + Math.random().toString(36).substring(2);
+    };
+
+    // Download json data as a file
+    this.downloadJSON = function (data, file_name) {
+      var blob = new Blob([JSON.stringify(data)], {
+        type: "application/json"
+      });
+      var link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = file_name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     };
   };
 

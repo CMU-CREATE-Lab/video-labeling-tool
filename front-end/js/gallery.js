@@ -1,6 +1,6 @@
 /*
+ * TODO: add a button for admins (researchers + experts) to download user token for scrapping data
  * TODO: add a legend to indicate Y, N, and ? (instead of using text)
- * TODO: add a text box to jump to a page
  */
 
 (function () {
@@ -25,6 +25,7 @@
   var is_admin = false;
   var is_researcher = false;
   var user_token;
+  var user_token_for_other_app;
   var label_state_map = {
     "47": "Gold Pos",
     "32": "Gold Neg",
@@ -208,8 +209,8 @@
       pageSize: 16,
       showPageNumbers: false,
       showNavigator: true,
-      showGoInput: false,
-      showGoButton: false,
+      showGoInput: true,
+      showGoButton: true,
       showPrevious: false,
       showNext: false,
       callback: function (data, pagination) {
@@ -346,8 +347,8 @@
 
   function initDownloadButton() {
     $("#download-data").on("click", function () {
-      var $download = $(this);
-      $download.prop("disabled", true);
+      var $this = $(this);
+      $this.prop("disabled", true);
       $.ajax({
         url: api_url_root + "get_all_labels",
         type: "POST",
@@ -358,22 +359,24 @@
         dataType: "json",
         success: function (data) {
           // Download data
-          var blob = new Blob([JSON.stringify(data)], {
-            type: "application/json"
-          });
-          var link = document.createElement("a");
-          link.href = window.URL.createObjectURL(blob);
-          link.download = "video_labels.json";
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          util.downloadJSON(data, "video_labels.json");
           // Reset button
-          $download.prop("disabled", false);
+          $this.prop("disabled", false);
         },
         error: function (xhr) {
           console.error("Error when getting video json!", xhr);
         }
       });
+    });
+    $("#download-user-token").on("click", function () {
+      var $this = $(this);
+      $this.prop("disabled", true);
+      // Download data
+      util.downloadJSON({
+        user_token: user_token_for_other_app
+      }, "user_token.json");
+      // Reset button
+      $this.prop("disabled", false);
     });
   }
 
@@ -406,6 +409,7 @@
             }, {
               success: function (data) {
                 user_token = data["user_token"];
+                user_token_for_other_app = data["user_token_for_other_app"];
                 var client_type = getJwtPayload(user_token)["client_type"];
                 is_admin = (client_type == 0 || client_type == 1) ? true : false;
                 is_researcher = client_type == 0 ? true : false;
@@ -420,6 +424,7 @@
             }, {
               success: function (data) {
                 user_token = data["user_token"];
+                user_token_for_other_app = data["user_token_for_other_app"];
                 var client_type = getJwtPayload(user_token)["client_type"];
                 is_admin = (client_type == 0 || client_type == 1) ? true : false;
                 is_researcher = client_type == 0 ? true : false;

@@ -1,11 +1,13 @@
+#BUG: when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
-#TODO: how to promote the client to a different rank when it is changed? invalidate the user token? (need to add a table to record the promotion history)
-#      (need to encode client type in the user token, and check if this matches the database record)
-#      (for a user that did not login via google, always treat them as laypeople)
+#TODO: how to promote the client to a different rank when it is changed, and invalidate previous user tokens with different permissions?
+#   (need to add a table to record the promotion history)
+#   (need to encode client type in the user token, and check if this matches the database record)
+#   (for a user that did not login via google, always treat them as laypeople)
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
 #TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
 
-from flask import Flask, render_template, jsonify, request, abort, g, make_response
+from flask import Flask, render_template, jsonify, request, abort, g, make_response, has_request_context
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -25,6 +27,7 @@ import os
 import json
 from urllib.parse import parse_qs
 from random import shuffle
+from flask.logging import default_handler
 
 """
 Config Parameters
@@ -36,6 +39,24 @@ batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
 gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
+
+"""
+Set Formatter
+"""
+class RequestFormatter(logging.Formatter):
+    def format(self, record):
+        if has_request_context():
+            record.url = request.url
+            record.method = request.method
+            record.agent = request.user_agent.string
+            record.data = request.get_data()
+            if request.headers.getlist("X-Forwarded-For"):
+                record.ip = request.headers.getlist("X-Forwarded-For")[0]
+            else:
+                record.ip = request.remote_addr
+        return super().format(record)
+formatter = RequestFormatter("[%(asctime)s] [%(ip)s] [%(url)s] [%(agent)s] [%(method)s] [%(data)s] %(levelname)s:\n\n\t%(message)s\n")
+default_handler.setFormatter(formatter)
 
 """
 Initialize the application
@@ -56,7 +77,6 @@ if app.config["ENV"] == "production":
     dir_name = os.path.dirname(custom_log_path)
     if dir_name != "" and not os.path.exists(dir_name):
         os.makedirs(dir_name) # create directory if it does not exist
-    formatter = logging.Formatter("[%(asctime)s] [%(ip)s] [%(agent)s] [%(path)s] [%(method)s] %(levelname)s:\n\n\t%(message)s\n")
     handler = logging.handlers.RotatingFileHandler(custom_log_path, mode="a", maxBytes=100000000, backupCount=200)
     handler.setFormatter(formatter)
     logger = logging.getLogger("video_labeling_tool")
@@ -222,9 +242,11 @@ class View(db.Model):
     # 0: query by label state
     # 1: query by user id
     query_type = db.Column(db.Integer, nullable=False)
+    # The epochtime (in seconds) when the view is added
+    time = db.Column(db.Integer, default=get_current_time)
 
     def __repr__(self):
-        return ("<View id=%r connection_id=%r video_id=%r query_type=%r>") % (self.id, self.connection_id, self.video_id, self.query_type)
+        return ("<View id=%r connection_id=%r video_id=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.video_id, self.query_type, self.time)
 
 """
 The schema for the video table, used for jsonify
@@ -232,7 +254,7 @@ The schema for the video table, used for jsonify
 class VideoSchema(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state") # fields to expose
+        fields = ("id", "url_part") # fields to expose
 video_schema = VideoSchema()
 videos_schema = VideoSchema(many=True)
 
@@ -242,7 +264,7 @@ The schema for the video table, used for jsonify without label_state
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time") # fields to expose
+        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name") # fields to expose
 video_schema_is_admin = VideoSchemaIsAdmin()
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
@@ -299,12 +321,12 @@ def login():
                 client_id = request.json["client_id"]
     # Get user id by client id, and issued an user jwt
     if client_id is not None:
-        user_token = get_user_token_by_client_id(client_id)
+        user_token, user_token_for_other_app = get_user_token_by_client_id(client_id)
         if user_token is None:
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
         else:
-            return_json = {"user_token": user_token}
+            return_json = {"user_token": user_token, "user_token_for_other_app": user_token_for_other_app}
             return jsonify(return_json)
     else:
         e = InvalidUsage("Missing field: google_id_token or client_id", status_code=400)
@@ -457,14 +479,14 @@ def get_neg_gold_labels():
 """
 Get videos with positive labels, exclude gold standard labels (only admin can use this call)
 """
-@app.route("/api/v1/get_pos_labels_by_researcher", methods=["GET", "POST"])
+@app.route("/api/v1/get_pos_labels_by_researcher", methods=["POST"])
 def get_pos_labels_by_researcher():
     return get_video_labels(pos_labels, only_admin=True, use_admin_label_state=True)
 
 """
 Get videos with negative labels, exclude gold standard labels (only admin can use this call)
 """
-@app.route("/api/v1/get_neg_labels_by_researcher", methods=["GET", "POST"])
+@app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
 def get_neg_labels_by_researcher():
     return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
 
@@ -491,7 +513,15 @@ Get all data (only admin can use this call)
 """
 @app.route("/api/v1/get_all_labels", methods=["POST"])
 def get_all_labels():
-    return get_video_labels(None, only_admin=True, use_admin_label_state=True)
+    return get_video_labels(None, only_admin=True)
+
+"""
+Log after each request
+"""
+@app.after_request
+def after_request(response):
+    log(response)
+    return response
 
 """
 Get video labels
@@ -528,19 +558,21 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
     is_admin = True if user_jwt is not None and (user_jwt["client_type"] == 0 or user_jwt["client_type"] == 1) else False
+    is_researcher = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
     if user_id is None:
         if labels is None and is_admin:
             return jsonify_videos(Video.query.all(), is_admin=True)
         else:
             q = get_video_query(labels, page_number, page_size, use_admin_label_state)
-            if user_jwt["client_type"] != 0: # ignore researcher
+            if not is_researcher: # ignore researcher
                 add_video_views(q.items, user_jwt, query_type=0)
             return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
-        q = get_pos_video_query_by_user_id(user_id, page_number, page_size)
-        if user_jwt["client_type"] != 0: # ignore researcher
+        q = get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researcher)
+        if not is_researcher: # ignore researcher
             add_video_views(q.items, user_jwt, query_type=1)
-        return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
+        # We need to set is_admin to True here because we want to show user agreements in the data
+        return jsonify_videos(q.items, total=q.total, is_admin=True)
 
 """
 Update the View table
@@ -548,7 +580,10 @@ Update the View table
 def add_video_views(videos, user_jwt, query_type=None):
     if query_type is None: return
     for v in videos:
-        add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
+        # If connection_id is -1, this means that the connection is from other app, not the current app
+        # We do not want to add this case to the view table
+        if user_jwt is not None and user_jwt["connection_id"] != -1:
+            add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
 
 """
 Get video query from the database
@@ -576,9 +611,13 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
 Get video query from the database by user id
 (exclude gold standards)
 """
-def get_pos_video_query_by_user_id(user_id, page_number, page_size):
+def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researcher):
     page_size = max_page_size if page_size > max_page_size else page_size
-    return Label.query.filter(and_(Label.user_id==user_id, Label.label==1)).from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
+    if is_researcher: # researcher
+        q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
+    else:
+        q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
+    return q.from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
 
 """
 Jsonify videos
@@ -881,10 +920,17 @@ def get_user_token_by_client_id(client_id):
     client_type = user.client_type
     user_score = user.score
     connection = add_connection(user_id=user_id, client_type=client_type, user_score=user_score)
+    ct = connection.time
+    cid = connection.id
     if client_type == -1:
-        return None # a blacklisted user does not get the token
+        return (None, None) # a blacklisted user does not get the token
     else:
-        return encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=connection.id, iat=connection.time, user_score=user_score)
+        # Field user_score is for the client to display the user score when loggin in
+        # Field connection_id is for updating the batch information when the client sends labels back
+        user_token = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=cid, iat=ct, user_score=user_score)
+        # This is the token for other app to access video labels from API calls
+        user_token_for_other_app = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=-1, iat=ct)
+        return (user_token, user_token_for_other_app)
 
 """
 Update client type by user id
@@ -943,17 +989,15 @@ Custom logs
 """
 def log_custom(msg, level="info"):
     try:
-        d = {"method": request.method, "path": request.full_path, "agent": request.user_agent.string}
-        if request.headers.getlist("X-Forwarded-For"):
-            d["ip"] = request.headers.getlist("X-Forwarded-For")[0]
+        if has_request_context():
+            if level == "info":
+                logger.info(msg)
+            elif level == "warning":
+                logger.warning(msg)
+            elif level == "error":
+                logger.error(msg)
         else:
-            d["ip"] = request.remote_addr
-        if level == "info":
-            logger.info(msg, extra=d)
-        elif level == "warning":
-            logger.warning(msg, extra=d)
-        elif level == "error":
-            logger.error(msg, extra=d)
+            print(msg)
     except Exception as ex:
         pass
 
@@ -961,7 +1005,7 @@ def log_custom(msg, level="info"):
 Log info
 """
 def log(msg):
-    app.logger.info("\n\n\t" + msg + "\n")
+    app.logger.info(msg)
     if app.config["ENV"] == "production":
         log_custom(msg, level="info")
 
@@ -969,7 +1013,7 @@ def log(msg):
 Log warning
 """
 def log_warning(msg):
-    app.logger.warning("\n\n\t" + msg + "\n")
+    app.logger.warning(msg)
     if app.config["ENV"] == "production":
         log_custom(msg, level="warning")
 
@@ -977,6 +1021,6 @@ def log_warning(msg):
 Log error
 """
 def log_error(msg):
-    app.logger.error("\n\n\t" + msg + "\n")
+    app.logger.error(msg)
     if app.config["ENV"] == "production":
         log_custom(msg, level="error")

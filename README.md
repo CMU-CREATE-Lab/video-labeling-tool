@@ -3,7 +3,17 @@ Demo: http://smoke.createlab.org
 
 A tool for labeling video clips (both front-end and back-end). The back-end depends on a [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provides video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). 
 
-# Install MySQL
+### Table of Content
+- [Install MySQL](#install-mysql)
+- [Setup back-end](#setup-back-end)
+- [Dump and import MySQL database](#dump-and-import-mysql)
+- [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
+- [Connect uwsgi to apache](#connect-uwsgi-to-apache)
+- [Setup front-end on apache](#setup-front-end-on-apache)
+- [Setup https (instead of using http)](#setup-https)
+- [API calls](#api-calls)
+
+# <a name="install-mysql"></a>Install MySQL
 Install and start mysql database. This assumes that Ubuntu is installed. A tutorial can be found on [this blog](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04).
 ```sh
 sudo apt-get install mysql-server
@@ -48,11 +58,12 @@ drop database video_labeling_tool_production;
 # For droping database on the development server or your local computer
 drop database video_labeling_tool_development;
 ```
-# Setup back-end
-Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/docs/user-guide/getting-started.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
+
+# <a name="setup-back-end"></a>Setup back-end
+Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
 ```sh
-wget https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh
-sudo sh Miniconda3-4.5.11-Linux-x86_64.sh -b -p /opt/miniconda3
+wget https://repo.continuum.io/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh
+sudo sh Miniconda2-4.6.14-Linux-x86_64.sh -b -p /opt/miniconda3
 
 sudo vim /etc/bash.bashrc
 # Add the following lines to this file
@@ -81,7 +92,11 @@ conda install pip
 which pip # make sure this is the pip inside the video-labeling-tool environment
 sh video-labeling-tool/back-end/install_packages.sh
 ```
-Create a text file with name "google_signin_client_id" in the "back-end/data/" directory to store the client ID. For detailed documentation about how to obtain the client ID, refer to the [Google Sign-In API](https://developers.google.com/identity/sign-in/web/sign-in).
+If the environment already exists and you want to remove it before installing packages, use the following:
+```sh
+conda remove -n video-labeling-tool --all
+```
+Create a text file with name "google_signin_client_id" in the "back-end/data/" directory to store the client ID. For detailed documentation about how to obtain the client ID, refer to the [Google Sign-In API](https://developers.google.com/identity/sign-in/web/sign-in). In the Google Cloud Console, remember to go to "APIs & Services" -> "Credentials" and add the desired domain names (or IP addresses) to the "Authorized JavaScript origins" in the OAuth client. This makes it possible to call the Google Sign-In API from these desired domains.
 ```sh
 sudo vim video-labeling-tool/back-end/data/google_signin_client_id
 # Add the following line to this file, obtained from the Google Sign-In API
@@ -126,7 +141,31 @@ Run server in the conda environment for development purpose.
 sh development.sh
 ```
 
-# Deploy back-end using uwsgi
+# <a name="dump-and-import-mysql"></a>Dump and import MySQL database
+This section assumes that you want to dump the production database to a file and import it to the development database. First, SSH to the production server and dump the database to the /tmp/ directory.
+```sh
+ssh [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]
+sudo mysqldump -u root -p video_labeling_tool_production >/tmp/video_labeling_tool_production.out
+exit
+```
+SSH to the development server and get the dumped database file from the production server.
+```sh
+ssh [USER_NAME_DEVELOPMENT]@[SERVER_ADDRESS_DEVELOPMENT]
+rsync -av [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]:/tmp/video_labeling_tool_production.out /tmp/
+
+# For specifying a port number
+rsync -av -e "ssh -p [PORT_NUMBER]" [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]:/tmp/video_labeling_tool_production.out /tmp/
+```
+Import the dumped production database file to the development database.
+```sh
+sudo mysql -u root -p
+drop database video_labeling_tool_development;
+create database video_labeling_tool_development;
+exit
+sudo mysql -u root -p video_labeling_tool_development </tmp/video_labeling_tool_production.out
+```
+
+# <a name="deploy-back-end-using-uwsgi"></a>Deploy back-end using uwsgi
 Install [uwsgi](https://uwsgi-docs.readthedocs.io/en/latest/) using conda.
 ```sh
 conda activate video-labeling-tool
@@ -183,7 +222,7 @@ curl localhost:8080
 # Should get the "Hello World!" message
 ```
 
-# Connect uwsgi to apache
+# <a name="connect-uwsgi-to-apache"></a>Connect uwsgi to apache
 Obtain domains from providers such as [Google Domains](https://domains.google/) or [Namecheap](https://www.namecheap.com/) for both the back-end and the front-end. Point these domain names to the domain of the Ubuntu machine. Then install apache2 and enable mods.
 ```sh
 sudo apt-get install apache2
@@ -222,7 +261,7 @@ sudo ln -s ../sites-available/[BACK_END_DOMAIN].conf
 sudo systemctl restart apache2
 ```
 
-# Setup front-end on apache
+# <a name="setup-front-end-on-apache"></a>Setup front-end on apache
 Create an apache virtual host. Replace [FRONT_END_DOMAIN] with your domain name for the front-end. Replace [PATH] with the path to the cloned repository.
 ```sh
 sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
@@ -241,6 +280,21 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   CustomLog ${APACHE_LOG_DIR}/[FRONT_END_DOMAIN].access.log combined
 </VirtualHost>
 ```
+Use the following if you only want to access the server from an IP address with a port. Remember to tell the apache server to listen to the port number.
+```sh
+sudo vim /etc/apache2/sites-available/video-labeling-tool-front-end.conf
+# Add the following lines to this file
+<VirtualHost *:8080>
+  ServerAdmin webmaster@localhost
+  DocumentRoot /[PATH]/video-labeling-tool/front-end
+  ErrorLog ${APACHE_LOG_DIR}/video-labeling-tool-front-end.error.log
+  CustomLog ${APACHE_LOG_DIR}/video-labeling-tool-front-end.access.log combined
+</VirtualHost>
+
+sudo vim /etc/apache2/ports.conf
+# Add the following lines to this file
+Listen 8080
+```
 Create a symlink of the virtual host and restart apache.
 ```sh
 cd /etc/apache2/sites-enabled/
@@ -248,20 +302,20 @@ sudo ln -s ../sites-available/[FRONT_END_DOMAIN].conf
 sudo systemctl restart apache2
 ```
 
-# Setup https (instead of using http)
+# <a name="setup-https"></a>Setup https (instead of using http)
 Go to https://certbot.eff.org/ and follow the instructions to install Certbot on the Ubuntu server. Then run the following to enable Apache2 mods.
 ```sh
 sudo a2enmod headers
 sudo a2enmod rewrite
 sudo a2enmod ssl
 ```
-Give permissions so that the Certbot and apache can modify the website.
+Give permissions so that the Certbot and apache can modify the website. This assumes that the cloned repository is placed under the /var/www/ directory. Replace [CLONED_REPOSITORY] with your directory name, such as video-labeling-tool.
 ```sh
 cd /var/www/
 sudo mkdir html # only run this if the html directory did not exist
 sudo chmod 775 html
 sudo chgrp www-data html
-sudo chgrp www-data smoke-detection
+sudo chgrp www-data [CLONED_REPOSITORY]
 ```
 Run the Certbot.
 ```sh
@@ -358,3 +412,203 @@ Add the following to the crontab.
 0 0 1 * * /opt/certbot-auto renew --no-self-upgrade >>/var/log/certbot.log
 ```
 Then type "exit" in the terminal to exit the bash mode. Also remember to go to the Google API console and add https domains to the authorized JavaScript origins for the OAuth client (the Google Login API). All http urls in the front-end code (e.g., API urls, video urls) also need to be replaced with the https version.
+
+# <a name="api-calls"></a>API calls
+The following code examples assusme that the root url is http://localhost:5000.
+### Log in to the system
+The server will return a user token in the form of JWT (JSON Web Token). There are four different client types, as documented in the User class in [this file](back-end/www/application.py).
+- Path:
+  - **/api/v1/login**
+- Available methods:
+  - POST
+- Required fields (either google_id_token or client_id):
+  - "google_id_token": from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
+  - "client_id": from Google Analytics id or randomly generated uuid
+- Returned fields:
+  - "user_token": user token for the front-end client
+  - "user_token_for_other_app": user token for other applications
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/login",
+  type: "POST",
+  data: JSON.stringify({google_id_token: gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+
+$.ajax({
+  url: "http://localhost:5000/api/v1/login",
+  type: "POST",
+  data: JSON.stringify({client_id: "uuid_for_testing"}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+### Get a batch of videos
+If the client type is not researcher, gold standards (with known labels) will be randomly placed to evaluate the label quality. For researchers, there will be no gold standards. Combine url_root and url_part in the returned data to get the full video URL.
+- Path:
+  - **/api/v1/get_batch**
+- Available methods:
+  - POST
+- Required fields:
+  - "user_token": from /api/v1/login
+- Returned fields:
+  - "data": video metadata
+  - "video_token": video token for verification when sending the labels back to the server
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_batch",
+  type: "POST",
+  data: JSON.stringify({user_token: "your_user_token"}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+### Send a batch of video labels
+The video token is for checking if the server issued the video batch. The label states determined by regular users and researchers are stored in two separate columns (label_state and label_state_admin) in the Video table in the database.
+- Path:
+  - **/api/v1/send_batch**
+- Available methods:
+  - POST
+- Required fields:
+  - "data": a list of dictionaries with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
+  - "user_token": from /api/v1/login
+  - "video_token": from /api/v1/get_batch
+- Returned fields:
+  - "data": scores for the current user (null for no changes) and the labeled batch (0 for poor labeling quality)
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/send_batch",
+  type: "POST",
+  data: JSON.stringify({"video_token":"your_video_token","user_token":"your_user_token","data":[{"video_id":1,"label":0},{"video_id":2,"label":1},{"video_id":3,"label":1},{"video_id":4,"label":0},{"video_id":5,"label":0},{"video_id":6,"label":0},{"video_id":16151,"label":0},{"video_id":7,"label":1},{"video_id":8,"label":0},{"video_id":9,"label":0},{"video_id":10,"label":0},{"video_id":11,"label":0},{"video_id":12,"label":0},{"video_id":13,"label":1},{"video_id":14,"label":1},{"video_id":15,"label":0}]}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+### Set the states of video labels
+This call is only available for researchers (client type 0) with valid user tokens. Any previously determined label state will be overwritten.
+- Path:
+  - **/api/v1/set_label_state**
+- Available methods:
+  - POST
+- Required fields:
+  - "data": a list of json with video_id (returned by the /v1/get_batch) and label state (documented in the label_state_machine function in [this file](back-end/www/application.py))
+  - "user_token": from /api/v1/login
+- No returned fields
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/set_label_state",
+  type: "POST",
+  data: JSON.stringify({"data":[{"video_id":1,"label":-2}],"user_token":"your_user_token"}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+### Get videos with positive or negative labels
+When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
+- Paths:
+  - **/api/v1/get_pos_labels**
+  - **/api/v1/get_neg_labels**
+- Available methods:
+  - GET, POST
+- Optional fields:
+  - "user_id": obtained by decoding the user_token JWT
+  - "page_number": default to 1
+  - "page_size": default to 16, maximum 1000
+  - "user_token": from /api/v1/login
+- Returned fields:
+  - "data": a list of video metadata
+  - "total": the total number of queried videos, can be larger than the page size
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_pos_labels",
+  type: "POST",
+  data: "user_token=your_user_token&pageSize=16&pageNumber=1",
+  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+```sh
+# curl example
+curl http://localhost:5000/api/v1/get_pos_labels
+curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
+curl http://localhost:5000/api/v1/get_neg_labels
+```
+### Get videos with other types of labels
+This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
+- Paths:
+  - **/api/v1/get_pos_gold_labels**
+  - **/api/v1/get_neg_gold_labels**
+  - **/api/v1/get_pos_labels_by_researcher**
+  - **/api/v1/get_neg_labels_by_researcher**
+  - **/api/v1/get_partial_labels**
+  - **/api/v1/get_bad_labels**
+- Available methods:
+  - POST
+- Required fields:
+  - "user_token": from /api/v1/login or the gallery page
+- Optional fields:
+  - "page_number": default to 1
+  - "page_size": default to 16, maximum 1000
+- Returned fields:
+  - "data": a list of video metadata
+  - "total": the total number of queried videos, can be larger than the page size
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_pos_gold_labels",
+  type: "POST",
+  data: "user_token=your_user_token&pageSize=16&pageNumber=1",
+  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+```sh
+# curl example
+curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_pos_gold_labels
+```
+### Get the entire video dataset with labels
+This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. Notice that this call is not paginated and will take a long time to complete.
+- Paths:
+  - **/api/v1/get_all_labels**
+- Available methods:
+  - POST
+- Required fields:
+  - "user_token": from /api/v1/login or the gallery page
+- Returned fields:
+  - "data": a list of video metadata
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_all_labels",
+  type: "POST",
+  data: "user_token=your_user_token",
+  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+```sh
+# curl example
+curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_all_labels
+```

@@ -62,19 +62,22 @@
               Symbol <span class="custom-text-primary-dark-theme">"Y"</span> and <span class="custom-text-danger-dark-theme">"N"</span> means that others agreed or disagreed with your findings respectively.
             </p>
             <p class="text-small-margin admin-text no-top-margin">
-              Your are a <span class="custom-text-info-dark-theme">researcher or expert</span>.
+              Your log in as a <span class="custom-text-info-dark-theme">researcher or expert</span>.
               The gallery is displayed in the dashboard mode.
+              Download user token from the following "Token" button.
+              You can use the token to get the metadata of labeled videos from API calls documented on <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">the GitHub repository</a>.
             </p>
             <div class="control-group admin-control add-bottom-margin">
-              <a class="custom-button-flat" href="?method=get_pos_labels">P</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels">N</a>
-              <a class="custom-button-flat" href="?method=get_partial_labels">?</a>
-              <a class="custom-button-flat" href="?method=get_pos_labels_by_researcher">P*</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels_by_researcher">N*</a>
-              <a class="custom-button-flat" href="?method=get_pos_gold_labels">Gold P*</a>
-              <a class="custom-button-flat" href="?method=get_neg_gold_labels">Gold N*</a>
-              <a class="custom-button-flat" href="?method=get_bad_labels">Bad</a>
-              <button id="download-data" class="custom-button-flat">Data</button>
+              <a class="custom-button-flat" href="?method=get_pos_labels" title="Positive labels (by community)">P</a>
+              <a class="custom-button-flat" href="?method=get_neg_labels" title="Negative labels (by community)">N</a>
+              <a class="custom-button-flat" href="?method=get_partial_labels" title="Partial labels">?</a>
+              <a class="custom-button-flat" href="?method=get_pos_labels_by_researcher" title="Positive labels (by researcher)">P*</a>
+              <a class="custom-button-flat" href="?method=get_neg_labels_by_researcher" title="Negative labels (by researcher)">N*</a>
+              <a class="custom-button-flat" href="?method=get_pos_gold_labels" title="Gold positive labels">GP*</a>
+              <a class="custom-button-flat" href="?method=get_neg_gold_labels" title="Gold negative labels">GN*</a>
+              <a class="custom-button-flat" href="?method=get_bad_labels" title="Bad labels">!</a>
+              <button id="download-data" class="custom-button-flat" title="Download labels">Data</button>
+              <button id="download-user-token" class="custom-button-flat" title="Download labels">Token</button>
             </div>
           </div>
         </div>
@@ -85,8 +88,8 @@
           <div class="flex-item flex-column full-width">
             <div id="page-control" class="control-group add-top-margin force-hidden">
               <button id="page-back" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/back.png"><span>Back</span></button>
-              <div id="page-navigator" class="stretch-on-mobile"></div>
               <button id="page-next" class="custom-button-flat large stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
+              <div id="page-navigator" class="stretch-on-mobile"></div>
             </div>
           </div>
         </div>
