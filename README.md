@@ -3,9 +3,10 @@ Demo: http://smoke.createlab.org
 
 A tool for labeling video clips (both front-end and back-end). The back-end depends on a [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provides video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). 
 
-## Table of Content
+### Table of Content
 - [Install MySQL](#install-mysql)
-- [API Calls](#api-calls)
+- [Setup back-end](#setup-back-end)
+- [API calls](#api-calls)
 
 # <a name="install-mysql"></a>Install MySQL
 Install and start mysql database. This assumes that Ubuntu is installed. A tutorial can be found on [this blog](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04).
@@ -52,7 +53,8 @@ drop database video_labeling_tool_production;
 # For droping database on the development server or your local computer
 drop database video_labeling_tool_development;
 ```
-# Setup back-end
+
+# <a name="setup-back-end"></a>Setup back-end
 Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
 ```sh
 wget https://repo.continuum.io/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh
@@ -406,9 +408,9 @@ Add the following to the crontab.
 ```
 Then type "exit" in the terminal to exit the bash mode. Also remember to go to the Google API console and add https domains to the authorized JavaScript origins for the OAuth client (the Google Login API). All http urls in the front-end code (e.g., API urls, video urls) also need to be replaced with the https version.
 
-# <a name="api-calls"></a>API Calls
+# <a name="api-calls"></a>API calls
 The following code examples assusme that the root url is http://localhost:5000.
-## /api/v1/login
+### /api/v1/login
 Log in to the system.
 - Available methods: POST
 - Required fields (either google_id_token or client_id):
@@ -439,7 +441,7 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-## /api/v1/get_batch
+### /api/v1/get_batch
 Get a batch of videos. If the client type is not researcher, gold standards (with known labels) will be randomly placed to evaluate the label quality.
 - Available methods: POST
 - Required fields:
@@ -459,7 +461,7 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-## /api/v1/send_batch
+### /api/v1/send_batch
 Send a batch of labels back to the server.
 - Available methods: POST
 - Required fields:
