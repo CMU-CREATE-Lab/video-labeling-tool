@@ -497,7 +497,7 @@ $.ajax({
 });
 ```
 ### Set the states of video labels
-This call is only available for researchers with valid user tokens. Any previously determined label state will be overwritten.
+This call is only available for researchers (client type 0) with valid user tokens. Any previously determined label state will be overwritten.
 - Path:
   - **/api/v1/set_label_state**
 - Available methods:
@@ -551,7 +551,8 @@ curl http://localhost:5000/api/v1/get_pos_labels
 curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
 curl http://localhost:5000/api/v1/get_neg_labels
 ```
-### Get videos with other types of labels or all labels
+### Get videos with other types of labels
+This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be displayed in the dashboard mode, and you can download the user token when in this mode. 
 - Paths:
   - **/api/v1/get_pos_gold_labels**
   - **/api/v1/get_neg_gold_labels**
@@ -559,4 +560,28 @@ curl http://localhost:5000/api/v1/get_neg_labels
   - **/api/v1/get_neg_labels_by_researcher**
   - **/api/v1/get_partial_labels**
   - **/api/v1/get_bad_labels**
-  - **/api/v1/get_all_labels**
+- Available methods:
+  - POST
+- Required fields:
+  - "user_token": from /api/v1/login or the Gallery page
+- Optional fields:
+  - "page_number": default to 1
+  - "page_size": default to 16, maximum 1000
+- Returned fields:
+  - "data": a list of video metadata
+  - "total": the total number of queried videos, can be larger than the page size
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_pos_gold_labels",
+  type: "POST",
+  data: "user_token=your_user_token&pageSize=16&pageNumber=1",
+  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+```sh
+# curl example
+curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_pos_gold_labels
+```
