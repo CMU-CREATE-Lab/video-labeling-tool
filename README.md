@@ -3,7 +3,11 @@ Demo: http://smoke.createlab.org
 
 A tool for labeling video clips (both front-end and back-end). The back-end depends on a [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provides video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). 
 
-# Install MySQL
+## Table of Content
+- [Install MySQL](#install-mysql)
+- [API Calls](#api-calls)
+
+# <a name="install-mysql"></a>Install MySQL
 Install and start mysql database. This assumes that Ubuntu is installed. A tutorial can be found on [this blog](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04).
 ```sh
 sudo apt-get install mysql-server
@@ -402,7 +406,7 @@ Add the following to the crontab.
 ```
 Then type "exit" in the terminal to exit the bash mode. Also remember to go to the Google API console and add https domains to the authorized JavaScript origins for the OAuth client (the Google Login API). All http urls in the front-end code (e.g., API urls, video urls) also need to be replaced with the https version.
 
-# API
+# <a name="api-calls"></a>API Calls
 The following code examples assusme that the root url is http://localhost:5000.
 ## /api/v1/login
 Log in to the system.
