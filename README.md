@@ -6,12 +6,12 @@ A tool for labeling video clips (both front-end and back-end). The back-end depe
 ### Table of Content
 - [Install MySQL](#install-mysql)
 - [Setup back-end](#setup-back-end)
-- [API calls](#api-calls)
 - [Dump and import MySQL database](#dump-and-import-mysql)
 - [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
 - [Connect uwsgi to apache](#connect-uwsgi-to-apache)
 - [Setup front-end on apache](#setup-front-end-on-apache)
 - [Setup https (instead of using http)](#setup-https)
+- [API calls](#api-calls)
 
 # <a name="install-mysql"></a>Install MySQL
 Install and start mysql database. This assumes that Ubuntu is installed. A tutorial can be found on [this blog](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04).
