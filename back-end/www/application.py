@@ -5,7 +5,7 @@
 #TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
 #TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
 
-from flask import Flask, render_template, jsonify, request, abort, g, make_response
+from flask import Flask, render_template, jsonify, request, abort, g, make_response, has_request_context
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
@@ -43,14 +43,15 @@ Set Formatter
 """
 class RequestFormatter(logging.Formatter):
     def format(self, record):
-        record.url = request.url
-        record.method = request.method
-        record.agent = request.user_agent.string
-        record.data = request.get_data()
-        if request.headers.getlist("X-Forwarded-For"):
-            record.ip = request.headers.getlist("X-Forwarded-For")[0]
-        else:
-            record.ip = request.remote_addr
+        if has_request_context():
+            record.url = request.url
+            record.method = request.method
+            record.agent = request.user_agent.string
+            record.data = request.get_data()
+            if request.headers.getlist("X-Forwarded-For"):
+                record.ip = request.headers.getlist("X-Forwarded-For")[0]
+            else:
+                record.ip = request.remote_addr
         return super().format(record)
 formatter = RequestFormatter("[%(asctime)s] [%(ip)s] [%(url)s] [%(agent)s] [%(method)s] [%(data)s] %(levelname)s:\n\n\t%(message)s\n")
 default_handler.setFormatter(formatter)
@@ -986,12 +987,15 @@ Custom logs
 """
 def log_custom(msg, level="info"):
     try:
-        if level == "info":
-            logger.info(msg)
-        elif level == "warning":
-            logger.warning(msg)
-        elif level == "error":
-            logger.error(msg)
+        if has_request_context():
+            if level == "info":
+                logger.info(msg)
+            elif level == "warning":
+                logger.warning(msg)
+            elif level == "error":
+                logger.error(msg)
+        else:
+            print(msg)
     except Exception as ex:
         pass
 
