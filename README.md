@@ -416,7 +416,7 @@ Log in to the system.
 - Required fields (either google_id_token or client_id):
   - "google_id_token": from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
   - "client_id": from Google Analytics id or randomly generated uuid
-- Returned data:
+- Returned fields:
   - "user_token": user token for the front-end client
   - "user_token_for_other_app": user token for other applications
 ```JavaScript
@@ -446,7 +446,7 @@ Get a batch of videos. If the client type is not researcher, gold standards (wit
 - Available methods: POST
 - Required fields:
   - "user_token": from /api/v1/login
-- Returned data:
+- Returned fields:
   - "data": video metadata
   - "video_token": video token for verification when sending the labels back to the server
 ```JavaScript
@@ -468,7 +468,7 @@ Send a batch of labels back to the server.
   - "data": a list of json with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
   - "user_token": from /api/v1/login
   - "video_token": from /api/v1/get_batch
-- Returned data:
+- Returned fields:
   - "data": scores for the current user (null for no changes) and the labeled batch (0 for poor labeling quality)
 ```JavaScript
 // jQuery examples
