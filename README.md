@@ -506,3 +506,31 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
+### /api/v1/get_pos_labels
+Get videos with positive labels. You can also query videos that were labeled positive by a user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
+- Available methods: GET, POST
+- Optional fields:
+  - "user_id": obtained from the decoded user_token, which is a JWT (JSON Web Token)
+  - "page_number": default to 1
+  - "page_size": default to 16, maximum 1000
+  - "user_token": from /api/v1/login
+- Returned fields:
+  - "data": a list of video metadata
+  - "total": the total number of queried videos, can be larger than the page size
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_pos_labels",
+  type: "POST",
+  data: "user_token=your_user_token&pageSize=16&pageNumber=1",
+  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+```sh
+# curl example
+curl http://localhost:5000/api/v1/get_pos_labels
+curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
+```
