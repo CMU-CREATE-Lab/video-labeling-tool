@@ -487,3 +487,22 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
+### /api/v1/set_label_state
+Set the states of video labels. This call is only available for reseachers with valid user tokens.
+- Available methods: POST
+- Required fields:
+  - "data": a list of json with video_id (returned by the /v1/get_batch) and label state (documented in the label_state_machine function in [this file](back-end/www/application.py))
+  - "user_token": from /api/v1/login
+- No returned fields
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/set_label_state",
+  type: "POST",
+  data: JSON.stringify({"data":[{"video_id":1,"label":-2}],"user_token":"your_user_token"}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
