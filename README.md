@@ -552,7 +552,7 @@ curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
 curl http://localhost:5000/api/v1/get_neg_labels
 ```
 ### Get videos with other types of labels
-This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be displayed in the dashboard mode, and you can download the user token when in this mode. 
+This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
 - Paths:
   - **/api/v1/get_pos_gold_labels**
   - **/api/v1/get_neg_gold_labels**
@@ -563,7 +563,7 @@ This call is only available for researchers or experts (client type 0 or 1) with
 - Available methods:
   - POST
 - Required fields:
-  - "user_token": from /api/v1/login or the Gallery page
+  - "user_token": from /api/v1/login or the gallery page
 - Optional fields:
   - "page_number": default to 1
   - "page_size": default to 16, maximum 1000
@@ -584,4 +584,30 @@ $.ajax({
 ```sh
 # curl example
 curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_pos_gold_labels
+```
+### Get the entire video dataset with labels
+This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. Notice that this call is not paginated and will take a long time to complete.
+- Paths:
+  - **/api/v1/get_all_labels**
+- Available methods:
+  - POST
+- Required fields:
+  - "user_token": from /api/v1/login or the gallery page
+- Returned fields:
+  - "data": a list of video metadata
+  - "total": the total number of queried videos, can be larger than the page size
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/get_all_labels",
+  type: "POST",
+  data: "user_token=your_user_token",
+  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
+```sh
+# curl example
+curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_all_labels
 ```
