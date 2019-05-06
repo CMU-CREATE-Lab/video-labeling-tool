@@ -415,9 +415,12 @@ Then type "exit" in the terminal to exit the bash mode. Also remember to go to t
 
 # <a name="api-calls"></a>API calls
 The following code examples assusme that the root url is http://localhost:5000.
-### /api/v1/login
-Log in to the system.
-- Available methods: POST
+### Log in to the system
+The server will return a user token in the form of JWT (JSON Web Token). There are four different client types, as documented in the User class in [this file](back-end/www/application.py).
+- Path:
+  - **/api/v1/login**
+- Available methods:
+  - POST
 - Required fields (either google_id_token or client_id):
   - "google_id_token": from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
   - "client_id": from Google Analytics id or randomly generated uuid
@@ -446,9 +449,12 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### /api/v1/get_batch
-Get a batch of videos. If the client type is not researcher, gold standards (with known labels) will be randomly placed to evaluate the label quality.
-- Available methods: POST
+### Get a batch of videos
+If the client type is not researcher, gold standards (with known labels) will be randomly placed to evaluate the label quality. For researchers, there will be no gold standards. Combine url_root and url_part in the returned data to get the full video URL.
+- Path:
+  - **/api/v1/get_batch**
+- Available methods:
+  - POST
 - Required fields:
   - "user_token": from /api/v1/login
 - Returned fields:
@@ -466,11 +472,14 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### /api/v1/send_batch
-Send a batch of labels back to the server.
-- Available methods: POST
+### Send a batch of video labels
+The video token is for checking if the server issued the video batch. The label states determined by regular users and researchers are stored in two separate columns (label_state and label_state_admin) in the Video table in the database.
+- Path:
+  - **/api/v1/send_batch**
+- Available methods:
+  - POST
 - Required fields:
-  - "data": a list of json with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
+  - "data": a list of dictionaries with video_id (returned by the /v1/get_batch) and label (0 means no, 1 means yes)
   - "user_token": from /api/v1/login
   - "video_token": from /api/v1/get_batch
 - Returned fields:
@@ -487,9 +496,12 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### /api/v1/set_label_state
-Set the states of video labels. This call is only available for reseachers with valid user tokens.
-- Available methods: POST
+### Set the states of video labels
+This call is only available for researchers with valid user tokens. Any previously determined label state will be overwritten.
+- Path:
+  - **/api/v1/set_label_state**
+- Available methods:
+  - POST
 - Required fields:
   - "data": a list of json with video_id (returned by the /v1/get_batch) and label state (documented in the label_state_machine function in [this file](back-end/www/application.py))
   - "user_token": from /api/v1/login
@@ -506,11 +518,15 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### /api/v1/get_pos_labels, /api/v1/get_neg_labels
-Get videos with positive or negative labels. For /api/v1/get_pos_labels, you can also query videos that were labeled positive by a user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
-- Available methods: GET, POST
+### Get videos with positive or negative labels
+When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
+- Paths:
+  - **/api/v1/get_pos_labels**
+  - **/api/v1/get_neg_labels**
+- Available methods:
+  - GET, POST
 - Optional fields:
-  - "user_id": obtained from the decoded user_token, which is a JWT (JSON Web Token)
+  - "user_id": obtained by decoding the user_token JWT
   - "page_number": default to 1
   - "page_size": default to 16, maximum 1000
   - "user_token": from /api/v1/login
@@ -535,3 +551,12 @@ curl http://localhost:5000/api/v1/get_pos_labels
 curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
 curl http://localhost:5000/api/v1/get_neg_labels
 ```
+### Get videos with other types of labels or all labels
+- Paths:
+  - **/api/v1/get_pos_gold_labels**
+  - **/api/v1/get_neg_gold_labels**
+  - **/api/v1/get_pos_labels_by_researcher**
+  - **/api/v1/get_neg_labels_by_researcher**
+  - **/api/v1/get_partial_labels**
+  - **/api/v1/get_bad_labels**
+  - **/api/v1/get_all_labels**
