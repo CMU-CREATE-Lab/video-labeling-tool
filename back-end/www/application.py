@@ -555,17 +555,18 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
             e = InvalidUsage("Permission denied", status_code=403)
             return handle_invalid_usage(e)
     is_admin = True if user_jwt is not None and (user_jwt["client_type"] == 0 or user_jwt["client_type"] == 1) else False
+    is_researcher = True if user_jwt is not None and user_jwt["client_type"] == 0 else False
     if user_id is None:
         if labels is None and is_admin:
             return jsonify_videos(Video.query.all(), is_admin=True)
         else:
             q = get_video_query(labels, page_number, page_size, use_admin_label_state)
-            if user_jwt is not None and user_jwt["client_type"] != 0: # ignore researcher
+            if not is_researcher: # ignore researcher
                 add_video_views(q.items, user_jwt, query_type=0)
             return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
     else:
-        q = get_pos_video_query_by_user_id(user_id, page_number, page_size, user_jwt["client_type"])
-        if user_jwt is not None and user_jwt["client_type"] != 0: # ignore researcher
+        q = get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researcher)
+        if not is_researcher: # ignore researcher
             add_video_views(q.items, user_jwt, query_type=1)
         # We need to set is_admin to True here because we want to show user agreements in the data
         return jsonify_videos(q.items, total=q.total, is_admin=True)
@@ -578,7 +579,7 @@ def add_video_views(videos, user_jwt, query_type=None):
     for v in videos:
         # If connection_id is -1, this means that the connection is from other app, not the current app
         # We do not want to add this case to the view table
-        if user_jwt["connection_id"] != -1:
+        if user_jwt is not None and user_jwt["connection_id"] != -1:
             add_view(connection_id=user_jwt["connection_id"], video_id=v.id, query_type=query_type)
 
 """
@@ -607,9 +608,9 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
 Get video query from the database by user id
 (exclude gold standards)
 """
-def get_pos_video_query_by_user_id(user_id, page_number, page_size, client_type):
+def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researcher):
     page_size = max_page_size if page_size > max_page_size else page_size
-    if client_type == 0: # researcher
+    if is_researcher: # researcher
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
     else:
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
