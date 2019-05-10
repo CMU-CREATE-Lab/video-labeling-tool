@@ -729,19 +729,18 @@ The first bit from the left indicates if the data is useful (1: useful, 0: disca
 The second bit from the left indicates if the data has discord (1: has discord, 0: no discord)
 The rest of the bits indicates positve (1) or negative (0) labels
 For example, if a layperson labels 0, will attach "0" to the current state
-Another example, if an expert labels 1, will attach "11" to the current state
     0b101111 (47) : pos (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
     0b100000 (32) : neg (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
     0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
-    0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10111
+    0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert) -> 0b10111
     0b1001 -> 0b11
     0b1010 -> 0b11
     0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert) -> 0b10000
-    0b1111 (15) : medium pos (has discord, verified by 1 expert) [TERMINAL STATE]
-    0b1100 (12) : medium neg (has discord, verified by 1 expert) [TERMINAL STATE]
+    0b1111 (15) : medium pos (has discord, verified by 1 expert) [NOT USED] [TERMINAL STATE]
+    0b1100 (12) : medium neg (has discord, verified by 1 expert) [NOT USED] [TERMINAL STATE]
     0b111 : weak pos (has discord, verified by 1 layperson/amateur) -> 0b10011
     0b110 : weak neg (has discord, verified by 1 layperson/amateur) -> 0b10100
     0b101 (5) : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
@@ -752,6 +751,9 @@ Another example, if an expert labels 1, will attach "11" to the current state
     -2 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
 Notation "->" means that the state is merged to another state
 For consistency, we always use -1 to indicate 0b10, the initial state that has no data
+
+[Change on May 10, 2019] For simplicity, experts now no longer add "00" or "11" to the label
+(Labels made by experts had higher weights than the ones made by laypeople/amateurs)
 """
 def label_state_machine(s, label, client_type):
     next_s = None
@@ -759,6 +761,8 @@ def label_state_machine(s, label, client_type):
     if client_type == 0:
         if label == 0b10111: next_s = 0b10111 # strong pos
         elif label == 0b10000: next_s = 0b10000 # strong neg
+        elif label == 0b10011: next_s = 0b10011 # weak pos
+        elif label == 0b10100: next_s = 0b10100 # weak neg
         elif label == 0b101111: next_s = 0b101111 # pos gold standard
         elif label == 0b100000: next_s = 0b100000 # neg gold standard
         elif label == 1: next_s = 0b10111 # strong pos
@@ -770,20 +774,7 @@ def label_state_machine(s, label, client_type):
         undefined_labels = [0b101, 0b100, 0b11, -1]
         if s not in undefined_labels: return None
     # Experts, amateurs, and laypeople
-    if client_type == 1: # experts
-        if s == -1: # 0b10 no data, no discord
-            if label == 1: next_s = 0b10111 # 0b1011 strong pos
-            elif label == 0: next_s = 0b10000 # 0b1000 strong neg
-        elif s == 0b11: # no data, has discord
-            if label == 1: next_s = 0b1111 # medium pos
-            elif label == 0: next_s = 0b1100 # medium neg
-        elif s == 0b100: # maybe neg
-            if label == 1: next_s = 0b10011 # weak pos
-            elif label == 0: next_s = 0b10000 # strong neg
-        elif s == 0b101: # maybe pos
-            if label == 1: next_s = 0b10111 # strong pos
-            elif label == 0: next_s = 0b10100 # weak neg
-    elif client_type == 2 or client_type == 3: # laypeople and amateurs
+    if client_type in [1, 2, 3]: # laypeople, amateurs, and experts
         if s == -1: # 0b10 no data, no discord
             if label == 1: next_s = 0b101 # maybe pos
             elif label == 0: next_s = 0b100 # maybe neg
