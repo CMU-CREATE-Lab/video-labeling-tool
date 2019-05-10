@@ -77,8 +77,13 @@
   <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
     <p id="sign-in-text">Sign in to track your personal achievements.</p>
     <div id="hello-text">
-      <p>Hi <span id="user-name-text"></span>, thank you for signing in with Google.</p>
-      <p>Your score (number of labeled videos) is: <span id="user-score-text"></span></p>
+      <p>
+        Hi <span id="user-name-text"></span>, thank you for signing in.
+        Your user ID is <span id="user-id-text"></span>.
+      </p>
+      <p>
+        Your score is <span id="user-score-text"></span>, which is the number of videos that you labeled reliably.
+      </p>
     </div>
     <div id="google-sign-in-button" class="g-signin2"></div>
     <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>

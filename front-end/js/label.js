@@ -63,6 +63,7 @@
 
   function onUserIdChangeSuccess(new_user_id) {
     setReviewLink(new_user_id);
+    google_account_dialog.updateUserId(new_user_id);
     if (is_first_time) {
       $next = $("#next");
       $next.on("click", function () {
