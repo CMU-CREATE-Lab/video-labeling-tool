@@ -133,7 +133,7 @@ class Video(db.Model):
     # (label_state_admin is for admin researcher, client type 0)
     label_state = db.Column(db.Integer, nullable=False, default=-1, index=True)
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
-    # The most recent epochtime that the label is updated
+    # The most recent epochtime that the label state is updated
     label_update_time = db.Column(db.Integer)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
