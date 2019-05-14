@@ -605,8 +605,8 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
         else:
             # Exclude gold standards for normal request
             q = Video.query.filter(and_(Video.label_state==labels[0], Video.label_state_admin.notin_((0b101111, 0b100000))))
+    q = q.order_by(desc(Video.label_update_time))
     if page_number is not None and page_size is not None:
-        q = q.order_by(desc(Video.label_update_time))
         q = q.paginate(page_number, page_size, False)
     return q
 
@@ -620,6 +620,7 @@ def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researche
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
     else:
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
+    q = q.order_by(desc(Video.label_update_time))
     return q.from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
 
 """
