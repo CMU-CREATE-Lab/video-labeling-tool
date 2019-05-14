@@ -11,7 +11,7 @@ from flask import Flask, render_template, jsonify, request, abort, g, make_respo
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from sqlalchemy import func, and_, or_, not_, MetaData
+from sqlalchemy import func, and_, or_, not_, MetaData, desc
 import numpy as np
 import time
 import jwt
@@ -133,12 +133,14 @@ class Video(db.Model):
     # (label_state_admin is for admin researcher, client type 0)
     label_state = db.Column(db.Integer, nullable=False, default=-1, index=True)
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
+    # The most recent epochtime that the label is updated
+    label_update_time = db.Column(db.Integer)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
     view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin)
+        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r, label_update_time=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin, self.label_update_time)
 
 """
 The class for the user table
@@ -355,7 +357,7 @@ def get_batch():
     # Query videos (active learning or random sampling)
     is_admin = True if user_jwt["client_type"] == 0 else False
     video_batch = query_video_batch(user_jwt["user_id"], use_admin_label_state=is_admin)
-    if len(video_batch) < batch_size:
+    if video_batch is None or len(video_batch) < batch_size:
         return make_response("", 204)
     else:
         if is_admin:
@@ -604,6 +606,7 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
             # Exclude gold standards for normal request
             q = Video.query.filter(and_(Video.label_state==labels[0], Video.label_state_admin.notin_((0b101111, 0b100000))))
     if page_number is not None and page_size is not None:
+        q = q.order_by(desc(Video.label_update_time))
         q = q.paginate(page_number, page_size, False)
     return q
 
@@ -702,8 +705,9 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
         for v in labels:
             v["user_id"] = user_id
             v["batch_id"] = batch_id
-            add_label(**v)
+            label = add_label(**v)
             video = video_batch_hashed[v["video_id"]]
+            video.label_update_time = label.time
             if client_type == 0: # admin researcher
                 next_s = label_state_machine(video.label_state_admin, v["label"], client_type)
             else: # normal user
