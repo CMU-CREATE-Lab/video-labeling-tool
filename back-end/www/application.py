@@ -115,7 +115,7 @@ class Video(db.Model):
     # The file name stored in the disk
     file_name = db.Column(db.String(255), unique=True, nullable=False)
     # The starting and ending epochtime of the video
-    start_time = db.Column(db.Integer, nullable=False) 
+    start_time = db.Column(db.Integer, nullable=False)
     end_time = db.Column(db.Integer, nullable=False)
     # Width, height, and scale of the video
     # Scale is used for computing a point in the video relative to the large panorama
@@ -620,7 +620,7 @@ def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researche
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
     else:
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
-    q = q.from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111)
+    q = q.from_self(Video).join(Video).distinct().filter(Video.label_state_admin!=0b101111)
     q = q.order_by(desc(Video.label_update_time))
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
