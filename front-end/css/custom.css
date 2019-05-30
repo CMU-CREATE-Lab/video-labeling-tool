@@ -40,7 +40,15 @@ body,
   display: none;
 }
 
+.intro-text {
+  display: none;
+}
+
 .admin-control {
+  display: none;
+}
+
+.community-control {
   display: none;
 }
 

@@ -59,7 +59,7 @@
     // Get the user id from the server
     function login(post_json, callback) {
       callback = safeGet(callback, {});
-      util.postJSON(api_url_root + "login", JSON.stringify(post_json), {
+      util.postJSON(api_url_root + "login", post_json, {
         success: function (data) {
           if (typeof callback["success"] === "function") callback["success"](data);
         },
@@ -75,9 +75,9 @@
     // Get the json file that contains image links
     function getVideoBatch(callback) {
       callback = safeGet(callback, {});
-      util.postJSON(api_url_root + "get_batch", JSON.stringify({
+      util.postJSON(api_url_root + "get_batch", {
         user_token: user_token,
-      }), {
+      }, {
         success: function (data) {
           if (typeof callback["success"] === "function") callback["success"](data);
         },
@@ -115,11 +115,11 @@
       if (labels.length == 0 || ignore_labels) {
         if (typeof callback["success"] === "function") callback["success"]();
       } else {
-        util.postJSON(api_url_root + "send_batch", JSON.stringify({
+        util.postJSON(api_url_root + "send_batch", {
           video_token: video_token,
           user_token: user_token,
           data: labels
-        }), {
+        }, {
           success: function (data) {
             if (typeof callback["success"] === "function") callback["success"](data);
           },
