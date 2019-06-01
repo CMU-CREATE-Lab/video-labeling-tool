@@ -1,4 +1,4 @@
-#BUG: when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
+#TODO: fix the bug when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: how to promote the client to a different rank when it is changed, and invalidate previous user tokens with different permissions?
 #   (need to add a table to record the promotion history)
@@ -453,12 +453,12 @@ def get_pos_labels():
     return get_video_labels(pos_labels, allow_user_id=True)
 
 """
-Get videos with negative labels
+Get videos with negative labels (only admin can use this call)
 """
 neg_labels = [0b10000, 0b1100, 0b10100]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    return get_video_labels(neg_labels)
+    return get_video_labels(neg_labels, only_admin=True)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
@@ -491,6 +491,15 @@ Get videos with negative labels, exclude gold standard labels (only admin can us
 @app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
 def get_neg_labels_by_researcher():
     return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get videos with insufficient user-provided positive labels
+This type of label will only be set by citizens
+"""
+maybe_pos_labels = [0b101]
+@app.route("/api/v1/get_maybe_pos_labels", methods=["POST"])
+def get_maybe_pos_labels():
+    return get_video_labels(maybe_pos_labels)
 
 """
 Get videos with insufficient user-provided labels (only admin can use this call)

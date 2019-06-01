@@ -1,13 +1,13 @@
 /*
- * TODO: wording check with Paul
+ * TODO: add a playback timeline bar to show the video playback time
  * TODO: add a link back to time machine viewer on the labeling page (also gallery page)
  * TODO: design user feedback system after labeling a batch (e.g., inform performance, correct or wrong labels for gold standards)
+ * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
+ * TODO: add interactive tutorial
  * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
  * TODO: add a leaderboard for showing user id and scores
- * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: if the user made too many bad batches, ask the user to retake the tutorial
- * TODO: remove google-signin-client_id meta name from the index.html
- * TODO: add a playback timeline bar to show the video playback time
+ * TODO: wording check with Paul
  * TODO: allow users to share the badge with the achievement on social media
  * TODO: as users gain enough scores, advance them to the harder mode
  * - laypeople mode: select videos that have smoke

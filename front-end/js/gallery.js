@@ -1,8 +1,3 @@
-/*
- * TODO: add a button for admins (researchers + experts) to download user token for scrapping data
- * TODO: add a legend to indicate Y, N, and ? (instead of using text)
- */
-
 (function () {
   "use strict";
 
@@ -143,9 +138,7 @@
       if ([19, 15, 23, 47].indexOf(s) != -1) {
         $i.text("Y").addClass("custom-text-primary-dark-theme");
       } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i.text("N").addClass("custom-text-danger-dark-theme");
-      } else {
-        $i.text("?").addClass("custom-text-info-dark-theme");
+        $i.text("N").addClass("custom-text-info-dark-theme");
       }
     }
     $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
@@ -376,7 +369,7 @@
   function setVideoTypeText(method) {
     var $s = $("#video-type-text");
     if (method == "get_pos_labels") {
-      $s.text("community-labeled videos with smoke");
+      $s.text("community-labeled videos with smoke by multiple users");
     } else if (method == "get_neg_labels") {
       $s.text("community-labeled videos with no smoke");
     } else if (method == "get_pos_labels_by_researcher") {
@@ -391,6 +384,8 @@
       $s.text("partially labeled videos");
     } else if (api_url_path_get == "get_bad_labels") {
       $s.text("videos with bad labels");
+    } else if (api_url_path_get == "get_maybe_pos_labels") {
+      $s.text("community-labeled videos that maybe have smoke");
     }
   }
 
