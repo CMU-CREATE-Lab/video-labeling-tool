@@ -369,9 +369,9 @@
   function setVideoTypeText(method) {
     var $s = $("#video-type-text");
     if (method == "get_pos_labels") {
-      $s.text("community-labeled videos with smoke by multiple users");
+      $s.text("community-labeled videos with smoke, confirmed by multiple users");
     } else if (method == "get_neg_labels") {
-      $s.text("community-labeled videos with no smoke");
+      $s.text("community-labeled videos with no smoke, confirmed by multiple users");
     } else if (method == "get_pos_labels_by_researcher") {
       $s.text("researcher-labeled videos with smoke");
     } else if (method == "get_neg_labels_by_researcher") {
@@ -381,11 +381,11 @@
     } else if (api_url_path_get == "get_neg_gold_labels") {
       $s.text("researcher-labeled gold standards with no smoke");
     } else if (api_url_path_get == "get_partial_labels") {
-      $s.text("partially labeled videos");
+      $s.text("partially labeled videos that maybe have or not have smoke");
     } else if (api_url_path_get == "get_bad_labels") {
-      $s.text("videos with bad labels");
+      $s.text("videos with bad labels, marked by researchers");
     } else if (api_url_path_get == "get_maybe_pos_labels") {
-      $s.text("community-labeled videos that maybe have smoke");
+      $s.text("community-labeled videos that maybe have smoke (not confirmed by others)");
     }
   }
 
