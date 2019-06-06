@@ -44,8 +44,15 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
+            <p class="text no-top-margin no-bottom-margin">
+              The <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> developed <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_bank">this tool</a> to engage citizens in <span class="custom-text-info-dark-theme">labeling smoke videos</span>, which are obtained from our Pittsburgh <a href="http://mon.createlab.org/" target="_bank">Mon Valley monitoring camera network</a>.
+              With sufficient labeled videos and state-of-the-art artificial intelligence, we aim to train a computer system that can detect smoke emissions automatically.
+            </p>
+            <div class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
             <p class="text no-top-margin">
-              This tool is developed by the <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> for <span class="custom-text-info-dark-theme">labeling smoke</span> from a batch of short air quality monitoring videos.
+              Smoke disappears slower and has unclear edges when compared to steam.
+              Smoke can also have various opacities.
+              High-opacity smoke can block most of its background.
               Here are examples that show <span class="custom-text-info-dark-theme">high opacity smoke</span>.
             </p>
           </div>
@@ -75,7 +82,8 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
-              Here are examples that show <span class="custom-text-info-dark-theme">low opacity smoke</span>.
+              For low-opacity smoke, its background is mostly visible.
+              Here are examples that show <span class="custom-text-info-dark-theme">low opacity smoke</span>, which also <span class="custom-text-info-dark-theme">needs to be identified</span>.
             </p>
           </div>
         </div>
@@ -104,6 +112,8 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
+              Steam disappears faster and has sharp edges when compared to smoke.
+              Steam also has extremely high opacity, which makes its background not visible.
               Here are examples that show <span class="custom-text-danger-dark-theme">mainly steam</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
             </p>
           </div>
@@ -133,7 +143,7 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
-              Here are examples that show <span class="custom-text-danger-dark-theme">bad weather</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
+              Various bad weather conditions can affect the camera view. Here are examples that show <span class="custom-text-danger-dark-theme">bad weather</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
             </p>
           </div>
         </div>

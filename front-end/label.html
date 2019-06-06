@@ -58,7 +58,8 @@
               Click to select videos that <span class="custom-text-info-dark-theme">have smoke</span>.
               Click again to deselect.
               <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
-              Several videos with known answers are randomly placed, and your scores are evaluated based on them.
+              Several videos with known answers are randomly placed, and your scores for each submission are evaluated based on them.
+              Your current score can be found on the "Account" tab at the top right.
             </p>
           </div>
         </div>
@@ -66,7 +67,7 @@
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
             <div class="control-group add-top-margin">
-              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Keep Going</span></button>
+              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Submit and Continue</span></button>
               <a id="review" class="custom-button-flat large stretch-on-mobile" href=""><img src="img/collection.png"><span>My Collection</span></a>
             </div>
           </div>
@@ -77,8 +78,13 @@
   <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
     <p id="sign-in-text">Sign in to track your personal achievements.</p>
     <div id="hello-text">
-      <p>Hi <span id="user-name-text"></span>, thank you for signing in with Google.</p>
-      <p>Your score (number of labeled videos) is: <span id="user-score-text"></span></p>
+      <p>
+        Hi <span id="user-name-text"></span>, thank you for signing in.
+        Your user ID is <span id="user-id-text"></span>.
+      </p>
+      <p>
+        Your score is <span id="user-score-text"></span>, which is the number of videos that you labeled reliably.
+      </p>
     </div>
     <div id="google-sign-in-button" class="g-signin2"></div>
     <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>

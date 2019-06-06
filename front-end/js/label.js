@@ -49,10 +49,6 @@
     });
   }
 
-  function setReviewLink(user_id) {
-    $("#review").prop("href", "gallery.html" + "?user_id=" + user_id);
-  }
-
   function printServerErrorMsg(xhr) {
     console.error("Server respond: " + JSON.stringify(xhr.responseJSON));
   }
@@ -62,7 +58,8 @@
   }
 
   function onUserIdChangeSuccess(new_user_id) {
-    setReviewLink(new_user_id);
+    $("#review").prop("href", "gallery.html" + "?user_id=" + new_user_id);
+    google_account_dialog.updateUserId(new_user_id);
     if (is_first_time) {
       $next = $("#next");
       $next.on("click", function () {
@@ -122,7 +119,7 @@
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
         google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
-          // If signed in, will be handled by the callback function of initGoogleSignIn()
+          // If signed in, will be handled by the callback function of initGoogleSignIn() in the GoogleAccountDialog object
           if (!is_signed_in) {
             video_labeling_tool.updateUserIdByClientId(client_id, {
               success: function (obj) {

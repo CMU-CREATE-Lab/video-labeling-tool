@@ -20,6 +20,7 @@
     //
     // Privileged methods
     //
+
     // Safely get the value from a variable, return a default value if undefined
     var safeGet = function (v, default_val) {
       if (typeof default_val === "undefined") default_val = "";
@@ -27,12 +28,8 @@
     };
     this.safeGet = safeGet;
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    // Public methods
-    //
     // Get the the root url of the API
-    this.getRootApiUrl = function () {
+    var getRootApiUrl = function () {
       var root_url;
       var url_hostname = window.location.hostname;
       var is_localhost = url_hostname.indexOf("localhost");
@@ -49,6 +46,12 @@
       }
       return root_url;
     };
+    this.getRootApiUrl = getRootApiUrl;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Public methods
+    //
 
     // Get the the Google Analytics id
     this.getGoogleAnalyticsId = function () {
@@ -74,7 +77,7 @@
       $.ajax({
         url: url,
         type: "POST",
-        data: data,
+        data: JSON.stringify(data),
         contentType: "application/json",
         dataType: "json",
         success: function (data) {
@@ -82,6 +85,9 @@
         },
         error: function (xhr) {
           if (typeof callback["error"] === "function") callback["error"](xhr);
+        },
+        complete: function () {
+          if (typeof callback["complete"] === "function") callback["complete"]();
         }
       });
     };
@@ -103,6 +109,37 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    };
+
+    // Read the payload in a JWT
+    this.getJwtPayload = function (jwt) {
+      return JSON.parse(window.atob(jwt.split('.')[1]));
+    };
+
+    // Login to the smoke labeling tool
+    this.login = function (post_json, callback) {
+      callback = safeGet(callback, {});
+      $.ajax({
+        url: getRootApiUrl() + "login",
+        type: "POST",
+        data: JSON.stringify(post_json),
+        contentType: "application/json",
+        dataType: "json",
+        success: function (data) {
+          if (typeof callback["success"] === "function") callback["success"](data);
+        },
+        error: function (xhr) {
+          if (typeof callback["error"] === "function") callback["error"](xhr);
+        },
+        complete: function () {
+          if (typeof callback["complete"] === "function") callback["complete"]();
+        }
+      });
+    };
+
+    // Check if a string contains a substring
+    this.hasSubString = function (str, sub_str) {
+      return str.indexOf(sub_str) !== -1;
     };
   };
 

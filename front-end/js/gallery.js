@@ -1,8 +1,3 @@
-/*
- * TODO: add a button for admins (researchers + experts) to download user token for scrapping data
- * TODO: add a legend to indicate Y, N, and ? (instead of using text)
- */
-
 (function () {
   "use strict";
 
@@ -131,8 +126,8 @@
     if (typeof user_id === "undefined") {
       if (is_admin) {
         var $i = $item.find("i").removeClass();
-        var label_admin = safeGet(label_state_map[v["label_state_admin"]], "Undefined");
-        var label = safeGet(label_state_map[v["label_state"]], "Undefined");
+        var label_admin = util.safeGet(label_state_map[v["label_state_admin"]], "Undefined");
+        var label = util.safeGet(label_state_map[v["label_state"]], "Undefined");
         $($i.get(0)).text(v["id"] + ": " + label_admin).addClass("custom-text-info-dark-theme");
         $($i.get(1)).text("Citizen: " + label).addClass("custom-text-info-dark-theme");
         $item.find("select").data("v", v).val("default");
@@ -143,9 +138,7 @@
       if ([19, 15, 23, 47].indexOf(s) != -1) {
         $i.text("Y").addClass("custom-text-primary-dark-theme");
       } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i.text("N").addClass("custom-text-danger-dark-theme");
-      } else {
-        $i.text("?").addClass("custom-text-info-dark-theme");
+        $i.text("N").addClass("custom-text-info-dark-theme");
       }
     }
     $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
@@ -179,11 +172,6 @@
   }
 
   function initPagination() {
-    if (typeof user_id === "undefined" && is_admin) {
-      $(".intro-text").hide();
-      $(".admin-text").show();
-      $(".admin-control").css("display", "flex");
-    }
     $page_nav = $("#page-navigator");
     $page_control = $("#page-control");
     $page_nav.pagination({
@@ -259,26 +247,6 @@
     });
   }
 
-  function login(post_json, callback) {
-    callback = safeGet(callback, {});
-    $.ajax({
-      url: api_url_root + "login",
-      type: "POST",
-      data: JSON.stringify(post_json),
-      contentType: "application/json",
-      dataType: "json",
-      success: function (data) {
-        if (typeof callback["success"] === "function") callback["success"](data);
-      },
-      error: function (xhr) {
-        if (typeof callback["error"] === "function") callback["error"](xhr);
-      },
-      complete: function () {
-        if (typeof callback["complete"] === "function") callback["complete"]();
-      }
-    });
-  }
-
   function setLabelState(labels, callback) {
     $.ajax({
       url: api_url_root + "set_label_state",
@@ -301,10 +269,6 @@
     });
   }
 
-  function safeGet(v, default_val) {
-    return util.safeGet(v, default_val);
-  }
-
   // Read the payload in a JWT
   function getJwtPayload(jwt) {
     return JSON.parse(window.atob(jwt.split('.')[1]));
@@ -321,7 +285,7 @@
             console.log(admin_marked_item["data"]);
             var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
-            var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
+            var txt = v_id + ": " + util.safeGet(label_state_map[v_label], "Undefined");
             $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
           "error": function () {
@@ -380,6 +344,51 @@
     });
   }
 
+  function onLoginSuccess(data) {
+    user_token = data["user_token"];
+    user_token_for_other_app = data["user_token_for_other_app"];
+    var payload = getJwtPayload(user_token);
+    var client_type = payload["client_type"];
+    var desired_href_review = "gallery.html" + "?user_id=" + payload["user_id"];
+    $("#review-community").prop("href", desired_href_review);
+    $("#review-admin").prop("href", desired_href_review);
+    is_admin = (client_type == 0 || client_type == 1) ? true : false;
+    is_researcher = client_type == 0 ? true : false;
+    if (is_admin) {
+      $(".admin-text").show();
+      $(".admin-control").css("display", "flex");
+    } else {
+      $(".community-control").css("display", "flex");
+    }
+  }
+
+  function onLoginComplete() {
+    initPagination();
+  }
+
+  function setVideoTypeText(method) {
+    var $s = $("#video-type-text");
+    if (method == "get_pos_labels") {
+      $s.text("community-labeled videos with smoke, confirmed by multiple users");
+    } else if (method == "get_neg_labels") {
+      $s.text("community-labeled videos with no smoke, confirmed by multiple users");
+    } else if (method == "get_pos_labels_by_researcher") {
+      $s.text("researcher-labeled videos with smoke");
+    } else if (method == "get_neg_labels_by_researcher") {
+      $s.text("researcher-labeled videos with no smoke");
+    } else if (api_url_path_get == "get_pos_gold_labels") {
+      $s.text("researcher-labeled gold standards with smoke");
+    } else if (api_url_path_get == "get_neg_gold_labels") {
+      $s.text("researcher-labeled gold standards with no smoke");
+    } else if (api_url_path_get == "get_partial_labels") {
+      $s.text("partially labeled videos that maybe have or not have smoke");
+    } else if (api_url_path_get == "get_bad_labels") {
+      $s.text("videos with bad labels, marked by researchers");
+    } else if (api_url_path_get == "get_maybe_pos_labels") {
+      $s.text("community-labeled videos that maybe have smoke (not confirmed by others)");
+    }
+  }
+
   function init() {
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
@@ -389,11 +398,13 @@
     if (typeof method !== "undefined") {
       api_url_path_get = method;
     }
+    setVideoTypeText(method);
     if (typeof user_id !== "undefined") {
       api_url_path_get += "?user_id=" + user_id;
-      $(".intro-text").hide();
       $(".user-text").show();
-    };
+    } else {
+      $(".intro-text").show();
+    }
     initDownloadButton();
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
       no_ui: true
@@ -404,34 +415,18 @@
       ready: function (client_id) {
         google_account_dialog.silentSignInWithGoogle(function (is_signed_in, google_user) {
           if (is_signed_in) {
-            login({
+            util.login({
               google_id_token: google_user.getAuthResponse().id_token
             }, {
-              success: function (data) {
-                user_token = data["user_token"];
-                user_token_for_other_app = data["user_token_for_other_app"];
-                var client_type = getJwtPayload(user_token)["client_type"];
-                is_admin = (client_type == 0 || client_type == 1) ? true : false;
-                is_researcher = client_type == 0 ? true : false;
-              },
-              complete: function () {
-                initPagination();
-              }
+              success: onLoginSuccess,
+              complete: onLoginComplete
             });
           } else {
-            login({
+            util.login({
               client_id: client_id
             }, {
-              success: function (data) {
-                user_token = data["user_token"];
-                user_token_for_other_app = data["user_token_for_other_app"];
-                var client_type = getJwtPayload(user_token)["client_type"];
-                is_admin = (client_type == 0 || client_type == 1) ? true : false;
-                is_researcher = client_type == 0 ? true : false;
-              },
-              complete: function () {
-                initPagination();
-              }
+              success: onLoginSuccess,
+              complete: onLoginComplete
             });
           }
         });

@@ -1,4 +1,4 @@
-#BUG: when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
+#TODO: fix the bug when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: how to promote the client to a different rank when it is changed, and invalidate previous user tokens with different permissions?
 #   (need to add a table to record the promotion history)
@@ -11,7 +11,7 @@ from flask import Flask, render_template, jsonify, request, abort, g, make_respo
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
-from sqlalchemy import func, and_, or_, not_, MetaData
+from sqlalchemy import func, and_, or_, not_, MetaData, desc
 import numpy as np
 import time
 import jwt
@@ -115,7 +115,7 @@ class Video(db.Model):
     # The file name stored in the disk
     file_name = db.Column(db.String(255), unique=True, nullable=False)
     # The starting and ending epochtime of the video
-    start_time = db.Column(db.Integer, nullable=False) 
+    start_time = db.Column(db.Integer, nullable=False)
     end_time = db.Column(db.Integer, nullable=False)
     # Width, height, and scale of the video
     # Scale is used for computing a point in the video relative to the large panorama
@@ -133,12 +133,14 @@ class Video(db.Model):
     # (label_state_admin is for admin researcher, client type 0)
     label_state = db.Column(db.Integer, nullable=False, default=-1, index=True)
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
+    # The most recent epochtime that the label state is updated
+    label_update_time = db.Column(db.Integer)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
     view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin)
+        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r, label_update_time=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin, self.label_update_time)
 
 """
 The class for the user table
@@ -355,7 +357,7 @@ def get_batch():
     # Query videos (active learning or random sampling)
     is_admin = True if user_jwt["client_type"] == 0 else False
     video_batch = query_video_batch(user_jwt["user_id"], use_admin_label_state=is_admin)
-    if len(video_batch) < batch_size:
+    if video_batch is None or len(video_batch) < batch_size:
         return make_response("", 204)
     else:
         if is_admin:
@@ -451,12 +453,12 @@ def get_pos_labels():
     return get_video_labels(pos_labels, allow_user_id=True)
 
 """
-Get videos with negative labels
+Get videos with negative labels (only admin can use this call)
 """
 neg_labels = [0b10000, 0b1100, 0b10100]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    return get_video_labels(neg_labels)
+    return get_video_labels(neg_labels, only_admin=True)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
@@ -489,6 +491,15 @@ Get videos with negative labels, exclude gold standard labels (only admin can us
 @app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
 def get_neg_labels_by_researcher():
     return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
+
+"""
+Get videos with insufficient user-provided positive labels
+This type of label will only be set by citizens
+"""
+maybe_pos_labels = [0b101]
+@app.route("/api/v1/get_maybe_pos_labels", methods=["POST"])
+def get_maybe_pos_labels():
+    return get_video_labels(maybe_pos_labels)
 
 """
 Get videos with insufficient user-provided labels (only admin can use this call)
@@ -603,6 +614,7 @@ def get_video_query(labels, page_number, page_size, use_admin_label_state):
         else:
             # Exclude gold standards for normal request
             q = Video.query.filter(and_(Video.label_state==labels[0], Video.label_state_admin.notin_((0b101111, 0b100000))))
+    q = q.order_by(desc(Video.label_update_time))
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
     return q
@@ -617,7 +629,11 @@ def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researche
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
     else:
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
-    return q.from_self(Video).join(Video).filter(Video.label_state_admin!=0b101111).paginate(page_number, page_size, False)
+    q = q.from_self(Video).join(Video).distinct().filter(Video.label_state_admin!=0b101111)
+    q = q.order_by(desc(Video.label_update_time))
+    if page_number is not None and page_size is not None:
+        q = q.paginate(page_number, page_size, False)
+    return q
 
 """
 Jsonify videos
@@ -702,8 +718,9 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
         for v in labels:
             v["user_id"] = user_id
             v["batch_id"] = batch_id
-            add_label(**v)
+            label = add_label(**v)
             video = video_batch_hashed[v["video_id"]]
+            video.label_update_time = label.time
             if client_type == 0: # admin researcher
                 next_s = label_state_machine(video.label_state_admin, v["label"], client_type)
             else: # normal user
@@ -729,19 +746,18 @@ The first bit from the left indicates if the data is useful (1: useful, 0: disca
 The second bit from the left indicates if the data has discord (1: has discord, 0: no discord)
 The rest of the bits indicates positve (1) or negative (0) labels
 For example, if a layperson labels 0, will attach "0" to the current state
-Another example, if an expert labels 1, will attach "11" to the current state
     0b101111 (47) : pos (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
     0b100000 (32) : neg (gold standard), by reseacher [both INITIAL and TERMINAL STATE]
     0b10111 (23) : strong pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10100 (20) : weak neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10011 (19) : weak pos (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
     0b10000 (16) : strong neg (no discord, by 1 laypeople/amateurs + 1 expert) [TERMINAL STATE]
-    0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert/researcher) -> 0b10111
+    0b1011 : strong pos (no discord, by 2 laypeople/amateurs, or 1 expert) -> 0b10111
     0b1001 -> 0b11
     0b1010 -> 0b11
     0b1000 : strong neg (no discord, by 2 laypeople/amateurs, or 1 expert) -> 0b10000
-    0b1111 (15) : medium pos (has discord, verified by 1 expert) [TERMINAL STATE]
-    0b1100 (12) : medium neg (has discord, verified by 1 expert) [TERMINAL STATE]
+    0b1111 (15) : medium pos (has discord, verified by 1 expert) [NOT USED] [TERMINAL STATE]
+    0b1100 (12) : medium neg (has discord, verified by 1 expert) [NOT USED] [TERMINAL STATE]
     0b111 : weak pos (has discord, verified by 1 layperson/amateur) -> 0b10011
     0b110 : weak neg (has discord, verified by 1 layperson/amateur) -> 0b10100
     0b101 (5) : maybe pos (by 1 layperson/amateur) [TRANSITIONAL STATE]
@@ -752,6 +768,9 @@ Another example, if an expert labels 1, will attach "11" to the current state
     -2 : discarded data, by researchers [both INITIAL and TERMINAL STATE]
 Notation "->" means that the state is merged to another state
 For consistency, we always use -1 to indicate 0b10, the initial state that has no data
+
+[Change on May 10, 2019] For simplicity, experts now no longer add "00" or "11" to the label
+(Labels made by experts had higher weights than the ones made by laypeople/amateurs)
 """
 def label_state_machine(s, label, client_type):
     next_s = None
@@ -759,6 +778,8 @@ def label_state_machine(s, label, client_type):
     if client_type == 0:
         if label == 0b10111: next_s = 0b10111 # strong pos
         elif label == 0b10000: next_s = 0b10000 # strong neg
+        elif label == 0b10011: next_s = 0b10011 # weak pos
+        elif label == 0b10100: next_s = 0b10100 # weak neg
         elif label == 0b101111: next_s = 0b101111 # pos gold standard
         elif label == 0b100000: next_s = 0b100000 # neg gold standard
         elif label == 1: next_s = 0b10111 # strong pos
@@ -770,20 +791,7 @@ def label_state_machine(s, label, client_type):
         undefined_labels = [0b101, 0b100, 0b11, -1]
         if s not in undefined_labels: return None
     # Experts, amateurs, and laypeople
-    if client_type == 1: # experts
-        if s == -1: # 0b10 no data, no discord
-            if label == 1: next_s = 0b10111 # 0b1011 strong pos
-            elif label == 0: next_s = 0b10000 # 0b1000 strong neg
-        elif s == 0b11: # no data, has discord
-            if label == 1: next_s = 0b1111 # medium pos
-            elif label == 0: next_s = 0b1100 # medium neg
-        elif s == 0b100: # maybe neg
-            if label == 1: next_s = 0b10011 # weak pos
-            elif label == 0: next_s = 0b10000 # strong neg
-        elif s == 0b101: # maybe pos
-            if label == 1: next_s = 0b10111 # strong pos
-            elif label == 0: next_s = 0b10100 # weak neg
-    elif client_type == 2 or client_type == 3: # laypeople and amateurs
+    if client_type in [1, 2, 3]: # laypeople, amateurs, and experts
         if s == -1: # 0b10 no data, no discord
             if label == 1: next_s = 0b101 # maybe pos
             elif label == 0: next_s = 0b100 # maybe neg

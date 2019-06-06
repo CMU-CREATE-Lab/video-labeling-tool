@@ -52,32 +52,37 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p class="text intro-text no-top-margin">
-              We greatly appreciate the efforts taken by the community to find smoke emissions from monitoring cameras.
-              These are the <span class="custom-text-info-dark-theme">smoke videos</span> labeled by using this tool.
-            </p>
-            <p class="text user-text no-top-margin">
-              The following smoke videos were identified by you.
-              Symbol <span class="custom-text-info-dark-theme">"?"</span> on the bottom-right corner means that the video has not been confirmed by others.
-              Symbol <span class="custom-text-primary-dark-theme">"Y"</span> and <span class="custom-text-danger-dark-theme">"N"</span> means that others agreed or disagreed with your findings respectively.
-            </p>
-            <p class="text-small-margin admin-text no-top-margin">
+            <p class="text admin-text no-top-margin add-bottom-margin">
               Your log in as a <span class="custom-text-info-dark-theme">researcher or expert</span>.
               The gallery is displayed in the dashboard mode.
-              Download user token from the following "Token" button.
-              You can use the token to get the metadata of labeled videos from API calls documented on <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">the GitHub repository</a>.
+              <a id="download-user-token">Click to download user token</a>.
+              You can use the token to get the metadata of labeled videos from API calls documented on <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">GitHub</a>.
             </p>
+            <p class="text intro-text no-top-margin add-bottom-margin">
+              We greatly appreciate your effort to label smoke emissions.
+              These are the <span class="custom-text-info-dark-theme" id="video-type-text">community-labeled videos with smoke</span>.
+            </p>
+            <p class="text user-text no-top-margin add-bottom-margin">
+              You found the following smoke videos.
+              Symbol <span class="custom-text-primary-dark-theme">"A"</span> and <span class="custom-text-info-dark-theme">"D"</span> on the bottom-right corner means that others <span class="custom-text-primary-dark-theme">agreed</span> or <span class="custom-text-info-dark-theme">disagreed</span> with your findings respectively.
+              Videos that have not been verified by others will not show symbols.
+            </p>
+            <div class="control-group community-control add-bottom-margin">
+              <a class="custom-button-flat" href="?method=get_pos_labels" title="Community-labeled smoke videos, confirmed by multiple users">Have Smoke</a>
+              <a class="custom-button-flat" href="?method=get_maybe_pos_labels" title="Community-labeled videos that maybe have smoke">Maybe Have Smoke</a>
+              <a id="review-community" class="custom-button-flat" href="" title="My collections of smoke videos">My Collection</a>
+            </div>
             <div class="control-group admin-control add-bottom-margin">
-              <a class="custom-button-flat" href="?method=get_pos_labels" title="Positive labels (by community)">P</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels" title="Negative labels (by community)">N</a>
-              <a class="custom-button-flat" href="?method=get_partial_labels" title="Partial labels">?</a>
-              <a class="custom-button-flat" href="?method=get_pos_labels_by_researcher" title="Positive labels (by researcher)">P*</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels_by_researcher" title="Negative labels (by researcher)">N*</a>
-              <a class="custom-button-flat" href="?method=get_pos_gold_labels" title="Gold positive labels">GP*</a>
-              <a class="custom-button-flat" href="?method=get_neg_gold_labels" title="Gold negative labels">GN*</a>
-              <a class="custom-button-flat" href="?method=get_bad_labels" title="Bad labels">!</a>
-              <button id="download-data" class="custom-button-flat" title="Download labels">Data</button>
-              <button id="download-user-token" class="custom-button-flat" title="Download labels">Token</button>
+              <a class="custom-button-flat" href="?method=get_pos_labels" title="Community-labeled videos with smoke">P</a>
+              <a class="custom-button-flat" href="?method=get_neg_labels" title="Community-labeled videos with no smoke">N</a>
+              <a class="custom-button-flat" href="?method=get_pos_labels_by_researcher" title="Researcher-labeled videos with smoke">P*</a>
+              <a class="custom-button-flat" href="?method=get_neg_labels_by_researcher" title="Researcher-labeled videos with no smoke">N*</a>
+              <a class="custom-button-flat" href="?method=get_pos_gold_labels" title="Researcher-labeled gold standards with smoke">GP*</a>
+              <a class="custom-button-flat" href="?method=get_neg_gold_labels" title="Researcher-labeled gold standards with no smoke">GN*</a>
+              <a id="review-admin" class="custom-button-flat" href="" title="My collections of smoke videos">M</a>
+              <a class="custom-button-flat" href="?method=get_partial_labels" title="Partially labeled videos">?</a>
+              <a class="custom-button-flat" href="?method=get_bad_labels" title="Videos with bad labels">!</a>
+              <button id="download-data" class="custom-button-flat" title="download all data">All Data</button>
             </div>
           </div>
         </div>

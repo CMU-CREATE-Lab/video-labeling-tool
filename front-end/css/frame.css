@@ -1,6 +1,6 @@
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
- * Version: v3.4
+ * Version: v3.7
  * This CSS file is for the website frame
  * If you want to keep this template updated, avoid modifying this file
  * Instead, add your own CSS in the index.css
@@ -299,9 +299,15 @@ hr {
   border-radius: 2px;
 }
 
+.adaptive-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 .image-wrap-text {
   float: left;
-  margin: 5px 40px 25px 0
+  margin: 5px 40px 25px 0;
 }
 
 .image-caption {
@@ -454,7 +460,7 @@ ol.publication.A-list li p:before {
 .left-align-content {
   display: flex;
   justify-content: flex-start;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .text-large {
@@ -664,6 +670,11 @@ ol.publication.A-list li p:before {
 
   .menu-items>a {
     display: block;
+  }
+
+  .image-wrap-text {
+    max-width: 100%;
+    margin-bottom: 20px;
   }
 }
 
