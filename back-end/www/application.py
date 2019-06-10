@@ -1,3 +1,5 @@
+#TODO: add the feature for labeling smoke opacity
+#TODO: add the feature for cropping videos to a region
 #TODO: fix the bug when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
 #TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
 #TODO: how to promote the client to a different rank when it is changed, and invalidate previous user tokens with different permissions?

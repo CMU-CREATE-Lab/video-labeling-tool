@@ -1,6 +1,6 @@
 /*
  * TODO: add a playback timeline bar to show the video playback time
- * TODO: add a link back to time machine viewer on the labeling page (also gallery page)
+ * TODO: add a link back to time machine viewer (or a larger video) on the labeling page (also gallery page)
  * TODO: design user feedback system after labeling a batch (e.g., inform performance, correct or wrong labels for gold standards)
  * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: add interactive tutorial
@@ -9,10 +9,14 @@
  * TODO: if the user made too many bad batches, ask the user to retake the tutorial
  * TODO: wording check with Paul
  * TODO: allow users to share the badge with the achievement on social media
+ * TODO: generate PDF certificates for people who have labeled a lot of videos
+ * TODO: add the feature for labeling smoke opacity
+ * TODO: add the feature for cropping videos to a region
+ * TODO: add a compass to show sun direction for each video (when labeling opacity)
  * TODO: as users gain enough scores, advance them to the harder mode
  * - laypeople mode: select videos that have smoke
- * - amateur mode: select smoke opacity (low, medium, high)
- * - expert mode: crop images to a region
+ * - amateur mode: label smoke opacity (low, medium, high)
+ * - expert mode: crop videos to a region
  */
 
 (function () {
