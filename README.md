@@ -314,6 +314,7 @@ Give permissions so that the Certbot and apache can modify the website. This ass
 cd /var/www/
 sudo mkdir html # only run this if the html directory did not exist
 sudo chmod 775 html
+sudo chmod 775 [CLONED_REPOSITORY]
 sudo chgrp www-data html
 sudo chgrp www-data [CLONED_REPOSITORY]
 ```
