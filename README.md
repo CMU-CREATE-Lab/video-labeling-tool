@@ -79,10 +79,15 @@ echo 'export PATH="/usr/local/miniconda3/bin:$PATH"' >> ~/.bash_profile
 echo '. /usr/local/miniconda3/etc/profile.d/conda.sh' >> ~/.bash_profile
 source ~/.bash_profile
 ```
-Clone this repository.
+Clone this repository and set the permission.
 ```sh
 git clone https://github.com/CMU-CREATE-Lab/video-labeling-tool.git
-sudo chown -R $USER video-labeling-tool
+sudo chown -R $USER video-labeling-tool/
+sudo addgroup [group_name]
+sudo usermod -a -G [group_name] [user_name]
+groups [user_name]
+sudo chmod -R 775 video-labeling-tool/
+sudo chgrp [group_name] video-labeling-tool/
 ```
 Create conda environment and install packages. It is important to install pip first inside the newly created conda environment.
 ```sh
