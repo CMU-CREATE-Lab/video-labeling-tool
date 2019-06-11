@@ -285,7 +285,7 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   CustomLog ${APACHE_LOG_DIR}/[FRONT_END_DOMAIN].access.log combined
 </VirtualHost>
 ```
-Use the following if you only want to access the server from an IP address with a port. Remember to tell the apache server to listen to the port number.
+Use the following if you only want to access the server from an IP address with a port (e.g., http://192.168.1.72:8080). Remember to tell the apache server to listen to the port number.
 ```sh
 sudo vim /etc/apache2/sites-available/video-labeling-tool-front-end.conf
 # Add the following lines to this file
