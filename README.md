@@ -323,6 +323,11 @@ sudo chmod 775 [CLONED_REPOSITORY]
 sudo chgrp www-data html
 sudo chgrp www-data [CLONED_REPOSITORY]
 ```
+If other users need to modify this repository, add them to the www-data group.
+```sh
+sudo usermod -a -G www-data [user_name]
+groups [user_name]
+```
 Run the Certbot.
 ```sh
 sudo certbot --apache certonly
