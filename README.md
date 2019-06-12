@@ -87,7 +87,7 @@ sudo addgroup [group_name]
 sudo usermod -a -G [group_name] [user_name]
 groups [user_name]
 sudo chmod -R 775 video-labeling-tool/
-sudo chgrp [group_name] video-labeling-tool/
+sudo chgrp -R [group_name] video-labeling-tool/
 ```
 Create conda environment and install packages. It is important to install pip first inside the newly created conda environment.
 ```sh
@@ -320,8 +320,8 @@ cd /var/www/
 sudo mkdir html # only run this if the html directory did not exist
 sudo chmod 775 html
 sudo chmod 775 [CLONED_REPOSITORY]
-sudo chgrp www-data html
-sudo chgrp www-data [CLONED_REPOSITORY]
+sudo chgrp -R www-data html
+sudo chgrp -R www-data [CLONED_REPOSITORY]
 ```
 If other users need to modify this repository, add them to the www-data group.
 ```sh
