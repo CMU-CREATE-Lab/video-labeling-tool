@@ -12,6 +12,8 @@
   var is_first_time = true;
   var is_video_autoplay_tested = false;
   var ga_tracker;
+  var $sign_in_prompt;
+  var $user_score_container;
 
   function countDown() {
     if (counter == 0) {
@@ -66,10 +68,9 @@
         nextBatch();
       });
       nextBatch();
-      var $account_dialog = google_account_dialog.getDialog();
       google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
         if (!is_signed_in) {
-          $account_dialog.dialog("open");
+          google_account_dialog.getDialog().dialog("open");
         }
       });
       is_first_time = false;
@@ -95,6 +96,8 @@
         video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
+            $sign_in_prompt.hide();
+            $user_score_container.show();
           },
           error: function (xhr) {
             console.error("Error when updating user id by using google token!");
@@ -106,6 +109,8 @@
         video_labeling_tool.updateUserIdByClientId(ga_tracker.getClientId(), {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
+            $sign_in_prompt.show();
+            $user_score_container.hide();
           },
           error: function (xhr) {
             console.error("Error when updating user id when signing out from google!");
@@ -114,6 +119,11 @@
         });
       }
     });
+    $sign_in_prompt = $("#sign-in-prompt");
+    $sign_in_prompt.on("click", function () {
+      google_account_dialog.getDialog().dialog("open");
+    });
+    $user_score_container = $("#user-score-container");
     video_test_dialog = new edaplotjs.VideoTestDialog();
     ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),

@@ -158,6 +158,10 @@ body,
   font-weight: bold;
 }
 
+#user-score-container {
+  display: none;
+}
+
 #google-sign-out-button {
   display: none;
 }

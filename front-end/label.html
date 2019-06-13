@@ -58,8 +58,9 @@
               Click to select videos that <span class="custom-text-info-dark-theme">have smoke</span>.
               Click again to deselect.
               <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
-              Several videos with known answers are randomly placed, and your scores for each submission are evaluated based on them.
-              Your current score can be found on the "Account" tab at the top right.
+              Several videos with known answers are randomly placed, and your scores are evaluated based on them.
+              <a id="sign-in-prompt">Click here to sign in and track your personal achievements.</a>
+              <span id="user-score-container"><span class="custom-text-info-dark-theme">Your current score is <span class="user-score-text">[...]</span></span>, which is the number of videos that you labeled reliably.</span>
             </p>
           </div>
         </div>
@@ -83,7 +84,7 @@
         Your user ID is <span id="user-id-text"></span>.
       </p>
       <p>
-        Your score is <span id="user-score-text"></span>, which is the number of videos that you labeled reliably.
+        Your score is <span class="user-score-text"></span>, which is the number of videos that you labeled reliably.
       </p>
     </div>
     <div id="google-sign-in-button" class="g-signin2"></div>

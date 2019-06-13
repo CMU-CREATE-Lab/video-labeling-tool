@@ -1,8 +1,8 @@
 /*
+ * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: add a playback timeline bar to show the video playback time
  * TODO: add a link back to time machine viewer (or a larger video) on the labeling page (also gallery page)
  * TODO: design user feedback system after labeling a batch (e.g., inform performance, correct or wrong labels for gold standards)
- * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
  * TODO: add interactive tutorial
  * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
  * TODO: add a leaderboard for showing user id and scores

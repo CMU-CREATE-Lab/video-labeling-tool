@@ -48,7 +48,7 @@
       $sign_in_text = $("#sign-in-text");
       $hello_text = $("#hello-text");
       $user_name_text = $("#user-name-text");
-      $user_score_text = $("#user-score-text");
+      $user_score_text = $(".user-score-text");
       $use_id_text = $("#user-id-text");
       $google_sign_out_button = $("#google-sign-out-button");
       $google_sign_in_button = $("#google-sign-in-button");
