@@ -98,7 +98,7 @@
               label: parseInt(label_str)
             }];
             admin_marked_item["select"] = $desired_state_select;
-            admin_marked_item["p"] = $label_state;
+            admin_marked_item["p"] = $label_state_researcher;
             $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_state_map[label_str] + "?");
             $set_label_confirm_dialog.dialog("open");
           });
