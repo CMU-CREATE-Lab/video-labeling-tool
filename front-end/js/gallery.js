@@ -17,7 +17,7 @@
   var $page_next;
   var $page_control;
   var user_id;
-  var is_admin = false;
+  var is_admin = false; // including expert and researcher
   var is_researcher = false;
   var user_token;
   var user_token_for_other_app;
@@ -78,11 +78,16 @@
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
-        // Add the display of label states
+        // Add the display of label states and the dropdown for changing the label states
         var $control = $("<div class='label-control'></div>");
-        var $label_state = $("<p class='text-small-margin'><i></i><i></i></p>");
-        $control.append($label_state);
-        // Add the function for setting label states
+        var $video_id = $("<p class='text-small-margin'><i></i></p>");
+        $control.append($video_id);
+        var $label_state_researcher = $("<p class='text-small-margin'><i></i></p>");
+        $control.append($label_state_researcher);
+        var $label_state_citizen = $("<p class='text-small-margin'><i></i></p>");
+        $control.append($label_state_citizen);
+        var $link_to_viewer = $("<p class='text-small-margin'><a target='_blank'>Link to Viewer</a></p>");
+        $control.append($link_to_viewer);
         if (is_researcher) {
           var $desired_state_select = createLabelStateSelect();
           $desired_state_select.on("change", function () {
@@ -125,11 +130,26 @@
   function updateItem($item, v) {
     if (typeof user_id === "undefined") {
       if (is_admin) {
+        // Update label information
         var $i = $item.find("i").removeClass();
-        var label_admin = util.safeGet(label_state_map[v["label_state_admin"]], "Undefined");
-        var label = util.safeGet(label_state_map[v["label_state"]], "Undefined");
-        $($i.get(0)).text(v["id"] + ": " + label_admin).addClass("custom-text-info-dark-theme");
-        $($i.get(1)).text("Citizen: " + label).addClass("custom-text-info-dark-theme");
+        $($i.get(0)).text("ID: " + v["id"]).addClass("custom-text-info-dark-theme");
+        var label_researcher = util.safeGet(label_state_map[v["label_state_admin"]], "Undefined");
+        $($i.get(1)).text("Scientist: " + label_researcher).addClass("custom-text-info-dark-theme");
+        var label_citizen = util.safeGet(label_state_map[v["label_state"]], "Undefined");
+        $($i.get(2)).text("Citizen: " + label_citizen).addClass("custom-text-info-dark-theme");
+        // Update link
+        var parsed_url = util.parseVars(v["url_part"]);
+        var b = parsed_url["boundsLTRB"];
+        var t = parseInt(parsed_url["startFrame"]) / parseInt(parsed_url["fps"]);
+        t = Math.round(t * 1000) / 1000
+        var parsed_root = parsed_url["root"].split("/");
+        var s = parsed_root[5];
+        var d = parsed_root[6].split(".")[0];
+        var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
+        var $a = $item.find("a").removeClass();
+        console.log(parsed_url);
+        $($a.get(0)).prop("href", href);
+        // Save data to DOM
         $item.find("select").data("v", v).val("default");
       }
     } else {

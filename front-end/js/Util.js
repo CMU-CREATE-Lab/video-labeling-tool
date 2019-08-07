@@ -141,6 +141,25 @@
     this.hasSubString = function (str, sub_str) {
       return str.indexOf(sub_str) !== -1;
     };
+
+    // Parse variables in the format of a hash url string
+    this.parseVars = function (str, keep_null_or_undefined_vars) {
+      var vars = {};
+      if (str) {
+        var keyvals = str.split(/[#?&]/);
+        for (var i = 0; i < keyvals.length; i++) {
+          var keyval = keyvals[i].split('=');
+          vars[keyval[0]] = keyval[1];
+        }
+      }
+      // Delete keys with null/undefined values
+      if (!keep_null_or_undefined_vars) {
+        Object.keys(vars).forEach(function (key) {
+          return (vars[key] == null || key == "") && delete vars[key];
+        });
+      }
+      return vars;
+    };
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////
