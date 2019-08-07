@@ -147,7 +147,6 @@
         var d = parsed_root[6].split(".")[0];
         var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
         var $a = $item.find("a").removeClass();
-        console.log(parsed_url);
         $($a.get(0)).prop("href", href);
         // Save data to DOM
         $item.find("select").data("v", v).val("default");
