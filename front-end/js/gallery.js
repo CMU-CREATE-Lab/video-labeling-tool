@@ -155,9 +155,11 @@
       var $i = $item.find("i").removeClass();
       var s = v["label_state"];
       if ([19, 15, 23, 47].indexOf(s) != -1) {
-        $i.text("Y").addClass("custom-text-primary-dark-theme");
+        $i.text("A").addClass("custom-text-primary-dark-theme");
       } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i.text("N").addClass("custom-text-info-dark-theme");
+        $i.text("D").addClass("custom-text-info-dark-theme");
+      } else {
+        $i.text("");
       }
     }
     $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
