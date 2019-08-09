@@ -203,16 +203,12 @@ class Connection(db.Model):
     client_type = db.Column(db.Integer, nullable=False)
     # The user id in the User table (the user who connected to the server)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    # Current score of the user (User.score)
-    user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
-    # Current raw score of the user (User.raw_score)
-    user_raw_score = db.Column(db.Integer) # null means no information, added on 8/9/2019
     # Relationships
     batch = db.relationship("Batch", backref=db.backref("connection", lazy=True), lazy=True)
     view = db.relationship("View", backref=db.backref("connection", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Connection id=%r time=%r client_type=%r user_id=%r user_score=%r user_raw_score=%r>") % (self.id, self.time, self.client_type, self.user_id, self.user_score, self.user_raw_score)
+        return ("<Connection id=%r time=%r client_type=%r user_id=%r>") % (self.id, self.time, self.client_type, self.user_id)
 
 """
 The class for the issued video batch history table (for tracking video batches)
@@ -941,7 +937,7 @@ def get_user_token_by_client_id(client_id):
     client_type = user.client_type
     user_score = user.score
     user_raw_score = user.raw_score
-    connection = add_connection(user_id=user_id, client_type=client_type, user_score=user_score, user_raw_score=user_raw_score)
+    connection = add_connection(user_id=user_id, client_type=client_type)
     ct = connection.time
     cid = connection.id
     if client_type == -1:
