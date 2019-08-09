@@ -94,12 +94,16 @@
             $user_score_text.text("(researcher)");
           } else {
             if (typeof score !== "undefined" && score !== null) {
-              $user_score_text.text(score);
+              $user_score_text.text(score / 12);
             }
           }
         }
         if (typeof $user_raw_score_text !== "undefined" && typeof raw_score !== "undefined" && raw_score !== null) {
-          $user_raw_score_text.text(raw_score);
+          if (video_labeling_tool.isAdmin()) {
+            $user_raw_score_text.text(raw_score / 16);
+          } else {
+            $user_raw_score_text.text(raw_score / 12);
+          }
         }
       }
     });
