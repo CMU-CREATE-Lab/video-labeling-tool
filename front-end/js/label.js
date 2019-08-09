@@ -14,6 +14,8 @@
   var ga_tracker;
   var $sign_in_prompt;
   var $user_score_container;
+  var $user_score_text;
+  var $user_raw_score_text;
 
   function countDown() {
     if (counter == 0) {
@@ -83,12 +85,22 @@
   }
 
   function init() {
+    $user_score_text = $(".user-score-text");
+    $user_raw_score_text = $(".user-raw-score-text");
     video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container", {
-      on_user_score_update: function (score) {
-        if (video_labeling_tool.isAdmin()) {
-          score = undefined;
+      on_user_score_update: function (score, raw_score) {
+        if (typeof $user_score_text !== "undefined") {
+          if (video_labeling_tool.isAdmin()) {
+            $user_score_text.text("(researcher)");
+          } else {
+            if (typeof score !== "undefined" && score !== null) {
+              $user_score_text.text(score);
+            }
+          }
         }
-        google_account_dialog.updateUserScore(score);
+        if (typeof $user_raw_score_text !== "undefined" && typeof raw_score !== "undefined" && raw_score !== null) {
+          $user_raw_score_text.text(raw_score);
+        }
       }
     });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({

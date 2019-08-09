@@ -47,6 +47,7 @@
     var user_token;
     var this_obj = this;
     var user_score;
+    var user_raw_score;
     var on_user_score_update = settings["on_user_score_update"];
     var is_admin;
 
@@ -318,9 +319,10 @@
     // When sending the current batch of video labels successfully, get a new batch of videos
     function onSendVideoBatchSuccess(data, callback) {
       // Update the user score
-      if (typeof data !== "undefined" && data["data"]["score"]["user"] != null) {
+      if (typeof data !== "undefined") {
         user_score = data["data"]["score"]["user"];
-        if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+        user_raw_score = data["data"]["score"]["raw"];
+        if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score);
       }
       // Get a new batch
       getVideoBatch({
@@ -334,6 +336,17 @@
           if (typeof callback["abort"] === "function") callback["abort"](xhr);
         }
       });
+    }
+
+    // When the user ID is updated successfully
+    function onUserIdUpdateSuccess(data) {
+      user_token = data["user_token"];
+      var user_payload = getJwtPayload(user_token);
+      user_id = user_payload["user_id"];
+      user_score = user_payload["user_score"];
+      user_raw_score = user_payload["user_raw_score"];
+      is_admin = user_payload["client_type"] == 0 ? true : false;
+      if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -365,12 +378,7 @@
         google_id_token: google_id_token
       }, {
         success: function (data) {
-          user_token = data["user_token"];
-          var user_payload = getJwtPayload(user_token);
-          user_id = user_payload["user_id"];
-          user_score = user_payload["user_score"];
-          is_admin = user_payload["client_type"] == 0 ? true : false;
-          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+          onUserIdUpdateSuccess(data);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {
@@ -385,12 +393,7 @@
         client_id: safeGet(new_client_id, util.getUniqueId())
       }, {
         success: function (data) {
-          user_token = data["user_token"];
-          var user_payload = getJwtPayload(user_token);
-          user_id = user_payload["user_id"];
-          user_score = user_payload["user_score"];
-          is_admin = user_payload["client_type"] == 0 ? true : false;
-          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+          onUserIdUpdateSuccess(data);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {

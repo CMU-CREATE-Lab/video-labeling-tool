@@ -212,7 +212,7 @@ class Connection(db.Model):
     view = db.relationship("View", backref=db.backref("connection", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Connection id=%r time=%r client_type=%r user_id=%r user_score=%r user_raw_score=%r>") % (self.id, self.time, self.client_type, self.user_id, self.user_score. self.user_raw_score)
+        return ("<Connection id=%r time=%r client_type=%r user_id=%r user_score=%r user_raw_score=%r>") % (self.id, self.time, self.client_type, self.user_id, self.user_score, self.user_raw_score)
 
 """
 The class for the issued video batch history table (for tracking video batches)

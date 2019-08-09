@@ -18,7 +18,6 @@
     var $sign_in_text;
     var $hello_text;
     var $user_name_text;
-    var $user_score_text;
     var $use_id_text;
     var widgets = new edaplotjs.Widgets();
     var sign_in_success = settings["sign_in_success"];
@@ -48,7 +47,6 @@
       $sign_in_text = $("#sign-in-text");
       $hello_text = $("#hello-text");
       $user_name_text = $("#user-name-text");
-      $user_score_text = $(".user-score-text");
       $use_id_text = $("#user-id-text");
       $google_sign_out_button = $("#google-sign-out-button");
       $google_sign_in_button = $("#google-sign-in-button");
@@ -162,16 +160,6 @@
 
     this.getDialog = function () {
       return $account_dialog;
-    };
-
-    this.updateUserScore = function (score) {
-      if (typeof $user_score_text !== "undefined") {
-        if (typeof score !== "undefined") {
-          $user_score_text.text(score);
-        } else {
-          $user_score_text.text("(researcher)");
-        }
-      }
     };
 
     this.updateUserId = function (user_id) {
