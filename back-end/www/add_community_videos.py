@@ -8,7 +8,7 @@ from urllib.parse import urlparse, parse_qs
 import re
 
 video_size = 180
-videos_path = "../data/video_samples/2.json"
+videos_path = "../data/video_samples/3.json"
 
 # Get video samples
 with open(videos_path) as f:
