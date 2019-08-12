@@ -166,6 +166,10 @@ body,
   display: none;
 }
 
+#label-statistics {
+  display: none;
+}
+
 .force-hidden {
   display: none !important;
 }

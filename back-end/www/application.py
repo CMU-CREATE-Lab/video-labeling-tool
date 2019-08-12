@@ -531,6 +531,22 @@ def get_all_labels():
     return get_video_labels(None, only_admin=True)
 
 """
+Get statistics of the labels
+"""
+@app.route("/api/v1/get_label_statistics", methods=["GET"])
+def get_label_statistics():
+    fully_labeled = pos_labels + pos_gold_labels + neg_labels + neg_gold_labels
+    q = Video.query
+    num_all_videos = q.count()
+    num_fully_labeled = q.filter(Video.label_state.in_(fully_labeled)).count()
+    num_partially_labeled = q.filter(Video.label_state.in_(partial_labels)).count()
+    return_json = {
+        "num_all_videos": num_all_videos,
+        "num_fully_labeled": num_fully_labeled,
+        "num_partially_labeled": num_partially_labeled}
+    return jsonify(return_json)
+
+"""
 Log after each request
 """
 @app.after_request
