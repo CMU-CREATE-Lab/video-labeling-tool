@@ -1,4 +1,4 @@
-from application import add_video
+from application import add_video, get_all_url_part
 import requests
 from datetime import datetime
 import pytz
@@ -169,6 +169,7 @@ def get_datetime_str_from_url(url):
     return m.group(0).split(".")[0]
 
 def add_videos():
+    url_part_list = [u[0] for u in get_all_url_part()]
     for k in video_samples:
         for url in video_samples[k]:
             if url == "": continue
@@ -183,6 +184,9 @@ def add_videos():
             for i in range(len(sf_list)):
                 sf = sf_list[i]
                 url_part = get_url_part(cam_id=k, ds=ds, b=b, sf=sf, w=video_size, h=video_size)
+                if url_part in url_part_list:
+                    print("Video already in database: " + url_part)
+                    continue
                 if check_url(url_part):
                     s = (b["R"] - b["L"]) / video_size
                     st = int(sf_dt_list[i].timestamp())
@@ -190,6 +194,8 @@ def add_videos():
                     fn = "%s-%s-%r-%r-%r-%r-%r-%r-%r-%r-%r" % (k, ds, b["L"], b["T"], b["R"], b["B"], video_size, video_size, sf, st, et)
                     video = add_video(file_name=fn, start_time=st, end_time=et, width=video_size, height=video_size, scale=s, left=b["L"], top=b["T"], url_part=url_part)
                     print(video)
+                else:
+                    print("Problem getting video: " + url_part)
 
 def add_videos_sampling(dt_map, n_sf=1, n_b=50):
     for k in dt_map:

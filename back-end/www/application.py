@@ -1019,6 +1019,12 @@ def decode_jwt(token):
     return jwt.decode(token, private_key, algorithms=["HS256"])
 
 """
+Get all the url_part in the Video table
+"""
+def get_all_url_part():
+    return Video.query.with_entities(Video.url_part).all()
+
+"""
 Custom logs
 """
 def log_custom(msg, level="info"):
