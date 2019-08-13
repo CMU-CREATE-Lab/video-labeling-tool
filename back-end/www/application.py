@@ -41,6 +41,7 @@ batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
 gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
+if gold_standard_in_batch < 2: gold_standard_in_batch = 2 # must be larger than 2
 
 """
 Set Formatter
@@ -913,34 +914,34 @@ Query a batch of videos for labeling by using active learning or random sampling
 def query_video_batch(user_id, use_admin_label_state=False):
     # Get the video ids labeled by the user before
     v_ids = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).distinct().with_entities(Video.id).all()
-    undefined_labels = (-1, 0b11, 0b100, 0b101)
     labeled_video_ids = [v[0] for v in v_ids]
     if use_admin_label_state:
+        # For admin researcher, do not add gold standards
         # Exclude the videos that were labeled by the same user
-        q = Video.query.filter(and_(Video.label_state_admin.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+        q = Video.query.filter(and_(Video.label_state_admin.in_((-1, 0b11, 0b100, 0b101)), Video.id.notin_(labeled_video_ids)))
         return q.order_by(func.random()).limit(batch_size).all()
     else:
-        if gold_standard_in_batch == 0:
-            # For admin researcher, do not add gold standards
-            # Exclude the videos that were labeled by the same user
-            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
-            return q.order_by(func.random()).limit(batch_size).all()
+        # Select gold standards (at least one pos and neg to prevent spamming)
+        # Spamming patterns include ignoring or selecting all videos
+        num_gold_pos = np.random.choice(range(1, gold_standard_in_batch))
+        num_gold_neg = gold_standard_in_batch - num_gold_pos
+        gold_pos = Video.query.filter(Video.label_state_admin==0b101111).order_by(func.random()).limit(num_gold_pos).all()
+        gold_neg = Video.query.filter(Video.label_state_admin==0b100000).order_by(func.random()).limit(num_gold_neg).all()
+        # Exclude videos that were labeled by the same user, also the gold standards
+        gold_v_ids = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000))).with_entities(Video.id).all()
+        q = Video.query.filter(Video.id.notin_(labeled_video_ids + gold_v_ids))
+        # Try to include some partially labeled videos in this batch
+        num_unlabeled = batch_size - gold_standard_in_batch
+        num_partially_labeled = int(num_unlabeled/2)
+        partially_labeled = q.filter(Video.label_state.in_((0b11, 0b100, 0b101))).order_by(func.random()).limit(num_partially_labeled).all()
+        not_labeled = q.filter(Video.label_state==-1).order_by(func.random()).limit(num_unlabeled - len(partially_labeled)).all()
+        if (len(gold_pos + gold_neg) != gold_standard_in_batch):
+            # This means that there are not enough or no gold standard videos
+            return make_response("", 204)
         else:
-            q_gold = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000)))
-            q_gold_pos = q_gold.filter(Video.label_state_admin==0b101111)
-            gold_v_ids = q_gold.with_entities(Video.id).all()
-            # Exclude videos that were labeled by the same user, also the gold standards
-            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids + gold_v_ids)))
-            gold_pos = q_gold_pos.order_by(func.random()).limit(1).all() # use at least on gold pos to prevent spamming
-            gold = q_gold.order_by(func.random()).limit(gold_standard_in_batch - 1).all()
-            unlabeled = q.order_by(func.random()).limit(batch_size - gold_standard_in_batch).all()
-            if (len(gold) != gold_standard_in_batch - 1):
-                # This means that there are not enough or no gold standard videos
-                return make_response("", 204)
-            else:
-                videos = gold + unlabeled + gold_pos
-                shuffle(videos)
-                return videos
+            videos = gold_pos + gold_neg + not_labeled + partially_labeled
+            shuffle(videos)
+            return videos
 
 """
 Get user token by using client id
