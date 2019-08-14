@@ -9,6 +9,7 @@
   var api_url_path_get = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
   var $gallery_error_text = $('<span class="gallery-error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
+  var $gallery_loading_text = $('<span class="loading-text"></span>');
   var $gallery;
   var $gallery_videos;
   var video_items = [];
@@ -63,12 +64,17 @@
 
   function showNoGalleryMsg() {
     $gallery_videos.detach();
-    $gallery.append($gallery_no_data_text);
+    $gallery.empty().append($gallery_no_data_text);
   }
 
   function showGalleryErrorMsg() {
     $gallery_videos.detach();
-    $gallery.append($gallery_error_text);
+    $gallery.empty().append($gallery_error_text);
+  }
+
+  function showGalleryLoadingMsg() {
+    $gallery_videos.detach();
+    $gallery.empty().append($gallery_loading_text);
   }
 
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
@@ -225,6 +231,7 @@
       callback: function (data, pagination) {
         if (typeof data !== "undefined" && data.length > 0) {
           $(window).scrollTop(0);
+          $gallery.empty().append($gallery_videos);
           updateVideos(data);
           if (!is_video_autoplay_tested) {
             video_test_dialog.startVideoPlayTest(1000);
@@ -260,10 +267,12 @@
     });
     $page_back = $("#page-back");
     $page_back.on("click", function () {
+      showGalleryLoadingMsg();
       $page_nav.pagination("previous");
     });
     $page_next = $("#page-next");
     $page_next.on("click", function () {
+      showGalleryLoadingMsg();
       $page_nav.pagination("next");
     });
   }
@@ -431,6 +440,7 @@
       no_ui: true
     });
     initConfirmDialog();
+    showGalleryLoadingMsg();
     var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {

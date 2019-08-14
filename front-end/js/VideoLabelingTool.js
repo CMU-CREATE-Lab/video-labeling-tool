@@ -38,6 +38,7 @@
       $tool = $('<div class="video-labeling-tool"></div>');
       $tool_videos = $('<div class="video-labeling-tool-videos"></div>');
       $container.append($tool.append($tool_videos));
+      showLoadingMsg();
     }
 
     // Get the user id from the server
