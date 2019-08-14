@@ -145,6 +145,13 @@ Run server in the conda environment for development purpose.
 ```sh
 sh development.sh
 ```
+The system uses gold standards (videos with known labels) to check the quality of each labeled batch. If a user did not label the gold standards correctly, the corresponding batch would be discarded. Initially, there are no gold standards, and the backend will not return videos for labeling. To solve this issue, give yourself the researcher permission by using
+```sh
+python set_client_type.py [user_id] 0
+```
+where user_id can be found on the "Account" tab on the top right of the "label.html" page after logging in with Google. The number 0 that follows the user_id is the researcher permission. For more information about the permission, please refer to the client_type variable in the "User" class in the "application.py" file. The system will not run the quality check for users with the researcher permission. In this way, you can start labeling first.
+
+To assign gold standards videos, go to the "gallery.html" page when logging in with the account that has the researcher permission. On the gallery, you will find "P*" and "N*" buttons. Clicking on these buttons shows the positive and negative videos that the researcher labeled. You can now use the dropdown below each video to change the label to Gold Pos (positive gold standards) or Gold Neg (negative gold standards). Once there is a sufficient number of gold standards (more than 4), normal users will be able to label videos. I recommend having at least 100 gold standards to start.
 
 # <a name="dump-and-import-mysql"></a>Dump and import MySQL database
 This section assumes that you want to dump the production database to a file and import it to the development database. First, SSH to the production server and dump the database to the /tmp/ directory.
