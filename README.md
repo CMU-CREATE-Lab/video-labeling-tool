@@ -5,6 +5,7 @@ A tool for labeling video clips (both front-end and back-end). The back-end depe
 
 ### Table of Content
 - [Install MySQL](#install-mysql)
+- [Prepare gold standards for quality check](#prepare-gold-standards)
 - [Setup back-end](#setup-back-end)
 - [Dump and import MySQL database](#dump-and-import-mysql)
 - [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
@@ -145,6 +146,8 @@ Run server in the conda environment for development purpose.
 ```sh
 sh development.sh
 ```
+
+# <a name="prepare-gold-standards"></a>Prepare gold standards for quality check
 The system uses gold standards (videos with known labels) to check the quality of each labeled batch. If a user did not label the gold standards correctly, the corresponding batch would be discarded. Initially, there are no gold standards, and the backend will not return videos for labeling. To solve this issue, give yourself the researcher permission by using
 ```sh
 python set_client_type.py [user_id] 0
