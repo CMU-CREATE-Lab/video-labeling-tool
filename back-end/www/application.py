@@ -937,7 +937,7 @@ def query_video_batch(user_id, use_admin_label_state=False):
         not_labeled = q.filter(Video.label_state==-1).order_by(func.random()).limit(num_unlabeled - len(partially_labeled)).all()
         if (len(gold_pos + gold_neg) != gold_standard_in_batch):
             # This means that there are not enough or no gold standard videos
-            return make_response("", 204)
+            return None
         else:
             videos = gold_pos + gold_neg + not_labeled + partially_labeled
             shuffle(videos)
