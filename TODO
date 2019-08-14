@@ -1,33 +1,35 @@
 TODO: add interactive tutorial
 
 TODO: design user feedback system after labeling a batch (e.g., dialog box)
-- poor performance when labels are rejected
-- if the user made too many bad batches, ask the user to retake the tutorial
-- detect and mark spamming (e.g., all not selected, all selected) in the database
+  - poor performance when labels are rejected
+  - if the user made too many bad batches, ask the user to retake the tutorial
+  - detect and mark spamming (e.g., all not selected, all selected) in the database
 
 TODO: design features for sharing achievements
-- add a leaderboard for showing user id and scores
-- generate PDF certificates of label statistics for each user upon request
-- allow users to share the badge with their achievement on social media
+  - add a leaderboard for showing user id and scores
+  - generate PDF certificates of label statistics for each user upon request
+  - allow users to share the badge with their achievement on social media
 
 TODO: add the feature for labeling smoke opacity
-- add a compass to show sun direction for each video (when labeling opacity)
+  - add a compass to show sun direction for each video (when labeling opacity)
 TODO: add the feature for cropping videos to a region
 
 TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
 
 TODO: as users gain enough scores, advance them to the harder mode
-- laypeople mode: select videos that have smoke
-- amateur mode: label smoke opacity (low, medium, high)
-- expert mode: crop videos to a region
-- how to invalidate previous user tokens with different permissions?
-- need to add a table to record the promotion history
-- need to encode client type in the user token, and check if this matches the database record
-- for a user that did not login via google, always treat them as laypeople
+  - laypeople mode: select videos that have smoke
+  - amateur mode: label smoke opacity (low, medium, high)
+  - expert mode: crop videos to a region
+  - how to invalidate previous user tokens with different permissions?
+  - need to add a table to record the promotion history
+  - need to encode client type in the user token, and check if this matches the database record
+  - for a user that did not login via google, always treat them as laypeople
 
 BUG: when changing the client type of a user, previous tokens with different permissions are still working
-- need to invalidate previous issued tokens?
+  - need to invalidate previous issued tokens?
 
 OPTIONAL: graphically display the label statistics (instead of using text)
 OPTIONAL: add a playback timeline bar to show the video playback time
 OPTIONAL: add a link back to time machine viewer (or a larger video) on the labeling page (also gallery page)
+OPTIONAL: prevent the case that multiple people label the same data
+  - add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
