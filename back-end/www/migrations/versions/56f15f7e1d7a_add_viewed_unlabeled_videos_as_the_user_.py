@@ -21,18 +21,16 @@ def upgrade():
     op.add_column('batch', sa.Column('user_raw_score', sa.Integer(), nullable=True))
     op.add_column('connection', sa.Column('user_raw_score', sa.Integer(), nullable=True))
     op.add_column('user', sa.Column('raw_score', sa.Integer(), nullable=False))
-    try:
-        db = op.get_bind()
-        user = sa.sql.table('user', sa.sql.column('id'), sa.sql.column('raw_score'))
-        connection = sa.sql.table('connection', sa.sql.column('id'), sa.sql.column('user_id'), sa.sql.column('user_raw_score'))
-        batch = sa.sql.table('batch', sa.sql.column('id'), sa.sql.column('num_unlabeled'), sa.sql.column('connection_id'), sa.sql.column('user_raw_score'))
-        for b in db.execute(batch.select()):
-            for c in db.execute(connection.select(connection.c.id == b.connection_id)):
-                for u in db.execute(user.select(user.c.id == c.user_id)):
-                    db.execute(batch.update().where(batch.c.id == b.id).values(user_raw_score=u.raw_score))
-                    db.execute(user.update().where(user.c.id == c.user_id).values(raw_score=u.raw_score+b.num_unlabeled))
-    except Exception:
-        traceback.print_exc()
+    db = op.get_bind()
+    user = sa.sql.table('user', sa.sql.column('id'), sa.sql.column('raw_score'))
+    connection = sa.sql.table('connection', sa.sql.column('id'), sa.sql.column('user_id'), sa.sql.column('user_raw_score'))
+    batch = sa.sql.table('batch', sa.sql.column('id'), sa.sql.column('num_unlabeled'), sa.sql.column('connection_id'), sa.sql.column('user_raw_score'))
+    for b in db.execute(batch.select()):
+        for c in db.execute(connection.select(connection.c.id == b.connection_id)):
+            for u in db.execute(user.select(user.c.id == c.user_id)):
+                print("Process batch: " + str(b.id))
+                db.execute(batch.update().where(batch.c.id == b.id).values(user_raw_score=u.raw_score))
+                db.execute(user.update().where(user.c.id == c.user_id).values(raw_score=u.raw_score+b.num_unlabeled))
     # ### end Alembic commands ###
 
 
