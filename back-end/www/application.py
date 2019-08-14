@@ -1,14 +1,3 @@
-#TODO: add the feature for labeling smoke opacity
-#TODO: add the feature for cropping videos to a region
-#TODO: fix the bug when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
-#TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
-#TODO: how to promote the client to a different rank when it is changed, and invalidate previous user tokens with different permissions?
-#   (need to add a table to record the promotion history)
-#   (need to encode client type in the user token, and check if this matches the database record)
-#   (for a user that did not login via google, always treat them as laypeople)
-#TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
-#TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
-
 from flask import Flask, render_template, jsonify, request, abort, g, make_response, has_request_context
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
