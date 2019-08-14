@@ -18,7 +18,7 @@ pip install numpy==1.15.4
 pip install pyjwt==1.7.1
 
 # http related
-pip install requests==2.21.0
+pip install requests==2.22.0
 
 # MySQL
 pip install mysqlclient==1.3.14
