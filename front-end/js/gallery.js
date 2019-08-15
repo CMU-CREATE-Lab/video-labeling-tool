@@ -278,6 +278,7 @@
   }
 
   function setLabelState(labels, callback) {
+    callback = safeGet(callback, {});
     $.ajax({
       url: api_url_root + "set_label_state",
       type: "POST",
@@ -310,7 +311,7 @@
       action_text: "Confirm",
       action_callback: function () {
         setLabelState(admin_marked_item["data"], {
-          "success": function () {
+          success: function () {
             console.log("Set label state successfully:");
             console.log(admin_marked_item["data"]);
             var v_id = admin_marked_item["data"][0]["video_id"];
@@ -318,12 +319,12 @@
             var txt = v_id + ": " + util.safeGet(label_state_map[v_label], "Undefined");
             $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
-          "error": function () {
+          error: function () {
             console.log("Error when setting label state:");
             console.log(admin_marked_item["data"]);
             $(admin_marked_item["p"].find("i").get(0)).removeClass().addClass("custom-text-danger-dark-theme");
           },
-          "complete": function () {
+          complete: function () {
             admin_marked_item["select"].val("default");
             admin_marked_item = {};
           }
@@ -444,15 +445,26 @@
     var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
-        google_account_dialog.silentSignInWithGoogle(function (is_signed_in, google_user) {
-          if (is_signed_in) {
-            util.login({
-              google_id_token: google_user.getAuthResponse().id_token
-            }, {
-              success: onLoginSuccess,
-              complete: onLoginComplete
-            });
-          } else {
+        google_account_dialog.silentSignInWithGoogle({
+          success: function (is_signed_in, google_user) {
+            if (is_signed_in) {
+              util.login({
+                google_id_token: google_user.getAuthResponse().id_token
+              }, {
+                success: onLoginSuccess,
+                complete: onLoginComplete
+              });
+            } else {
+              util.login({
+                client_id: client_id
+              }, {
+                success: onLoginSuccess,
+                complete: onLoginComplete
+              });
+            }
+          },
+          error: function (error) {
+            console.error("Error with Google sign-in: ", error);
             util.login({
               client_id: client_id
             }, {

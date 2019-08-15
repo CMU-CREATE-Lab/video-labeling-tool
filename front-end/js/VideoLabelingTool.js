@@ -199,6 +199,7 @@
         }
       }
       // Load and show videos
+      callback = safeGet(callback, {});
       resolvePromises(deferreds, {
         success: function (data) {
           $tool.empty().append($tool_videos);

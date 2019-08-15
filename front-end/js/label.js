@@ -72,9 +72,11 @@
         nextBatch();
       });
       nextBatch();
-      google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
-        if (!is_signed_in) {
-          google_account_dialog.getDialog().dialog("open");
+      google_account_dialog.isAuthenticatedWithGoogle({
+        success: function (is_signed_in) {
+          if (!is_signed_in) {
+            google_account_dialog.getDialog().dialog("open");
+          }
         }
       });
       is_first_time = false;
@@ -97,6 +99,19 @@
       var num_partially_labeled_p = Math.round(num_partially_labeled / num_all_videos * 10000) / 100;
       $(".num-partially-labeled-text").text(num_partially_labeled + " (" + num_partially_labeled_p + "%)");
       $("#label-statistics").show();
+    });
+  }
+
+  function onUserNotSignedIn(client_id) {
+    video_labeling_tool.updateUserIdByClientId(client_id, {
+      success: function (obj) {
+        onUserIdChangeSuccess(obj.userId());
+      },
+      error: function (xhr) {
+        console.error("Error when updating user id when updating user id by client id!");
+        printServerErrorMsg(xhr);
+        $("#start").prop("disabled", true).find("span").text("Error when connecting to server");
+      }
     });
   }
 
@@ -160,19 +175,16 @@
     ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
-        google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
-          // If signed in, will be handled by the callback function of initGoogleSignIn() in the GoogleAccountDialog object
-          if (!is_signed_in) {
-            video_labeling_tool.updateUserIdByClientId(client_id, {
-              success: function (obj) {
-                onUserIdChangeSuccess(obj.userId());
-              },
-              error: function (xhr) {
-                console.error("Error when updating user id when updating user id by client id!");
-                printServerErrorMsg(xhr);
-                $("#start").prop("disabled", true).find("span").text("Error when connecting to server");
-              }
-            });
+        google_account_dialog.isAuthenticatedWithGoogle({
+          success: function (is_signed_in) {
+            // If signed in, will be handled by the callback function of initGoogleSignIn() in the GoogleAccountDialog object
+            if (!is_signed_in) {
+              onUserNotSignedIn(client_id);
+            }
+          },
+          error: function (error) {
+            console.error("Error with Google sign-in: ", error);
+            onUserNotSignedIn(client_id);
           }
         });
       }

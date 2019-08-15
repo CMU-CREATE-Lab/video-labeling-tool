@@ -121,20 +121,27 @@
     // Public methods
     //
     var isAuthenticatedWithGoogle = function (callback) {
+      callback = safeGet(callback, {});
       if (typeof gapi !== "undefined" && typeof gapi.auth2 === "undefined") {
         gapi.load("auth2", function () {
           gapi.auth2.init().then(function () {
             isAuthenticatedWithGoogle(callback);
+          }, function (error) {
+            if (typeof error !== "undefined") {
+              if (typeof callback["error"] === "function") {
+                callback["error"](error);
+              }
+            }
           });
         });
       } else {
-        if (typeof callback === "function") {
+        if (typeof callback["success"] === "function") {
           var auth2 = gapi.auth2.getAuthInstance();
           var is_signed_in = auth2.isSignedIn.get();
           if (is_signed_in) {
-            callback(is_signed_in, auth2.currentUser.get());
+            callback["success"](is_signed_in, auth2.currentUser.get());
           } else {
-            callback(is_signed_in);
+            callback["success"](is_signed_in);
           }
         }
       }
@@ -142,16 +149,23 @@
     this.isAuthenticatedWithGoogle = isAuthenticatedWithGoogle;
 
     this.silentSignInWithGoogle = function (callback) {
+      callback = safeGet(callback, {});
       gapi.load("auth2", function () {
         // gapi.auth2.init() will automatically sign in a user to the application if previously signed in
         gapi.auth2.init().then(function () {
-          if (typeof callback === "function") {
+          if (typeof callback["success"] === "function") {
             var auth2 = gapi.auth2.getAuthInstance();
             var is_signed_in = auth2.isSignedIn.get();
             if (is_signed_in) {
-              callback(is_signed_in, auth2.currentUser.get());
+              callback["success"](is_signed_in, auth2.currentUser.get());
             } else {
-              callback(is_signed_in);
+              callback["success"](is_signed_in);
+            }
+          }
+        }, function (error) {
+          if (typeof error !== "undefined") {
+            if (typeof callback["error"] === "function") {
+              callback["error"](error);
             }
           }
         });
