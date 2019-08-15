@@ -115,9 +115,9 @@
         open: function (event, ui) {
           var $body = $("body");
           if (!$body.hasClass("no-scroll")) {
-            // When the modal is shown, we want a fixed body
+            // When the modal is open, we want to set the top of the body to the scroll position
+            document.body.style.top = -window.scrollY + "px";
             $body.addClass("no-scroll");
-            document.body.style.top = "-${window.scrollY}px";
           }
           $selector_container.css({
             position: "fixed",
@@ -140,13 +140,16 @@
         }
       };
       dialog_settings["position"] = {
-        my: "left top",
-        at: "left-999999 top-999999",
+        my: "center",
+        at: "center",
         of: window
       };
       var $dialog = $selector.dialog(dialog_settings);
       $selector_container = $selector.closest(".ui-dialog");
       $selector_container.find(".ui-dialog-titlebar-close").empty().append("<i class='fa fa-times fa-lg'></i>");
+      $(window).on("resize", function () {
+        $dialog.dialog("option", "position", dialog_settings["position"]);
+      });
       if (!show_close_button) {
         $dialog.on("dialogopen", function () {
           $(this).parent().find(".ui-dialog-titlebar-close").hide();
