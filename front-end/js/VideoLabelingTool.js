@@ -16,9 +16,9 @@
     var $tool;
     var $tool_videos;
     var video_items = [];
-    var $bad_video_text = $('<span class="bad-video-text">Oops!<br>Some video links are broken.<br>Please press "Keep Going" to skip this video batch.</span>');
+    var $bad_video_text = $('<span class="bad-video-text">Oops!<br>Some video links are broken.<br>Please refresh this page.</span>');
     var $error_text = $('<span class="error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
-    var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
+    var $no_data_text = $('<span class="no-data-text">Thank you!<br>Videos are all labeled.<br>Please come back later.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
     var api_url_root = util.getRootApiUrl();
     var user_id;
