@@ -17,12 +17,19 @@
   var $user_score_text;
   var $user_raw_score_text;
   var api_url_root = util.getRootApiUrl();
+  var count_down_timeout;
+
+  function resetCountDown() {
+    clearTimeout(count_down_timeout);
+    $next.removeClass("count-down-" + counter);
+    counter = 0;
+  }
 
   function countDown() {
     if (counter == 0) {
       $next.addClass("count-down-0");
     }
-    setTimeout(function () {
+    count_down_timeout = setTimeout(function () {
       $next.removeClass("count-down-" + counter);
       if (counter == max_counter) {
         $next.prop("disabled", false);
@@ -37,6 +44,7 @@
 
   function nextBatch(ignore_labels) {
     $next.prop("disabled", true);
+    resetCountDown();
     $(window).scrollTop(0);
     video_labeling_tool.next({
       success: function () {
