@@ -2,12 +2,18 @@
 Demo: http://smoke.createlab.org
 
 A tool for labeling video clips (both front-end and back-end). The back-end depends on a [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provides video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). This tool is tested and worked on:
-- MAC Desktop Chrome 76
-- Android Mobile Chrome 76
-- MAC Desktop Firefox 68
-- Android Mobile Firefox 68
-- MAC Desktop Safari 12
-- iOS Mobile Safari 12
+- macOS Mojave
+  - Chrome 76
+  - Safari 12
+  - Firefox 68
+- Android 8
+  - Chrome 76
+  - Firefox 68
+- iOS 12
+  - Chrome 76
+  - Safari 12
+### Known Problems and Bugs
+- Video labeling and the gallery pages do not work on Firefox 18 on iOS 12.
 
 ### Table of Content
 - [Install MySQL](#install-mysql)
