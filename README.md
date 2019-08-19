@@ -6,6 +6,10 @@ A tool for labeling video clips (both front-end and back-end). The back-end depe
   - Chrome 76
   - Safari 12
   - Firefox 68
+- Windows 10
+  - Chrome 76
+  - Firefox 68
+  - Edge 44
 - Android 8
   - Chrome 76
   - Firefox 68
