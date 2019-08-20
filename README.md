@@ -16,8 +16,7 @@ A tool for labeling video clips (both front-end and back-end). The back-end depe
 - iOS 12
   - Chrome 76
   - Safari 12
-### Known Problems and Bugs
-- Video labeling and the gallery pages do not work on Firefox 18 on iOS 12.
+  - Firefox 18
 
 ### Table of Content
 - [Install MySQL](#install-mysql)
