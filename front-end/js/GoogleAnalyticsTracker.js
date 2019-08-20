@@ -26,23 +26,26 @@
     settings = safeGet(settings, {});
     var tracker_id = settings["tracker_id"];
     var ready = settings["ready"];
-    var client_id;
+    var client_id = util.getUniqueId();
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
     function init() {
-      if (typeof tracker_id !== "undefined") {
-        ga("create", tracker_id, "auto");
-        ga(function (tracker) {
-          client_id = "ga." + tracker.get("clientId"); // prepend "ga" to indicate Google Analytics
-          ga("send", "pageview");
+      window.addEventListener("load", function () {
+        if (typeof window.ga !== "undefined" && typeof ga.create !== "undefined" && typeof tracker_id !== "undefined") {
+          ga("create", tracker_id, "auto");
+          ga(function (tracker) {
+            client_id = "ga." + tracker.get("clientId"); // prepend "ga" to indicate Google Analytics
+            ga("send", "pageview");
+            if (typeof ready === "function") ready(client_id);
+          });
+        } else {
+          // When tracking protection is on or no tracker id, use the generated uuid for the client_id
           if (typeof ready === "function") ready(client_id);
-        });
-      } else {
-        ready(client_id);
-      }
+        }
+      }, false);
     }
 
     function safeGet(v, default_val) {
@@ -53,7 +56,7 @@
     //
     // Public methods
     //
-    this.getClientId = function() {
+    this.getClientId = function () {
       return client_id;
     };
 
