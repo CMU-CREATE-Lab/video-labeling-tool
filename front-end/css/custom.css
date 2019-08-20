@@ -24,6 +24,11 @@ body,
   color: white !important;
 }
 
+.content-table ul {
+  color: white !important;
+  font-size: 18px;
+}
+
 .text {
   font-size: 18px;
 }
