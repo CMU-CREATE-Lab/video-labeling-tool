@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Smoke Labeling</title>
+  <title>Smoke Hunting</title>
   <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
@@ -35,7 +35,7 @@
     <div class="menu">
       <div class="menu-table flex-row-space-between">
         <div class="logo flex-row-center">
-          <a href="index.html">Smoke Labeling</a>
+          <a href="index.html">Smoke Hunting</a>
         </div>
         <a class="menu-button" tabindex="0" href="javascript:void(0)">
           <img src="img/menu.png">
@@ -55,15 +55,15 @@
           <div class="flex-item flex-column">
             <p class="text no-top-margin">
               Each video below is 3 seconds.
-              Click to select videos that have smoke.
-              Click again to deselect.
-              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
+              Click or tap to select videos that have smoke.
+              Click or tap again to deselect.
+              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure whether it has smoke</span>.
             </p>
             <p class="text no-top-margin">
               <a id="sign-in-prompt">Sign in and track your personal achievements.</a>
               <span id="user-score-container">
-                This page shows a batch of 16 randomly chosen videos.
-                You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the system's quality check</span>.
+                This page shows a batch of 16 videos.
+                You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the quality check</span> (using randomly placed videos with known answers).
               </span>
             </p>
             <p class="text no-top-margin" id="label-statistics">

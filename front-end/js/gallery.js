@@ -9,7 +9,8 @@
   var api_url_path_get = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
   var $gallery_error_text = $('<span class="gallery-error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
-  var $gallery_loading_text = $('<span class="loading-text"></span>');
+  var $gallery_loading_text = $('<span class="gallery-loading-text"></span>');
+  var $gallery_not_supported_text = $('<span class="gallery-not-supported-text">We are sorry!<br>Your browser is not supported.</span>');
   var $gallery;
   var $gallery_videos;
   var video_items = [];
@@ -75,6 +76,11 @@
   function showGalleryLoadingMsg() {
     $gallery_videos.detach();
     $gallery.empty().append($gallery_loading_text);
+  }
+
+  function showGalleryNotSupportedMsg() {
+    $gallery_videos.detach();
+    $gallery.empty().append($gallery_not_supported_text);
   }
 
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
@@ -441,20 +447,31 @@
       no_ui: true
     });
     initConfirmDialog();
-    showGalleryLoadingMsg();
-    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-      tracker_id: util.getGoogleAnalyticsId(),
-      ready: function (client_id) {
-        google_account_dialog.silentSignInWithGoogle({
-          success: function (is_signed_in, google_user) {
-            if (is_signed_in) {
-              util.login({
-                google_id_token: google_user.getAuthResponse().id_token
-              }, {
-                success: onLoginSuccess,
-                complete: onLoginComplete
-              });
-            } else {
+    if (util.browserSupported()) {
+      showGalleryLoadingMsg();
+      var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+        tracker_id: util.getGoogleAnalyticsId(),
+        ready: function (client_id) {
+          google_account_dialog.silentSignInWithGoogle({
+            success: function (is_signed_in, google_user) {
+              if (is_signed_in) {
+                util.login({
+                  google_id_token: google_user.getAuthResponse().id_token
+                }, {
+                  success: onLoginSuccess,
+                  complete: onLoginComplete
+                });
+              } else {
+                util.login({
+                  client_id: client_id
+                }, {
+                  success: onLoginSuccess,
+                  complete: onLoginComplete
+                });
+              }
+            },
+            error: function (error) {
+              console.error("Error with Google sign-in: ", error);
               util.login({
                 client_id: client_id
               }, {
@@ -462,20 +479,14 @@
                 complete: onLoginComplete
               });
             }
-          },
-          error: function (error) {
-            console.error("Error with Google sign-in: ", error);
-            util.login({
-              client_id: client_id
-            }, {
-              success: onLoginSuccess,
-              complete: onLoginComplete
-            });
-          }
-        });
-      }
-    });
-    video_test_dialog = new edaplotjs.VideoTestDialog();
+          });
+        }
+      });
+      video_test_dialog = new edaplotjs.VideoTestDialog();
+    } else {
+      console.warn("Browser not supported.");
+      showGalleryNotSupportedMsg();
+    }
   }
 
   $(init);

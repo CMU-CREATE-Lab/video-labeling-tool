@@ -20,6 +20,7 @@
     var $error_text = $('<span class="error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
     var $no_data_text = $('<span class="no-data-text">Thank you!<br>Videos are all labeled.<br>Please come back later.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
+    var $not_supported_text = $('<span class="not-supported-text">We are sorry!<br>Your browser is not supported.</span>');
     var api_url_root = util.getRootApiUrl();
     var user_id;
     var video_token;
@@ -230,6 +231,12 @@
       }
     }
 
+    // Show not supported message
+    function showNotSupportedMsg() {
+      $tool_videos.detach();
+      $tool.empty().append($not_supported_text);
+    }
+
     // Show error message
     function showErrorMsg() {
       $tool_videos.detach();
@@ -337,17 +344,23 @@
     //
     this.next = function (callback, options) {
       callback = safeGet(callback, {});
-      sendVideoBatch({
-        success: function (data) {
-          onSendVideoBatchSuccess(data, callback);
-        },
-        error: function (xhr) {
-          if (typeof callback["error"] === "function") callback["error"](xhr);
-        },
-        abort: function (xhr) {
-          onSendVideoBatchSuccess(xhr.responseJSON, callback);
-        }
-      }, options);
+      if (util.browserSupported()) {
+        sendVideoBatch({
+          success: function (data) {
+            onSendVideoBatchSuccess(data, callback);
+          },
+          error: function (xhr) {
+            if (typeof callback["error"] === "function") callback["error"](xhr);
+          },
+          abort: function (xhr) {
+            onSendVideoBatchSuccess(xhr.responseJSON, callback);
+          }
+        }, options);
+      } else {
+        showNotSupportedMsg();
+        console.warn("Browser not supported.")
+        if (typeof callback["error"] === "function") callback["error"]("Browser not supported.");
+      }
     };
 
     this.userId = function () {

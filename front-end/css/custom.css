@@ -200,7 +200,8 @@ body,
   padding: 10px 0;
 }
 
-.gallery-error-text {
+.gallery-error-text,
+.gallery-not-supported-text {
   color: #ff5e5e !important;
   text-align: center;
   flex: 1 0 100%;
@@ -279,7 +280,7 @@ body,
   padding: 0;
 }
 
-.gallery .loading-text {
+.gallery .gallery-loading-text {
   color: #3be4ff;
   text-align: center;
   flex: 1 0 100%;
