@@ -18,7 +18,7 @@
     var isSupportedIOSVersion = isIOSDevice && parseInt(matchIOSVersionString[1]) >= 11;
     var isAndroidDevice = ua.match(/Android/) != null;
     var matchAndroidVersionString = ua.match(/Android (\d+(?:\.*\d*){1,2})/);
-    var isSupportedAndroidVersion = isAndroidDevice && parseFloat(matchAndroidVersionString[1]) >= 8
+    var isSupportedAndroidVersion = isAndroidDevice && parseFloat(matchAndroidVersionString[1]) >= 7
     var isMSIEUserAgent = ua.match(/MSIE|Trident|Edge/) != null;
     var isOperaUserAgent = ua.match(/OPR/) != null;
     var isChromeUserAgent = ua.match(/Chrome/) != null && !isMSIEUserAgent && !isOperaUserAgent;
