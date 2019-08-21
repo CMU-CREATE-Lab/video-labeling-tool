@@ -648,3 +648,23 @@ $.ajax({
 # curl example
 curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_all_labels
 ```
+### Get the statistics of labels
+Get the number of all videos (excluding the videos that were marked as "bad" data), the number of fully labeled videos (confirmed by multiple users), and the number of partially labeled videos.
+- Paths:
+  - **/api/v1/get_label_statistics**
+- Available methods:
+  - GET
+- Returned fields:
+  - "num_all_videos": number of all videos (excluding bad data)
+  - "num_fully_labeled": number of fully labeled videos
+  - "num_partially_labeled": number of partially labeled videos
+```JavaScript
+// jQuery examples
+$.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
+  console.log(data);
+});
+```
+```sh
+# curl example
+curl http://localhost:5000/api/v1/get_label_statistics
+```
