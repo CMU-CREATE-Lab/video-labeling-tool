@@ -527,7 +527,7 @@ Get statistics of the labels
 def get_label_statistics():
     fully_labeled = pos_labels + pos_gold_labels + neg_labels + neg_gold_labels
     q = Video.query
-    num_all_videos = q.count()
+    num_all_videos = q.filter(~Video.label_state.in_(bad_labels)).count()
     num_fully_labeled = q.filter(Video.label_state.in_(fully_labeled)).count()
     num_partially_labeled = q.filter(Video.label_state.in_(partial_labels)).count()
     return_json = {
