@@ -33,7 +33,6 @@ def parse_cam_data(data):
     for d in data:
         camera_id = d["camera_id"]
         if camera_id in camera_id_list:
-            #dt = pytz.utc.localize(datetime.strptime(d["begin_time"], "%Y-%m-%dT%H:%M:%SZ"))
             dt = datetime.strptime(d["begin_time"][:10], "%Y-%m-%d")
             if camera_id not in dt_map:
                 dt_map[camera_id] = [dt]
