@@ -139,15 +139,19 @@
     return $(html);
   }
 
+  function safeGet(v, default_val) {
+    return util.safeGet(v, default_val);
+  }
+
   function updateItem($item, v) {
     if (typeof user_id === "undefined") {
       if (is_admin) {
         // Update label information
         var $i = $item.find("i").removeClass();
         $($i.get(0)).text("ID: " + v["id"]).addClass("custom-text-info-dark-theme");
-        var label_researcher = util.safeGet(label_state_map[v["label_state_admin"]], "Undefined");
+        var label_researcher = safeGet(label_state_map[v["label_state_admin"]], "Undefined");
         $($i.get(1)).text("Scientist: " + label_researcher).addClass("custom-text-info-dark-theme");
-        var label_citizen = util.safeGet(label_state_map[v["label_state"]], "Undefined");
+        var label_citizen = safeGet(label_state_map[v["label_state"]], "Undefined");
         $($i.get(2)).text("Citizen: " + label_citizen).addClass("custom-text-info-dark-theme");
         // Update link
         var parsed_url = util.parseVars(v["url_part"]);
@@ -322,7 +326,7 @@
             console.log(admin_marked_item["data"]);
             var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
-            var txt = v_id + ": " + util.safeGet(label_state_map[v_label], "Undefined");
+            var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
             $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
           error: function () {
