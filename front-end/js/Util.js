@@ -84,7 +84,7 @@
     var handleVideoPromise = function (video, actionType, error_callback) {
       if (!video) return;
       if (actionType == "play" && video.paused && !video.playPromise) {
-        if (video.readyState >= 1) {
+        if (video.readyState > 1) {
           video.playPromise = video.play();
         } else {
           console.warn("This video is not ready to play, will try later.");

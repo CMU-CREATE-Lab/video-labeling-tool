@@ -113,7 +113,7 @@
           var vid = $(this).get(0);
           if (util.isScrolledIntoView(vid)) {
             is_at_least_one_video_on_screen = true;
-            if (vid.readyState < 1) {
+            if (vid.readyState < 2) {
               is_all_videos_on_screen_ready_to_play = false;
               return false;
             }
