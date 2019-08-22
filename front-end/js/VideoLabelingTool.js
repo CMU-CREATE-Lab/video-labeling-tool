@@ -177,9 +177,8 @@
         $item.data("id", v["id"]);
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
-          if (this.paused) {
-            this.play(); // play if the autoplay tag fails
-          }
+          // Play the video
+          util.handleVideoPromise(this, "play");
         });
         if (!$vid.complete) {
           var deferred = $.Deferred();

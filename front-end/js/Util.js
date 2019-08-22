@@ -25,6 +25,7 @@
     var matchChromeVersionString = ua.match(/Chrome\/([0-9.]+)/);
     var isSupportedChromeMobileVersion = matchChromeVersionString && matchChromeVersionString.length > 1 && parseInt(matchChromeVersionString[1]) >= 73;
     var isSamsungInternetUserAgent = ua.match(/SamsungBrowser/) != null;
+    var isIEEdgeUserAgent = !!(isMSIEUserAgent && ua.match(/Edge\/([\d]+)/));
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -77,6 +78,44 @@
       return root_url;
     };
     this.getRootApiUrl = getRootApiUrl;
+
+    // Play or pause the videos properly
+    // See https://developers.google.com/web/updates/2017/06/play-request-was-interrupted
+    var handleVideoPromise = function (video, actionType, error_callback) {
+      if (!video) return;
+      if (actionType == "play" && video.paused && !video.playPromise) {
+        if (video.readyState >= 1) {
+          video.playPromise = video.play();
+        } else {
+          console.warn("This video is not ready to play, will try later.");
+          setTimeout(function () {
+            handleVideoPromise(video, actionType);
+          }, 500);
+          return;
+        }
+      }
+      // HTML5 video does not return Promises in <= IE 11, so we create a fake one.
+      // Also note that <= IE11 does not support Promises, so we need to include a polyfill.
+      if (isMSIEUserAgent && !isIEEdgeUserAgent) {
+        video.playPromise = Promise.resolve(true);
+      }
+      if (video.playPromise !== undefined) {
+        video.playPromise.then(function (_) {
+          if (actionType == "pause" && video.played.length && !video.paused) {
+            video.pause();
+          } else if (actionType == "load") {
+            video.load();
+          }
+          if (actionType != "play") {
+            video.playPromise = undefined;
+          }
+        }).catch(function (error) {
+          console.error(error.name, error.message);
+          if (typeof error_callback === "function") error_callback();
+        });
+      }
+    };
+    this.handleVideoPromise = handleVideoPromise;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -215,6 +254,17 @@
 
       // The viewer is supported by the browser
       return true;
+    };
+
+    // Is a DOM element on screen
+    this.isScrolledIntoView = function (elem) {
+      var docViewTop = $(window).scrollTop();
+      var docViewBottom = docViewTop + $(window).height();
+
+      var elemTop = $(elem).offset().top;
+      var elemBottom = elemTop + $(elem).height();
+
+      return ((docViewTop < elemBottom) && (elemTop < docViewBottom));
     };
   };
 

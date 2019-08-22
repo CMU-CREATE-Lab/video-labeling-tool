@@ -14,11 +14,13 @@
     var $video_test_dialog;
     var widgets = new edaplotjs.Widgets();
     var hidden, visibilityChange;
+    var should_do_video_play_test = true;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
+
     function init() {
       // The dialog for users to manually enable video autoplay
       $video_test_dialog = widgets.createCustomDialog({
@@ -28,8 +30,8 @@
         show_close_button: false
       });
       $("#play-video-button").on("click", function () {
-        $("video").each(function () {
-          this.play();
+        $("video:visible").each(function () {
+          this.playPromise = this.play();
         });
         $video_test_dialog.dialog("close");
       });
@@ -52,50 +54,39 @@
         // Handle page visibility change
         document.addEventListener(visibilityChange, handleVisibilityChange, false);
       }
+      // Add a scroll event to the document to play videos that are in view
+      // , and pause videos that are not in view
+      $(document).on("scroll", function () {
+        $("video:visible").each(function () {
+          var vid = $(this)[0];
+          if (util.isScrolledIntoView(vid)) {
+            util.handleVideoPromise(vid, "play", function () {
+              startVideoPlayTest(1000);
+            });
+          } else {
+            util.handleVideoPromise(vid, "pause");
+          }
+        });
+      });
     }
 
     function safeGet(v, default_val) {
       return util.safeGet(v, default_val);
     }
 
-    // Test if the video plays
-    // If not, show a dialog for users to click and play
-    function videoPlayTest() {
-      var is_some_video_on_screen_paused = false;
-      $("video:visible").each(function () {
-        var vid = $(this).get(0);
-        if (isScrolledIntoView(vid) && vid.paused) {
-          is_some_video_on_screen_paused = true;
-          return false;
-        }
-      });
-      if (is_some_video_on_screen_paused) {
-        console.warn("Some videos on screen are paused. Give a dialog box for users to manually enable autoplay.")
-        $video_test_dialog.dialog("open");
-      }
-    }
-
-    // if the page is shown, attemp to play the video, and then run the check
+    // If the page is shown, attemp to play the video, and then run the check
     function handleVisibilityChange() {
       if (!document[hidden]) {
+        should_do_video_play_test = true;
+        // Attemp to play the videos that are in view
         $("video:visible").each(function () {
           var vid = $(this).get(0);
-          if (vid.paused) {
-            vid.play();
+          if (util.isScrolledIntoView(vid)) {
+            util.handleVideoPromise(vid, "play");
           }
         });
         startVideoPlayTest(1000);
       }
-    }
-
-    function isScrolledIntoView(elem) {
-      var docViewTop = $(window).scrollTop();
-      var docViewBottom = docViewTop + $(window).height();
-
-      var elemTop = $(elem).offset().top;
-      var elemBottom = elemTop + $(elem).height();
-
-      return ((docViewTop < elemBottom) && (elemTop < docViewBottom));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,25 +94,59 @@
     // Public methods
     //
     var startVideoPlayTest = function (delay) {
-      window.setTimeout(function () {
+      if (!should_do_video_play_test) return;
+      should_do_video_play_test = false;
+      // We need this timeout to properly get document[hidden]
+      setTimeout(function () {
+        // Check if the page is hidden
         if (document[hidden]) {
           console.warn("The page is hidden. Ignore video play check.");
+          should_do_video_play_test = true;
           return;
         }
-        // Check the ready state of the videos
-        var is_all_video_on_screen_ready = true;
-        $("video:visible").each(function () {
+        var $videos = $("video:visible");
+        // Check if videos on screen are ready to play
+        // Check if there is at least one video on screen
+        var is_at_least_one_video_on_screen = false;
+        var is_all_videos_on_screen_ready_to_play = true;
+        $videos.each(function () {
           var vid = $(this).get(0);
-          if (isScrolledIntoView(vid) && vid.readyState != 4) {
-            is_all_video_on_screen_ready = false;
+          if (util.isScrolledIntoView(vid)) {
+            is_at_least_one_video_on_screen = true;
+            if (vid.readyState < 1) {
+              is_all_videos_on_screen_ready_to_play = false;
+              return false;
+            }
+          }
+        });
+        if (!is_at_least_one_video_on_screen) {
+          console.warn("No videos are on screen. The video play test will be handeled by the scroll event if video autoplay errors occur.");
+          should_do_video_play_test = true;
+          return;
+        }
+        if (!is_all_videos_on_screen_ready_to_play) {
+          console.warn("Some videos on the screen are not ready to play, will try the video play test later.");
+          setTimeout(function () {
+            should_do_video_play_test = true;
+            startVideoPlayTest(1000);
+          }, 5000);
+          return;
+        }
+        // Check if videos on screen plays
+        var is_all_video_on_screen_playing = true;
+        $videos.each(function () {
+          var vid = $(this).get(0);
+          if (util.isScrolledIntoView(vid) && vid.paused) {
+            is_all_video_on_screen_playing = false;
             return false;
           }
         });
-        if (is_all_video_on_screen_ready) {
-          videoPlayTest();
+        if (!is_all_video_on_screen_playing) {
+          // If not, show a dialog for users to click and play
+          console.warn("Video autoplay is disabled. Give a dialog box for users to manually enable autoplay.");
+          $video_test_dialog.dialog("open");
         } else {
-          console.warn("Some videos on screen do not have ready state 4 yet. Will test if videos play later.")
-          startVideoPlayTest(delay);
+          console.log("Video autoplay is enabled. Great!");
         }
       }, delay);
     };
