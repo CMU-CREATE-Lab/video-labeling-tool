@@ -723,33 +723,33 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
     if batch_score is not None:
         user_raw_score = user.raw_score + batch.num_unlabeled
         user.raw_score = user_raw_score
-        if batch_score != 0:
-            # Update user score
-            if client_type != 0: # do not update the score for reseacher
-                user_score = user.score + batch_score
-                user.score = user_score
-            # Update labels
-            for v in labels:
-                v["user_id"] = user_id
-                v["batch_id"] = batch_id
-                label = add_label(**v)
-                video = video_batch_hashed[v["video_id"]]
-                video.label_update_time = label.time
-                if client_type == 0: # admin researcher
-                    next_s = label_state_machine(video.label_state_admin, v["label"], client_type)
-                else: # normal user
-                    next_s = label_state_machine(video.label_state, v["label"], client_type)
-                if next_s is not None:
-                    if client_type == 0: # admin researcher
-                        # Researchers should not override the labels provided by normal users
-                        # Because we need to compare the reliability of the labels provided by normal users
-                        video.label_state_admin = next_s
-                    else: # normal user
-                        video.label_state = next_s
-                    log("Update video: %r" % video)
-                else:
-                    log_warning("No next state for video: %r" % video)
+        # Update user score
+        if client_type != 0: # do not update the score for reseacher
+            user_score = user.score + batch_score
+            user.score = user_score
         log("Update user: %r" % user)
+    if batch_score != 0: # batch_score can be None if from the dashboard when updating labels
+        # Update labels
+        for v in labels:
+            v["user_id"] = user_id
+            v["batch_id"] = batch_id
+            label = add_label(**v)
+            video = video_batch_hashed[v["video_id"]]
+            video.label_update_time = label.time
+            if client_type == 0: # admin researcher
+                next_s = label_state_machine(video.label_state_admin, v["label"], client_type)
+            else: # normal user
+                next_s = label_state_machine(video.label_state, v["label"], client_type)
+            if next_s is not None:
+                if client_type == 0: # admin researcher
+                    # Researchers should not override the labels provided by normal users
+                    # Because we need to compare the reliability of the labels provided by normal users
+                    video.label_state_admin = next_s
+                else: # normal user
+                    video.label_state = next_s
+                log("Update video: %r" % video)
+            else:
+                log_warning("No next state for video: %r" % video)
     # Update database
     update_db()
     return {"batch": batch_score, "user": user_score, "raw": user_raw_score}
