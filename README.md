@@ -1,7 +1,7 @@
 # video-labeling-tool
 Demo: http://smoke.createlab.org
 
-A tool for labeling video clips (both front-end and back-end). The back-end depends on a [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provides video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). This tool is tested and worked on:
+A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). This tool is tested and worked on:
 - macOS Mojave
   - Chrome 76
   - Safari 12
@@ -20,8 +20,8 @@ A tool for labeling video clips (both front-end and back-end). The back-end depe
 
 ### Table of Content
 - [Install MySQL](#install-mysql)
-- [Prepare gold standards for quality check](#prepare-gold-standards)
 - [Setup back-end](#setup-back-end)
+- [Prepare gold standards for quality check](#prepare-gold-standards)
 - [Dump and import MySQL database](#dump-and-import-mysql)
 - [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
 - [Connect uwsgi to apache](#connect-uwsgi-to-apache)
@@ -170,6 +170,11 @@ python set_client_type.py [user_id] 0
 where user_id can be found on the "Account" tab on the top right of the "label.html" page after logging in with Google. The number 0 that follows the user_id is the researcher permission. For more information about the permission, please refer to the client_type variable in the "User" class in the "application.py" file. The system will not run the quality check for users with the researcher permission. In this way, you can start labeling first.
 
 To assign gold standards videos, go to the "gallery.html" page when logging in with the account that has the researcher permission. On the gallery, you will find "P*" and "N*" buttons. Clicking on these buttons shows the positive and negative videos that the researcher labeled. You can now use the dropdown below each video to change the label to Gold Pos (positive gold standards) or Gold Neg (negative gold standards). Once there is a sufficient number of gold standards (more than 4), normal users will be able to label videos. I recommend having at least 100 gold standards to start.
+
+If you found that some videos are not suitable for labeling (e.g., due to incorrect image stitching), you can get the url of the video and use the following command to remove similar ones (with the same date and bounding box).
+```sh
+python set_client_type.py [video_url]
+```
 
 # <a name="dump-and-import-mysql"></a>Dump and import MySQL database
 This section assumes that you want to dump the production database to a file and import it to the development database. First, SSH to the production server and dump the database to the /tmp/ directory.
