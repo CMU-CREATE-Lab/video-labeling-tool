@@ -171,7 +171,7 @@ where user_id can be found on the "Account" tab on the top right of the "label.h
 
 To assign gold standards videos, go to the "gallery.html" page when logging in with the account that has the researcher permission. On the gallery, you will find "P*" and "N*" buttons. Clicking on these buttons shows the positive and negative videos that the researcher labeled. You can now use the dropdown below each video to change the label to Gold Pos (positive gold standards) or Gold Neg (negative gold standards). Once there is a sufficient number of gold standards (more than 4), normal users will be able to label videos. I recommend having at least 100 gold standards to start.
 
-If you found that some videos are not suitable for labeling (e.g., due to incorrect image stitching), you can get the url of the video and use the following command to mark similar ones (with the same date and bounding box) as "bad". This process does not remove videos. Instead it gives all bad videos a label state -2.
+If you found that some videos are not suitable for labeling (e.g., due to incorrect image stitching), you can get the url of the video and use the following command to mark similar ones (with the same date and bounding box) as "bad" videos. This process does not remove videos. Instead it gives all bad videos a label state -2.
 ```sh
 python set_client_type.py [video_url]
 ```
