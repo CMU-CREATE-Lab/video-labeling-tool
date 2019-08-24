@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Smoke Hunting</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="js/widgets.js"></script>
+  <script src="js/Util.js"></script>
+  <script src="js/GoogleAnalyticsTracker.js"></script>
+</head>
+
+<body>
+  <div class="menu-container">
+    <div class="menu">
+      <div class="menu-table flex-row-space-between">
+        <div class="logo flex-row-center">
+          <a href="index.html">Smoke Hunting</a>
+        </div>
+        <a class="menu-button" tabindex="0" href="javascript:void(0)">
+          <img src="img/menu.png">
+        </a>
+        <div class="menu-items flex-row-center flex-item">
+          <a href="index.html">Overview</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="faq.html" class="menu-highlight">FAQ</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="content-container">
+    <div class="content">
+      <div class="content-table flex-column">
+        <div class="flex-row">
+          <div class="flex-item flex-column">
+            <p class="text no-top-margin">
+              On this page, we listed and answered some frequently asked questions:
+            </p>
+            <p class="text no-top-margin no-bottom-margin">
+              <span class="custom-text-info-dark-theme">
+                Q1: Why sometimes a dialog box popped up and asked me to enable video autoplay?
+              </span>
+            </p>
+            <hr>
+            <p class="text no-top-margin">
+              A1: During labeling, videos need to play and loop automatically.
+              However, if a mobile device has data saver enabled, videos will stop autoplay.
+              Also, some mobile devices pause videos after users wake it up from sleeping mode.
+              In order to enable autoplay, browsers require user interactions, which is why the system shows the dialog box.
+            </p>
+            <p class="text no-bottom-margin">
+              <span class="custom-text-info-dark-theme">
+                Q2: Why my labels did not pass the quality check? How did you define the quality?
+              </span>
+            </p>
+            <hr>
+            <p class="text no-top-margin">
+              A2: For each batch (16 videos) on the page, the system randomly placed several videos with known answers, also called gold standards.
+              A batch will pass the quality check if you label these gold standards correctly.
+            </p>
+            <p class="text no-bottom-margin">
+              <span class="custom-text-info-dark-theme">
+                Q3: Why sometimes I saw similar videos? Were they the same?
+              </span>
+            </p>
+            <hr>
+            <p class="text no-top-margin">
+              A3: There can be two reasons.
+              Firstly, videos that have closer times (e.g., 8 and 8:10 am) can look similar due to the same weather and lighting conditions.
+              Secondly, gold standard videos for the quality check can appear again if you label many batches.
+            </p>
+            <p class="text no-bottom-margin">
+              <span class="custom-text-info-dark-theme">
+                Q4: What are you planning to do with all these labeled data?
+              </span>
+            </p>
+            <hr>
+            <p class="text no-top-margin">
+              A4: We will use these labeled videos to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train a deep neural network for detecting smoke emissions</a>.
+              While deep neural networks have been proven to outperform traditional models in various applications, training such large networks requires a considerable amount of labeled data, which is why we need volunteers' help.
+            </p>
+            <p class="text no-bottom-margin">
+              <span class="custom-text-info-dark-theme">
+                Q5: Where do these video clips come from?
+              </span>
+            </p>
+            <hr>
+            <p class="text no-top-margin">
+              A5: We selected several windows and cropped them into video clips from the panorama in our <a href="http://mon.createlab.org" target="_blank">monitoring camera network</a> (as shown in the following image).
+              Each video contains 36 frames, which represent about 6 minutes in real-world time.
+            </p>
+            <div class="image adaptive-image no-top-margin" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
+            <p class="text no-bottom-margin">
+              <span class="custom-text-info-dark-theme">
+                Q6: Can I build a similar system with your code?
+              </span>
+            </p>
+            <hr>
+            <p class="text no-top-margin">
+              A6: This project is <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">open-sourced on GitHub</a>. Please feel free to reuse the code.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
+    <p>Video autoplay is disabled. Please enable it.</p>
+    <button id="play-video-button" class="custom-button">Enable video autoplay</button>
+  </div>
+</body>
+
+</html>
