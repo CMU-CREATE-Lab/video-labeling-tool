@@ -9,6 +9,8 @@
   var api_url_path_get = "get_pos_labels";
   var $gallery_no_data_text = $('<span class="gallery-no-data-text">No videos are found.</span>');
   var $gallery_error_text = $('<span class="gallery-error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
+  var $gallery_loading_text = $('<span class="gallery-loading-text"></span>');
+  var $gallery_not_supported_text = $('<span class="gallery-not-supported-text">We are sorry!<br>Your browser is not supported.</span>');
   var $gallery;
   var $gallery_videos;
   var video_items = [];
@@ -17,7 +19,7 @@
   var $page_next;
   var $page_control;
   var user_id;
-  var is_admin = false;
+  var is_admin = false; // including expert and researcher
   var is_researcher = false;
   var user_token;
   var user_token_for_other_app;
@@ -63,12 +65,22 @@
 
   function showNoGalleryMsg() {
     $gallery_videos.detach();
-    $gallery.append($gallery_no_data_text);
+    $gallery.empty().append($gallery_no_data_text);
   }
 
   function showGalleryErrorMsg() {
     $gallery_videos.detach();
-    $gallery.append($gallery_error_text);
+    $gallery.empty().append($gallery_error_text);
+  }
+
+  function showGalleryLoadingMsg() {
+    $gallery_videos.detach();
+    $gallery.empty().append($gallery_loading_text);
+  }
+
+  function showGalleryNotSupportedMsg() {
+    $gallery_videos.detach();
+    $gallery.empty().append($gallery_not_supported_text);
   }
 
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
@@ -78,11 +90,16 @@
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
-        // Add the display of label states
+        // Add the display of label states and the dropdown for changing the label states
         var $control = $("<div class='label-control'></div>");
-        var $label_state = $("<p class='text-small-margin'><i></i><i></i></p>");
-        $control.append($label_state);
-        // Add the function for setting label states
+        var $video_id = $("<p class='text-small-margin'><i></i></p>");
+        $control.append($video_id);
+        var $label_state_researcher = $("<p class='text-small-margin'><i></i></p>");
+        $control.append($label_state_researcher);
+        var $label_state_citizen = $("<p class='text-small-margin'><i></i></p>");
+        $control.append($label_state_citizen);
+        var $link_to_viewer = $("<p class='text-small-margin'><a target='_blank'>Link to Viewer</a></p>");
+        $control.append($link_to_viewer);
         if (is_researcher) {
           var $desired_state_select = createLabelStateSelect();
           $desired_state_select.on("change", function () {
@@ -93,7 +110,7 @@
               label: parseInt(label_str)
             }];
             admin_marked_item["select"] = $desired_state_select;
-            admin_marked_item["p"] = $label_state;
+            admin_marked_item["p"] = $label_state_researcher;
             $set_label_confirm_dialog.find("p").text("Set the label of video (id=" + v_id + ") to " + label_state_map[label_str] + "?");
             $set_label_confirm_dialog.dialog("open");
           });
@@ -122,23 +139,43 @@
     return $(html);
   }
 
+  function safeGet(v, default_val) {
+    return util.safeGet(v, default_val);
+  }
+
   function updateItem($item, v) {
     if (typeof user_id === "undefined") {
       if (is_admin) {
+        // Update label information
         var $i = $item.find("i").removeClass();
-        var label_admin = util.safeGet(label_state_map[v["label_state_admin"]], "Undefined");
-        var label = util.safeGet(label_state_map[v["label_state"]], "Undefined");
-        $($i.get(0)).text(v["id"] + ": " + label_admin).addClass("custom-text-info-dark-theme");
-        $($i.get(1)).text("Citizen: " + label).addClass("custom-text-info-dark-theme");
+        $($i.get(0)).text("ID: " + v["id"]).addClass("custom-text-info-dark-theme");
+        var label_researcher = safeGet(label_state_map[v["label_state_admin"]], "Undefined");
+        $($i.get(1)).text("Scientist: " + label_researcher).addClass("custom-text-info-dark-theme");
+        var label_citizen = safeGet(label_state_map[v["label_state"]], "Undefined");
+        $($i.get(2)).text("Citizen: " + label_citizen).addClass("custom-text-info-dark-theme");
+        // Update link
+        var parsed_url = util.parseVars(v["url_part"]);
+        var b = parsed_url["boundsLTRB"];
+        var t = parseInt(parsed_url["startFrame"]) / parseInt(parsed_url["fps"]);
+        t = Math.round(t * 1000) / 1000
+        var parsed_root = parsed_url["root"].split("/");
+        var s = parsed_root[5];
+        var d = parsed_root[6].split(".")[0];
+        var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
+        var $a = $item.find("a").removeClass();
+        $($a.get(0)).prop("href", href);
+        // Save data to DOM
         $item.find("select").data("v", v).val("default");
       }
     } else {
       var $i = $item.find("i").removeClass();
       var s = v["label_state"];
       if ([19, 15, 23, 47].indexOf(s) != -1) {
-        $i.text("Y").addClass("custom-text-primary-dark-theme");
+        $i.text("A").addClass("custom-text-primary-dark-theme");
       } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i.text("N").addClass("custom-text-info-dark-theme");
+        $i.text("D").addClass("custom-text-info-dark-theme");
+      } else {
+        $i.text("");
       }
     }
     $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
@@ -204,6 +241,7 @@
       callback: function (data, pagination) {
         if (typeof data !== "undefined" && data.length > 0) {
           $(window).scrollTop(0);
+          $gallery.empty().append($gallery_videos);
           updateVideos(data);
           if (!is_video_autoplay_tested) {
             video_test_dialog.startVideoPlayTest(1000);
@@ -239,15 +277,18 @@
     });
     $page_back = $("#page-back");
     $page_back.on("click", function () {
+      showGalleryLoadingMsg();
       $page_nav.pagination("previous");
     });
     $page_next = $("#page-next");
     $page_next.on("click", function () {
+      showGalleryLoadingMsg();
       $page_nav.pagination("next");
     });
   }
 
   function setLabelState(labels, callback) {
+    callback = safeGet(callback, {});
     $.ajax({
       url: api_url_root + "set_label_state",
       type: "POST",
@@ -280,20 +321,20 @@
       action_text: "Confirm",
       action_callback: function () {
         setLabelState(admin_marked_item["data"], {
-          "success": function () {
+          success: function () {
             console.log("Set label state successfully:");
             console.log(admin_marked_item["data"]);
             var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
-            var txt = v_id + ": " + util.safeGet(label_state_map[v_label], "Undefined");
+            var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
             $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
-          "error": function () {
+          error: function () {
             console.log("Error when setting label state:");
             console.log(admin_marked_item["data"]);
             $(admin_marked_item["p"].find("i").get(0)).removeClass().addClass("custom-text-danger-dark-theme");
           },
-          "complete": function () {
+          complete: function () {
             admin_marked_item["select"].val("default");
             admin_marked_item = {};
           }
@@ -410,29 +451,46 @@
       no_ui: true
     });
     initConfirmDialog();
-    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-      tracker_id: util.getGoogleAnalyticsId(),
-      ready: function (client_id) {
-        google_account_dialog.silentSignInWithGoogle(function (is_signed_in, google_user) {
-          if (is_signed_in) {
-            util.login({
-              google_id_token: google_user.getAuthResponse().id_token
-            }, {
-              success: onLoginSuccess,
-              complete: onLoginComplete
-            });
-          } else {
-            util.login({
-              client_id: client_id
-            }, {
-              success: onLoginSuccess,
-              complete: onLoginComplete
-            });
-          }
-        });
-      }
-    });
-    video_test_dialog = new edaplotjs.VideoTestDialog();
+    if (util.browserSupported()) {
+      showGalleryLoadingMsg();
+      var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+        tracker_id: util.getGoogleAnalyticsId(),
+        ready: function (client_id) {
+          google_account_dialog.silentSignInWithGoogle({
+            success: function (is_signed_in, google_user) {
+              if (is_signed_in) {
+                util.login({
+                  google_id_token: google_user.getAuthResponse().id_token
+                }, {
+                  success: onLoginSuccess,
+                  complete: onLoginComplete
+                });
+              } else {
+                util.login({
+                  client_id: client_id
+                }, {
+                  success: onLoginSuccess,
+                  complete: onLoginComplete
+                });
+              }
+            },
+            error: function (error) {
+              console.error("Error with Google sign-in: ", error);
+              util.login({
+                client_id: client_id
+              }, {
+                success: onLoginSuccess,
+                complete: onLoginComplete
+              });
+            }
+          });
+        }
+      });
+      video_test_dialog = new edaplotjs.VideoTestDialog();
+    } else {
+      console.warn("Browser not supported.");
+      showGalleryNotSupportedMsg();
+    }
   }
 
   $(init);

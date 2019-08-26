@@ -18,7 +18,6 @@
     var $sign_in_text;
     var $hello_text;
     var $user_name_text;
-    var $user_score_text;
     var $use_id_text;
     var widgets = new edaplotjs.Widgets();
     var sign_in_success = settings["sign_in_success"];
@@ -48,7 +47,6 @@
       $sign_in_text = $("#sign-in-text");
       $hello_text = $("#hello-text");
       $user_name_text = $("#user-name-text");
-      $user_score_text = $("#user-score-text");
       $use_id_text = $("#user-id-text");
       $google_sign_out_button = $("#google-sign-out-button");
       $google_sign_in_button = $("#google-sign-in-button");
@@ -123,20 +121,27 @@
     // Public methods
     //
     var isAuthenticatedWithGoogle = function (callback) {
+      callback = safeGet(callback, {});
       if (typeof gapi !== "undefined" && typeof gapi.auth2 === "undefined") {
         gapi.load("auth2", function () {
           gapi.auth2.init().then(function () {
             isAuthenticatedWithGoogle(callback);
+          }, function (error) {
+            if (typeof error !== "undefined") {
+              if (typeof callback["error"] === "function") {
+                callback["error"](error);
+              }
+            }
           });
         });
       } else {
-        if (typeof callback === "function") {
+        if (typeof callback["success"] === "function") {
           var auth2 = gapi.auth2.getAuthInstance();
           var is_signed_in = auth2.isSignedIn.get();
           if (is_signed_in) {
-            callback(is_signed_in, auth2.currentUser.get());
+            callback["success"](is_signed_in, auth2.currentUser.get());
           } else {
-            callback(is_signed_in);
+            callback["success"](is_signed_in);
           }
         }
       }
@@ -144,16 +149,23 @@
     this.isAuthenticatedWithGoogle = isAuthenticatedWithGoogle;
 
     this.silentSignInWithGoogle = function (callback) {
+      callback = safeGet(callback, {});
       gapi.load("auth2", function () {
         // gapi.auth2.init() will automatically sign in a user to the application if previously signed in
         gapi.auth2.init().then(function () {
-          if (typeof callback === "function") {
+          if (typeof callback["success"] === "function") {
             var auth2 = gapi.auth2.getAuthInstance();
             var is_signed_in = auth2.isSignedIn.get();
             if (is_signed_in) {
-              callback(is_signed_in, auth2.currentUser.get());
+              callback["success"](is_signed_in, auth2.currentUser.get());
             } else {
-              callback(is_signed_in);
+              callback["success"](is_signed_in);
+            }
+          }
+        }, function (error) {
+          if (typeof error !== "undefined") {
+            if (typeof callback["error"] === "function") {
+              callback["error"](error);
             }
           }
         });
@@ -162,16 +174,6 @@
 
     this.getDialog = function () {
       return $account_dialog;
-    };
-
-    this.updateUserScore = function (score) {
-      if (typeof $user_score_text !== "undefined") {
-        if (typeof score !== "undefined") {
-          $user_score_text.text(score);
-        } else {
-          $user_score_text.text("(researcher)");
-        }
-      }
     };
 
     this.updateUserId = function (user_id) {

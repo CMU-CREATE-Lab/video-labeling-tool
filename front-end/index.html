@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <title>Smoke Labeling</title>
-  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+  <title>Smoke Hunting</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
@@ -27,7 +27,7 @@
     <div class="menu">
       <div class="menu-table flex-row-space-between">
         <div class="logo flex-row-center">
-          <a href="index.html">Smoke Labeling</a>
+          <a href="index.html">Smoke Hunting</a>
         </div>
         <a class="menu-button" tabindex="0" href="javascript:void(0)">
           <img src="img/menu.png">
@@ -35,6 +35,7 @@
         <div class="menu-items flex-row-center flex-item">
           <a href="index.html" class="menu-highlight">Overview</a>
           <a href="gallery.html">Gallery</a>
+          <a href="faq.html">FAQ</a>
         </div>
       </div>
     </div>
@@ -45,15 +46,24 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text no-top-margin no-bottom-margin">
-              The <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> developed <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_bank">this tool</a> to engage citizens in <span class="custom-text-info-dark-theme">labeling smoke videos</span>, which are obtained from our Pittsburgh <a href="http://mon.createlab.org/" target="_bank">Mon Valley monitoring camera network</a>.
+              The <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> needs volunteers' help to <span class="custom-text-info-dark-theme">label smoke videos</span> obtained from our <a href="http://mon.createlab.org/" target="_bank">monitoring cameras</a>.
               With sufficient labeled videos and state-of-the-art artificial intelligence, we aim to train a computer system that can detect smoke emissions automatically.
+              A brief introduction about this tool can be found at <a href="https://www.youtube.com/watch?v=A4p5V9ZlM44" target="_blank">this video</a>.
             </p>
             <div class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
+            <p class="text no-top-margin no-bottom-margin">
+              The system currently supports Android 7+, iOS 11+, and recent up-to-date desktop browsers. Before you start, note the following characteristics of smoke:
+            </p>
+            <ul>
+              <li>Smoke disappears slower than steam.</li>
+              <li>Smoke shows various colors.</li>
+              <li>Smoke has unclear edges.</li>
+              <li>Smoke has various opacities.</li>
+            </ul>
             <p class="text no-top-margin">
-              Smoke disappears slower and has unclear edges when compared to steam.
-              Smoke can also have various opacities.
-              High-opacity smoke can block most of its background.
-              Here are examples that show <span class="custom-text-info-dark-theme">high opacity smoke</span>.
+              <span class="custom-text-info-dark-theme">We need to label both high and low opacity smoke.</span>
+              High-opacity smoke (the first and second videos below) can block most of the background.
+              For low-opacity smoke (the third and fourth videos below), the background is mostly visible.
             </p>
           </div>
         </div>
@@ -70,42 +80,12 @@
           </a>
           <a href="javascript:void(0)" class="flex-column">
             <video autoplay loop muted playsinline disableRemotePlayback>
-              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=3012,1145,3515,1648&width=180&height=180&startFrame=11462&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
-            </video>
-          </a>
-          <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline disableRemotePlayback>
-              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/westmifflin1/2018-06-12.timemachine/&boundsLTRB=2617,1625,3124,2132&width=180&height=180&startFrame=3899&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
-            </video>
-          </a>
-        </div>
-        <div class="flex-row">
-          <div class="flex-item flex-column">
-            <p class="text">
-              For low-opacity smoke, its background is mostly visible.
-              Here are examples that show <span class="custom-text-info-dark-theme">low opacity smoke</span>, which also <span class="custom-text-info-dark-theme">needs to be identified</span>.
-            </p>
-          </div>
-        </div>
-        <div class="gallery">
-          <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline disableRemotePlayback>
-              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6304,964,6807,1467&width=180&height=180&startFrame=7718&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
-            </video>
-          </a>
-          <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5329,1033,5831,1535&width=180&height=180&startFrame=10346&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
             </video>
           </a>
           <a href="javascript:void(0)" class="flex-column">
             <video autoplay loop muted playsinline disableRemotePlayback>
               <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6007,1008,6509,1510&width=180&height=180&startFrame=13586&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
-            </video>
-          </a>
-          <a href="javascript:void(0)" class="flex-column">
-            <video autoplay loop muted playsinline disableRemotePlayback>
-              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=13010&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
             </video>
           </a>
         </div>
@@ -143,6 +123,36 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text">
+              Smoke and steam can appear at the same time.
+              Here are examples that show <span class="custom-text-info-dark-theme">both smoke and steam</span>, which also <span class="custom-text-info-dark-theme">needs to be selected</span>.
+            </p>
+          </div>
+        </div>
+        <div class="gallery">
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline disableRemotePlayback>
+              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-17.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=4878&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline disableRemotePlayback>
+              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=3544,899,4026,1381&width=180&height=180&startFrame=6811&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline disableRemotePlayback>
+              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=2583,1111,3086,1614&width=180&height=180&startFrame=13406&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
+            </video>
+          </a>
+          <a href="javascript:void(0)" class="flex-column">
+            <video autoplay loop muted playsinline disableRemotePlayback>
+              <source src="https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-17.timemachine/&boundsLTRB=3981,1004,4484,1507&width=180&height=180&startFrame=7398&format=mp4&fps=12&tileFormat=mp4&nframes=36" type="video/mp4">
+            </video>
+          </a>
+        </div>
+        <div class="flex-row">
+          <div class="flex-item flex-column">
+            <p class="text">
               Various bad weather conditions can affect the camera view. Here are examples that show <span class="custom-text-danger-dark-theme">bad weather</span>, which should <span class="custom-text-danger-dark-theme">not be selected</span>.
             </p>
           </div>
@@ -169,9 +179,19 @@
             </video>
           </a>
         </div>
+        <div class="flex-row" id="label-statistics">
+          <div class="flex-item flex-column">
+            <p class="text">
+              We need your help to train the computer system to recognize smoke emissions!
+              There are <span class="num-all-videos-text">[...]</span> videos in the dataset.
+              Among them, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> are fully labeled</span> and confirmed by multiple users so far.
+              Also, <span class="num-partially-labeled-text">[...]</span> are partially labeled.
+            </p>
+          </div>
+        </div>
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
-            <div class="control-group add-top-margin">
+            <div class="control-group">
               <a id="start" class="custom-button-flat large stretch-on-mobile" href="label.html"><img src="img/play.png"><span>Start Labeling</span></a>
             </div>
           </div>
@@ -180,7 +200,7 @@
     </div>
   </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
-    <p>Videos on this page did not autoplay. Please enable it.</p>
+    <p>Video autoplay is disabled. Please enable it.</p>
     <button id="play-video-button" class="custom-button">Enable video autoplay</button>
   </div>
 </body>

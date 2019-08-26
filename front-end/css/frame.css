@@ -1,6 +1,6 @@
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
- * Version: v3.7
+ * Version: v3.12
  * This CSS file is for the website frame
  * If you want to keep this template updated, avoid modifying this file
  * Instead, add your own CSS in the index.css
@@ -12,6 +12,9 @@ body {
   padding: 0;
   background-color: white;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+  left: 0;
+  right: 0;
+  width: auto;
 }
 
 a {
@@ -287,6 +290,7 @@ hr {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  display: flex;
 }
 
 .image img,
@@ -343,7 +347,7 @@ ol.publication li {
 
 ol.publication li p:before {
   line-height: 1;
-  margin-right: 0;
+  margin-right: 5px;
 }
 
 ol.publication.C-list {
@@ -427,7 +431,7 @@ ol.publication.F-list li p {
 }
 
 ol.publication.F-list li p:before {
-  content: "[Featured.F"counter(F-counter)"]";
+  content: "[F"counter(F-counter)"]";
 }
 
 ol.publication.A-list {

@@ -1,12 +1,3 @@
-#TODO: fix the bug when changing the client type of a user, previous tokens with different permissions are still working (need to invalidate previous ones)
-#TODO: force a user to go to the tutorial if doing the batches wrong for too many times, mark the user as spam if continue to do so
-#TODO: how to promote the client to a different rank when it is changed, and invalidate previous user tokens with different permissions?
-#   (need to add a table to record the promotion history)
-#   (need to encode client type in the user token, and check if this matches the database record)
-#   (for a user that did not login via google, always treat them as laypeople)
-#TODO: add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
-#TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
-
 from flask import Flask, render_template, jsonify, request, abort, g, make_response, has_request_context
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -39,6 +30,7 @@ batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
 gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
+if gold_standard_in_batch < 2: gold_standard_in_batch = 2 # must be larger than 2
 
 """
 Set Formatter
@@ -160,14 +152,16 @@ class User(db.Model):
     client_type = db.Column(db.Integer, nullable=False, default=3)
     # The epochtime (in seconds) when the user was added
     register_time = db.Column(db.Integer, nullable=False, default=get_current_time)
-    # The score that the user obtained so far (number of labeled videos)
+    # The score that the user obtained so far (number of effectively labeled videos that passed the system's check)
     score = db.Column(db.Integer, nullable=False, default=0)
+    # The raw score that the user obtained so far (number of unlabeled video that the user went through so far)
+    raw_score = db.Column(db.Integer, nullable=False, default=0)
     # Relationships
     label = db.relationship("Label", backref=db.backref("user", lazy=True), lazy=True)
     connection = db.relationship("Connection", backref=db.backref("user", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score)
+        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r raw_score=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score, self.raw_score)
 
 """
 The class for the label history table
@@ -199,14 +193,12 @@ class Connection(db.Model):
     client_type = db.Column(db.Integer, nullable=False)
     # The user id in the User table (the user who connected to the server)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    # Current score of the user
-    user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
     # Relationships
     batch = db.relationship("Batch", backref=db.backref("connection", lazy=True), lazy=True)
     view = db.relationship("View", backref=db.backref("connection", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Connection id=%r time=%r client_type=%r user_id=%r user_score=%r>") % (self.id, self.time, self.client_type, self.user_id, self.user_score)
+        return ("<Connection id=%r time=%r client_type=%r user_id=%r>") % (self.id, self.time, self.client_type, self.user_id)
 
 """
 The class for the issued video batch history table (for tracking video batches)
@@ -223,13 +215,15 @@ class Batch(db.Model):
     # The number of gold standards and unlabeled videos in this batch
     num_unlabeled = db.Column(db.Integer, nullable=False, default=0)
     num_gold_standard = db.Column(db.Integer, nullable=False, default=0)
-    # Current score of the user
+    # Current score of the user (User.score)
     user_score = db.Column(db.Integer) # null means no information, added on 4/26/2019
+    # Current raw score of the user (User.raw_score)
+    user_raw_score = db.Column(db.Integer) # null means no information, added on 8/9/2019
     # Relationships
     label = db.relationship("Label", backref=db.backref("batch", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r user_score=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard, self.user_score)
+        return ("<Batch id=%r request_time=%r return_time=%r connection_id=%r score=%r num_unlabeled=%r num_gold_standard=%r user_score=%r user_raw_score=%r>") % (self.id, self.request_time, self.return_time, self.connection_id, self.score, self.num_unlabeled, self.num_gold_standard, self.user_score, self.user_raw_score)
 
 """
 The table for tracking viewed videos
@@ -527,6 +521,22 @@ def get_all_labels():
     return get_video_labels(None, only_admin=True)
 
 """
+Get statistics of the labels
+"""
+@app.route("/api/v1/get_label_statistics", methods=["GET"])
+def get_label_statistics():
+    fully_labeled = pos_labels + pos_gold_labels + neg_labels + neg_gold_labels
+    q = Video.query
+    num_all_videos = q.filter(~Video.label_state.in_(bad_labels)).count()
+    num_fully_labeled = q.filter(Video.label_state.in_(fully_labeled)).count()
+    num_partially_labeled = q.filter(Video.label_state.in_(partial_labels)).count()
+    return_json = {
+        "num_all_videos": num_all_videos,
+        "num_fully_labeled": num_fully_labeled,
+        "num_partially_labeled": num_partially_labeled}
+    return jsonify(return_json)
+
+"""
 Log after each request
 """
 @app.after_request
@@ -704,16 +714,21 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
             batch_score = compute_video_batch_score(video_batch_hashed, labels)
             batch.score = batch_score
             batch.user_score = user.score
+            batch.user_raw_score = user.raw_score
         log("Update batch: %r" % batch)
     # Add labeling history and update the video label state
     # If the batch score is 0, do not update the label history since this batch is not reliable
     user_score = None
-    if batch_score != 0:
+    user_raw_score = None
+    if batch_score is not None:
+        user_raw_score = user.raw_score + batch.num_unlabeled
+        user.raw_score = user_raw_score
         # Update user score
         if client_type != 0: # do not update the score for reseacher
             user_score = user.score + batch_score
             user.score = user_score
-            log("Update user: %r" % user)
+        log("Update user: %r" % user)
+    if batch_score != 0: # batch_score can be None if from the dashboard when updating labels
         # Update labels
         for v in labels:
             v["user_id"] = user_id
@@ -737,7 +752,7 @@ def update_labels(labels, user_id, connection_id, batch_id, client_type):
                 log_warning("No next state for video: %r" % video)
     # Update database
     update_db()
-    return {"batch": batch_score, "user": user_score}
+    return {"batch": batch_score, "user": user_score, "raw": user_raw_score}
 
 """
 A finite state machine to infer the new label state based on current label state and some inputs
@@ -888,34 +903,34 @@ Query a batch of videos for labeling by using active learning or random sampling
 def query_video_batch(user_id, use_admin_label_state=False):
     # Get the video ids labeled by the user before
     v_ids = Label.query.filter(Label.user_id==user_id).from_self(Video).join(Video).distinct().with_entities(Video.id).all()
-    undefined_labels = (-1, 0b11, 0b100, 0b101)
     labeled_video_ids = [v[0] for v in v_ids]
     if use_admin_label_state:
+        # For admin researcher, do not add gold standards
         # Exclude the videos that were labeled by the same user
-        q = Video.query.filter(and_(Video.label_state_admin.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
+        q = Video.query.filter(and_(Video.label_state_admin.in_((-1, 0b11, 0b100, 0b101)), Video.id.notin_(labeled_video_ids)))
         return q.order_by(func.random()).limit(batch_size).all()
     else:
-        if gold_standard_in_batch == 0:
-            # For admin researcher, do not add gold standards
-            # Exclude the videos that were labeled by the same user
-            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids)))
-            return q.order_by(func.random()).limit(batch_size).all()
+        # Select gold standards (at least one pos and neg to prevent spamming)
+        # Spamming patterns include ignoring or selecting all videos
+        num_gold_pos = np.random.choice(range(1, gold_standard_in_batch))
+        num_gold_neg = gold_standard_in_batch - num_gold_pos
+        gold_pos = Video.query.filter(Video.label_state_admin==0b101111).order_by(func.random()).limit(num_gold_pos).all()
+        gold_neg = Video.query.filter(Video.label_state_admin==0b100000).order_by(func.random()).limit(num_gold_neg).all()
+        # Exclude videos that were labeled by the same user, also the gold standards
+        gold_v_ids = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000))).with_entities(Video.id).all()
+        q = Video.query.filter(Video.id.notin_(labeled_video_ids + gold_v_ids))
+        # Try to include some partially labeled videos in this batch
+        num_unlabeled = batch_size - gold_standard_in_batch
+        num_partially_labeled = int(num_unlabeled/2)
+        partially_labeled = q.filter(Video.label_state.in_((0b11, 0b100, 0b101))).order_by(func.random()).limit(num_partially_labeled).all()
+        not_labeled = q.filter(Video.label_state==-1).order_by(func.random()).limit(num_unlabeled - len(partially_labeled)).all()
+        if (len(gold_pos + gold_neg) != gold_standard_in_batch):
+            # This means that there are not enough or no gold standard videos
+            return None
         else:
-            q_gold = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000)))
-            q_gold_pos = q_gold.filter(Video.label_state_admin==0b101111)
-            gold_v_ids = q_gold.with_entities(Video.id).all()
-            # Exclude videos that were labeled by the same user, also the gold standards
-            q = Video.query.filter(and_(Video.label_state.in_(undefined_labels), Video.id.notin_(labeled_video_ids + gold_v_ids)))
-            gold_pos = q_gold_pos.order_by(func.random()).limit(1).all() # use at least on gold pos to prevent spamming
-            gold = q_gold.order_by(func.random()).limit(gold_standard_in_batch - 1).all()
-            unlabeled = q.order_by(func.random()).limit(batch_size - gold_standard_in_batch).all()
-            if (len(gold) != gold_standard_in_batch - 1):
-                # This means that there are not enough or no gold standard videos
-                return make_response("", 204)
-            else:
-                videos = gold + unlabeled + gold_pos
-                shuffle(videos)
-                return videos
+            videos = gold_pos + gold_neg + not_labeled + partially_labeled
+            shuffle(videos)
+            return videos
 
 """
 Get user token by using client id
@@ -927,15 +942,16 @@ def get_user_token_by_client_id(client_id):
     user_id = user.id
     client_type = user.client_type
     user_score = user.score
-    connection = add_connection(user_id=user_id, client_type=client_type, user_score=user_score)
+    user_raw_score = user.raw_score
+    connection = add_connection(user_id=user_id, client_type=client_type)
     ct = connection.time
     cid = connection.id
     if client_type == -1:
         return (None, None) # a blacklisted user does not get the token
     else:
-        # Field user_score is for the client to display the user score when loggin in
+        # Field user_score and user_raw_score is for the client to display the user score when loggin in
         # Field connection_id is for updating the batch information when the client sends labels back
-        user_token = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=cid, iat=ct, user_score=user_score)
+        user_token = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=cid, iat=ct, user_score=user_score, user_raw_score=user_raw_score)
         # This is the token for other app to access video labels from API calls
         user_token_for_other_app = encode_user_jwt(user_id=user_id, client_type=client_type, connection_id=-1, iat=ct)
         return (user_token, user_token_for_other_app)
@@ -991,6 +1007,12 @@ Decode jwt
 """
 def decode_jwt(token):
     return jwt.decode(token, private_key, algorithms=["HS256"])
+
+"""
+Get all the url_part in the Video table
+"""
+def get_all_url_part():
+    return Video.query.with_entities(Video.url_part).all()
 
 """
 Custom logs

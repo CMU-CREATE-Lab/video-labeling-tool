@@ -1,20 +1,3 @@
-/*
- * TODO: add a playback timeline bar to show the video playback time
- * TODO: add a link back to time machine viewer on the labeling page (also gallery page)
- * TODO: design user feedback system after labeling a batch (e.g., inform performance, correct or wrong labels for gold standards)
- * TODO: show a bar (with badge) about how many videos are correctly labeled (use gold standard videos to verify this)
- * TODO: add interactive tutorial
- * TODO: if the labels are rejected due to poor quality, need to let user know (e.g., dialog box)
- * TODO: add a leaderboard for showing user id and scores
- * TODO: if the user made too many bad batches, ask the user to retake the tutorial
- * TODO: wording check with Paul
- * TODO: allow users to share the badge with the achievement on social media
- * TODO: as users gain enough scores, advance them to the harder mode
- * - laypeople mode: select videos that have smoke
- * - amateur mode: select smoke opacity (low, medium, high)
- * - expert mode: crop images to a region
- */
-
 (function () {
   "use strict";
 
@@ -33,16 +16,18 @@
     var $tool;
     var $tool_videos;
     var video_items = [];
-    var $bad_video_text = $('<span class="bad-video-text">Oops!<br>Some video links are broken.<br>Please press "Keep Going" to skip this video batch.</span>');
+    var $bad_video_text = $('<span class="bad-video-text">Oops!<br>Some video links are broken.<br>Please refresh this page.</span>');
     var $error_text = $('<span class="error-text">Oops!<br>Server may be down or busy.<br>Please come back later.</span>');
-    var $no_data_text = $('<span class="no-data-text">Thank you!<br>Available videos are all labeled.<br>Please come back tomorrow.</span>');
+    var $no_data_text = $('<span class="no-data-text">Thank you!<br>Videos are all labeled.<br>Please come back later.</span>');
     var $loading_text = $('<span class="loading-text"></span>');
+    var $not_supported_text = $('<span class="not-supported-text">We are sorry!<br>Your browser is not supported.</span>');
     var api_url_root = util.getRootApiUrl();
     var user_id;
     var video_token;
     var user_token;
     var this_obj = this;
     var user_score;
+    var user_raw_score;
     var on_user_score_update = settings["on_user_score_update"];
     var is_admin;
 
@@ -54,6 +39,7 @@
       $tool = $('<div class="video-labeling-tool"></div>');
       $tool_videos = $('<div class="video-labeling-tool-videos"></div>');
       $container.append($tool.append($tool_videos));
+      showLoadingMsg();
     }
 
     // Get the user id from the server
@@ -157,6 +143,7 @@
 
     // Create a video label element
     // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
+    // UPDATE: starting from Safari 12, more videos are allowed
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
@@ -190,9 +177,8 @@
         $item.data("id", v["id"]);
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
-          if (this.paused) {
-            this.play(); // play if the autoplay tag fails
-          }
+          // Play the video
+          util.handleVideoPromise(this, "play");
         });
         if (!$vid.complete) {
           var deferred = $.Deferred();
@@ -213,6 +199,7 @@
         }
       }
       // Load and show videos
+      callback = safeGet(callback, {});
       resolvePromises(deferreds, {
         success: function (data) {
           $tool.empty().append($tool_videos);
@@ -241,6 +228,12 @@
       if ($element.hasClass("selected")) {
         $element.removeClass("selected");
       }
+    }
+
+    // Show not supported message
+    function showNotSupportedMsg() {
+      $tool_videos.detach();
+      $tool.empty().append($not_supported_text);
     }
 
     // Show error message
@@ -314,9 +307,10 @@
     // When sending the current batch of video labels successfully, get a new batch of videos
     function onSendVideoBatchSuccess(data, callback) {
       // Update the user score
-      if (typeof data !== "undefined" && data["data"]["score"]["user"] != null) {
+      if (typeof data !== "undefined") {
         user_score = data["data"]["score"]["user"];
-        if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+        user_raw_score = data["data"]["score"]["raw"];
+        if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score);
       }
       // Get a new batch
       getVideoBatch({
@@ -332,23 +326,40 @@
       });
     }
 
+    // When the user ID is updated successfully
+    function onUserIdUpdateSuccess(data) {
+      user_token = data["user_token"];
+      var user_payload = getJwtPayload(user_token);
+      user_id = user_payload["user_id"];
+      user_score = user_payload["user_score"];
+      user_raw_score = user_payload["user_raw_score"];
+      is_admin = user_payload["client_type"] == 0 ? true : false;
+      if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score);
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Public methods
     //
     this.next = function (callback, options) {
       callback = safeGet(callback, {});
-      sendVideoBatch({
-        success: function (data) {
-          onSendVideoBatchSuccess(data, callback);
-        },
-        error: function (xhr) {
-          if (typeof callback["error"] === "function") callback["error"](xhr);
-        },
-        abort: function (xhr) {
-          onSendVideoBatchSuccess(xhr.responseJSON, callback);
-        }
-      }, options);
+      if (util.browserSupported()) {
+        sendVideoBatch({
+          success: function (data) {
+            onSendVideoBatchSuccess(data, callback);
+          },
+          error: function (xhr) {
+            if (typeof callback["error"] === "function") callback["error"](xhr);
+          },
+          abort: function (xhr) {
+            onSendVideoBatchSuccess(xhr.responseJSON, callback);
+          }
+        }, options);
+      } else {
+        showNotSupportedMsg();
+        console.warn("Browser not supported.")
+        if (typeof callback["error"] === "function") callback["error"]("Browser not supported.");
+      }
     };
 
     this.userId = function () {
@@ -361,12 +372,7 @@
         google_id_token: google_id_token
       }, {
         success: function (data) {
-          user_token = data["user_token"];
-          var user_payload = getJwtPayload(user_token);
-          user_id = user_payload["user_id"];
-          user_score = user_payload["user_score"];
-          is_admin = user_payload["client_type"] == 0 ? true : false;
-          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+          onUserIdUpdateSuccess(data);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {
@@ -381,12 +387,7 @@
         client_id: safeGet(new_client_id, util.getUniqueId())
       }, {
         success: function (data) {
-          user_token = data["user_token"];
-          var user_payload = getJwtPayload(user_token);
-          user_id = user_payload["user_id"];
-          user_score = user_payload["user_score"];
-          is_admin = user_payload["client_type"] == 0 ? true : false;
-          if (typeof on_user_score_update === "function") on_user_score_update(user_score);
+          onUserIdUpdateSuccess(data);
           if (typeof callback["success"] === "function") callback["success"](this_obj);
         },
         error: function (xhr) {

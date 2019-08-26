@@ -8,16 +8,28 @@
   var $next;
   var counter = 0;
   var max_counter = 10;
-  var count_down_duration = 500; // in milliseconds
+  var count_down_duration = 1000; // in milliseconds
   var is_first_time = true;
   var is_video_autoplay_tested = false;
   var ga_tracker;
+  var $sign_in_prompt;
+  var $user_score_container;
+  var $user_score_text;
+  var $user_raw_score_text;
+  var api_url_root = util.getRootApiUrl();
+  var count_down_timeout;
+
+  function resetCountDown() {
+    clearTimeout(count_down_timeout);
+    $next.removeClass("count-down-" + counter);
+    counter = 0;
+  }
 
   function countDown() {
     if (counter == 0) {
       $next.addClass("count-down-0");
     }
-    setTimeout(function () {
+    count_down_timeout = setTimeout(function () {
       $next.removeClass("count-down-" + counter);
       if (counter == max_counter) {
         $next.prop("disabled", false);
@@ -32,6 +44,7 @@
 
   function nextBatch(ignore_labels) {
     $next.prop("disabled", true);
+    resetCountDown();
     $(window).scrollTop(0);
     video_labeling_tool.next({
       success: function () {
@@ -40,6 +53,7 @@
           is_video_autoplay_tested = true;
         }
         countDown();
+        updateLabelStatistics();
       },
       abort: function () {
         $next.prop("disabled", false);
@@ -66,10 +80,11 @@
         nextBatch();
       });
       nextBatch();
-      var $account_dialog = google_account_dialog.getDialog();
-      google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
-        if (!is_signed_in) {
-          $account_dialog.dialog("open");
+      google_account_dialog.isAuthenticatedWithGoogle({
+        success: function (is_signed_in) {
+          if (!is_signed_in) {
+            google_account_dialog.getDialog().dialog("open");
+          }
         }
       });
       is_first_time = false;
@@ -81,13 +96,54 @@
     }
   }
 
+  function updateLabelStatistics() {
+    $.getJSON(api_url_root + "get_label_statistics", function (data) {
+      var num_all_videos = data["num_all_videos"];
+      $(".num-all-videos-text").text(num_all_videos);
+      var num_fully_labeled = data["num_fully_labeled"];
+      var num_fully_labeled_p = Math.round(num_fully_labeled / num_all_videos * 10000) / 100;
+      $(".num-fully-labeled-text").text(num_fully_labeled + " (" + num_fully_labeled_p + "%)");
+      var num_partially_labeled = data["num_partially_labeled"];
+      var num_partially_labeled_p = Math.round(num_partially_labeled / num_all_videos * 10000) / 100;
+      $(".num-partially-labeled-text").text(num_partially_labeled + " (" + num_partially_labeled_p + "%)");
+      $("#label-statistics").show();
+    });
+  }
+
+  function onUserNotSignedIn(client_id) {
+    video_labeling_tool.updateUserIdByClientId(client_id, {
+      success: function (obj) {
+        onUserIdChangeSuccess(obj.userId());
+      },
+      error: function (xhr) {
+        console.error("Error when updating user id when updating user id by client id!");
+        printServerErrorMsg(xhr);
+        $("#start").prop("disabled", true).find("span").text("Error when connecting to server");
+      }
+    });
+  }
+
   function init() {
+    $user_score_text = $(".user-score-text");
+    $user_raw_score_text = $(".user-raw-score-text");
     video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container", {
-      on_user_score_update: function (score) {
-        if (video_labeling_tool.isAdmin()) {
-          score = undefined;
+      on_user_score_update: function (score, raw_score) {
+        if (typeof $user_score_text !== "undefined") {
+          if (video_labeling_tool.isAdmin()) {
+            $user_score_text.text("(researcher)");
+          } else {
+            if (typeof score !== "undefined" && score !== null) {
+              $user_score_text.text(score / 12);
+            }
+          }
         }
-        google_account_dialog.updateUserScore(score);
+        if (typeof $user_raw_score_text !== "undefined" && typeof raw_score !== "undefined" && raw_score !== null) {
+          if (video_labeling_tool.isAdmin()) {
+            $user_raw_score_text.text(raw_score / 16);
+          } else {
+            $user_raw_score_text.text(raw_score / 12);
+          }
+        }
       }
     });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
@@ -95,6 +151,8 @@
         video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
+            $sign_in_prompt.hide();
+            $user_score_container.show();
           },
           error: function (xhr) {
             console.error("Error when updating user id by using google token!");
@@ -106,6 +164,8 @@
         video_labeling_tool.updateUserIdByClientId(ga_tracker.getClientId(), {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
+            $sign_in_prompt.show();
+            $user_score_container.hide();
           },
           error: function (xhr) {
             console.error("Error when updating user id when signing out from google!");
@@ -114,27 +174,30 @@
         });
       }
     });
+    $sign_in_prompt = $("#sign-in-prompt");
+    $sign_in_prompt.on("click", function () {
+      google_account_dialog.getDialog().dialog("open");
+    });
+    $user_score_container = $("#user-score-container");
     video_test_dialog = new edaplotjs.VideoTestDialog();
     ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
-        google_account_dialog.isAuthenticatedWithGoogle(function (is_signed_in) {
-          // If signed in, will be handled by the callback function of initGoogleSignIn() in the GoogleAccountDialog object
-          if (!is_signed_in) {
-            video_labeling_tool.updateUserIdByClientId(client_id, {
-              success: function (obj) {
-                onUserIdChangeSuccess(obj.userId());
-              },
-              error: function (xhr) {
-                console.error("Error when updating user id when updating user id by client id!");
-                printServerErrorMsg(xhr);
-                $("#start").prop("disabled", true).find("span").text("Error when connecting to server");
-              }
-            });
+        google_account_dialog.isAuthenticatedWithGoogle({
+          success: function (is_signed_in) {
+            // If signed in, will be handled by the callback function of initGoogleSignIn() in the GoogleAccountDialog object
+            if (!is_signed_in) {
+              onUserNotSignedIn(client_id);
+            }
+          },
+          error: function (error) {
+            console.error("Error with Google sign-in: ", error);
+            onUserNotSignedIn(client_id);
           }
         });
       }
     });
+    updateLabelStatistics();
   }
 
   $(init);

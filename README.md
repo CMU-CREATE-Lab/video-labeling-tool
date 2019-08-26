@@ -1,11 +1,27 @@
 # video-labeling-tool
 Demo: http://smoke.createlab.org
 
-A tool for labeling video clips (both front-end and back-end). The back-end depends on a [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provides video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). 
+A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). This tool is tested and worked on:
+- macOS Mojave
+  - Chrome 76
+  - Safari 12
+  - Firefox 68
+- Windows 10
+  - Chrome 76
+  - Firefox 68
+  - Edge 44
+- Android 8
+  - Chrome 76
+  - Firefox 68
+- iOS 12
+  - Chrome 76
+  - Safari 12
+  - Firefox 18
 
 ### Table of Content
 - [Install MySQL](#install-mysql)
 - [Setup back-end](#setup-back-end)
+- [Prepare gold standards for quality check](#prepare-gold-standards)
 - [Dump and import MySQL database](#dump-and-import-mysql)
 - [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
 - [Connect uwsgi to apache](#connect-uwsgi-to-apache)
@@ -79,10 +95,15 @@ echo 'export PATH="/usr/local/miniconda3/bin:$PATH"' >> ~/.bash_profile
 echo '. /usr/local/miniconda3/etc/profile.d/conda.sh' >> ~/.bash_profile
 source ~/.bash_profile
 ```
-Clone this repository.
+Clone this repository and set the permission.
 ```sh
 git clone https://github.com/CMU-CREATE-Lab/video-labeling-tool.git
-sudo chown -R $USER video-labeling-tool
+sudo chown -R $USER video-labeling-tool/
+sudo addgroup [group_name]
+sudo usermod -a -G [group_name] [user_name]
+groups [user_name]
+sudo chmod -R 775 video-labeling-tool/
+sudo chgrp -R [group_name] video-labeling-tool/
 ```
 Create conda environment and install packages. It is important to install pip first inside the newly created conda environment.
 ```sh
@@ -139,6 +160,20 @@ python add_video_set_large.py confirm
 Run server in the conda environment for development purpose.
 ```sh
 sh development.sh
+```
+
+# <a name="prepare-gold-standards"></a>Prepare gold standards for quality check
+The system uses gold standards (videos with known labels) to check the quality of each labeled batch. If a user did not label the gold standards correctly, the corresponding batch would be discarded. Initially, there are no gold standards, and the backend will not return videos for labeling. To solve this issue, give yourself the researcher permission by using
+```sh
+python set_client_type.py [user_id] 0
+```
+where user_id can be found on the "Account" tab on the top right of the "label.html" page after logging in with Google. The number 0 that follows the user_id is the researcher permission. For more information about the permission, please refer to the client_type variable in the "User" class in the "application.py" file. The system will not run the quality check for users with the researcher permission. In this way, you can start labeling first.
+
+To assign gold standards videos, go to the "gallery.html" page when logging in with the account that has the researcher permission. On the gallery, you will find "P*" and "N*" buttons. Clicking on these buttons shows the positive and negative videos that the researcher labeled. You can now use the dropdown below each video to change the label to Gold Pos (positive gold standards) or Gold Neg (negative gold standards). Once there is a sufficient number of gold standards (more than 4), normal users will be able to label videos. I recommend having at least 100 gold standards to start.
+
+If you found that some videos are not suitable for labeling (e.g., due to incorrect image stitching), you can get the url of the video and use the following command to mark similar ones (with the same date and bounding box) as "bad" videos. This process does not remove videos. Instead it gives all bad videos a label state -2.
+```sh
+python set_client_type.py [video_url]
 ```
 
 # <a name="dump-and-import-mysql"></a>Dump and import MySQL database
@@ -244,7 +279,7 @@ sudo vim /etc/apache2/sites-available/[BACK_END_DOMAIN].conf
   ServerName [BACK_END_DOMAIN]
   Header always set Access-Control-Allow-Origin "http://[FRONT_END_DOMAIN]"
   Header set Access-Control-Allow-Headers "Content-Type"
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   ProxyPreserveHost On
   ProxyRequests Off
   ProxyVia Off
@@ -270,7 +305,7 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   ServerName [FRONT_END_DOMAIN]
   DocumentRoot /[PATH]/video-labeling-tool/front-end
   Header always set Access-Control-Allow-Origin "*"
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   <Directory "/[PATH]/video-labeling-tool/front-end">
     Options FollowSymLinks
     AllowOverride None
@@ -280,7 +315,7 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   CustomLog ${APACHE_LOG_DIR}/[FRONT_END_DOMAIN].access.log combined
 </VirtualHost>
 ```
-Use the following if you only want to access the server from an IP address with a port. Remember to tell the apache server to listen to the port number.
+Use the following if you only want to access the server from an IP address with a port (e.g., http://192.168.1.72:8080). Remember to tell the apache server to listen to the port number.
 ```sh
 sudo vim /etc/apache2/sites-available/video-labeling-tool-front-end.conf
 # Add the following lines to this file
@@ -314,8 +349,14 @@ Give permissions so that the Certbot and apache can modify the website. This ass
 cd /var/www/
 sudo mkdir html # only run this if the html directory did not exist
 sudo chmod 775 html
-sudo chgrp www-data html
-sudo chgrp www-data [CLONED_REPOSITORY]
+sudo chmod 775 [CLONED_REPOSITORY]
+sudo chgrp -R www-data html
+sudo chgrp -R www-data [CLONED_REPOSITORY]
+```
+If other users need to modify this repository, add them to the www-data group.
+```sh
+sudo usermod -a -G www-data [user_name]
+groups [user_name]
 ```
 Run the Certbot.
 ```sh
@@ -338,7 +379,7 @@ sudo vim /etc/apache2/sites-available/[BACK_END_DOMAIN].conf
   Header always set Access-Control-Allow-Origin "https://[FRONT_END_DOMAIN]"
   Header set Access-Control-Allow-Headers "Content-Type"
   # The following line forces the browser to break the cache
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   # Reverse proxy to the uwsgi server
   ProxyPreserveHost On
   ProxyRequests Off
@@ -374,7 +415,7 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   # The following line enables cors
   Header always set Access-Control-Allow-Origin "*"
   # The following line forces the browser to break the cache
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   <Directory "/[PATH]/video-labeling-tool/front-end">
     Options FollowSymLinks
     AllowOverride None
@@ -611,4 +652,24 @@ $.ajax({
 ```sh
 # curl example
 curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_all_labels
+```
+### Get the statistics of labels
+Get the number of all videos (excluding the videos that were marked as "bad" data), the number of fully labeled videos (confirmed by multiple users), and the number of partially labeled videos.
+- Paths:
+  - **/api/v1/get_label_statistics**
+- Available methods:
+  - GET
+- Returned fields:
+  - "num_all_videos": number of all videos (excluding bad data)
+  - "num_fully_labeled": number of fully labeled videos
+  - "num_partially_labeled": number of partially labeled videos
+```JavaScript
+// jQuery examples
+$.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
+  console.log(data);
+});
+```
+```sh
+# curl example
+curl http://localhost:5000/api/v1/get_label_statistics
 ```

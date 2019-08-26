@@ -23,7 +23,8 @@
   padding: 0;
 }
 
-.video-labeling-tool .error-text {
+.video-labeling-tool .error-text,
+.video-labeling-tool .not-supported-text {
   color: #ff5e5e;
   text-align: center;
   flex: 1 0 100%;

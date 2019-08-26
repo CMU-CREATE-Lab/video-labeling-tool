@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <title>Smoke Labeling</title>
-  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
+  <title>Smoke Hunting</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
@@ -35,7 +35,7 @@
     <div class="menu">
       <div class="menu-table flex-row-space-between">
         <div class="logo flex-row-center">
-          <a href="index.html">Smoke Labeling</a>
+          <a href="index.html">Smoke Hunting</a>
         </div>
         <a class="menu-button" tabindex="0" href="javascript:void(0)">
           <img src="img/menu.png">
@@ -43,6 +43,7 @@
         <div class="menu-items flex-row-center flex-item">
           <a href="index.html" class="menu-highlight">Overview</a>
           <a href="gallery.html">Gallery</a>
+          <a href="faq.html">FAQ</a>
           <a href="javascript:void(0)" id="account">Account</a>
         </div>
       </div>
@@ -54,12 +55,21 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text no-top-margin">
-              Each video is <span class="custom-text-info-dark-theme">3 seconds</span>.
-              Click to select videos that <span class="custom-text-info-dark-theme">have smoke</span>.
-              Click again to deselect.
-              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure</span>.
-              Several videos with known answers are randomly placed, and your scores for each submission are evaluated based on them.
-              Your current score can be found on the "Account" tab at the top right.
+              Each video below is 3 seconds.
+              Click or tap to select videos that have smoke.
+              Click or tap again to deselect.
+              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure whether it has smoke</span>.
+            </p>
+            <p class="text no-top-margin">
+              <a id="sign-in-prompt">Sign in and track your personal achievements.</a>
+              <span id="user-score-container">
+                This page shows a batch of 16 videos.
+                You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the quality check</span> (using randomly placed videos with known answers).
+              </span>
+            </p>
+            <p class="text no-top-margin" id="label-statistics">
+              So far, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> videos are fully labeled</span> (confirmed by multiple users), and <span class="num-partially-labeled-text">[...]</span> videos are partially labeled.
+              There are <span class="num-all-videos-text">[...]</span> videos in the dataset.
             </p>
           </div>
         </div>
@@ -68,7 +78,7 @@
           <div class="flex-item flex-column full-width">
             <div class="control-group add-top-margin">
               <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Submit and Continue</span></button>
-              <a id="review" class="custom-button-flat large stretch-on-mobile" href=""><img src="img/collection.png"><span>My Collection</span></a>
+              <a id="review" class="custom-button-flat large stretch-on-mobile" href=""><img src="img/collection.png"><span>My Contribution</span></a>
             </div>
           </div>
         </div>
@@ -82,16 +92,13 @@
         Hi <span id="user-name-text"></span>, thank you for signing in.
         Your user ID is <span id="user-id-text"></span>.
       </p>
-      <p>
-        Your score is <span id="user-score-text"></span>, which is the number of videos that you labeled reliably.
-      </p>
     </div>
     <div id="google-sign-in-button" class="g-signin2"></div>
     <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
     <button id="guest-button" class="custom-button">Continue as guest</button>
   </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
-    <p>Videos on this page did not autoplay. Please enable it.</p>
+    <p>Video autoplay is disabled. Please enable it.</p>
     <button id="play-video-button" class="custom-button">Enable video autoplay</button>
   </div>
 </body>

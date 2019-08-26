@@ -24,6 +24,15 @@ body,
   color: white !important;
 }
 
+.content-table ul {
+  color: white !important;
+  font-size: 18px;
+}
+
+.content-table hr {
+  background: #3be4ff !important;
+}
+
 .text {
   font-size: 18px;
 }
@@ -158,7 +167,15 @@ body,
   font-weight: bold;
 }
 
+#user-score-container {
+  display: none;
+}
+
 #google-sign-out-button {
+  display: none;
+}
+
+#label-statistics {
   display: none;
 }
 
@@ -187,7 +204,8 @@ body,
   padding: 10px 0;
 }
 
-.gallery-error-text {
+.gallery-error-text,
+.gallery-not-supported-text {
   color: #ff5e5e !important;
   text-align: center;
   flex: 1 0 100%;
@@ -226,6 +244,9 @@ body,
   font-style: normal;
   font-weight: normal;
   width: 100%;
+}
+
+.gallery a .label-control p:first-child {
   margin-top: 10px;
 }
 
@@ -239,8 +260,42 @@ body,
   display: block;
 }
 
-.gallery a .label-control i:last-child {
-  margin-top: 5px;
+.gallery a .label-control p a {
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
+  font-size: 14px;
+  line-height: 14px;
+  font-style: normal;
+  font-weight: normal;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.gallery .gallery-videos {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: stretch;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0;
+}
+
+.gallery .gallery-loading-text {
+  color: #3be4ff;
+  text-align: center;
+  flex: 1 0 100%;
+  max-width: 100%;
+  font-size: 18px;
+  padding: 10px 0;
+  min-height: 100px;
+  background-image: url(../img/loading.gif);
+  background-repeat: no-repeat;
+  background-size: 50px 50px;
+  background-position: center;
 }
 
 .custom-select {
@@ -256,18 +311,6 @@ body,
 
 .custom-select:focus {
   outline: none;
-}
-
-.gallery-videos {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: center;
-  align-content: stretch;
-  box-sizing: border-box;
-  width: 100%;
-  padding: 0;
 }
 
 .paginationjs.paginationjs-custom {
