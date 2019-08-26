@@ -379,7 +379,7 @@ sudo vim /etc/apache2/sites-available/[BACK_END_DOMAIN].conf
   Header always set Access-Control-Allow-Origin "https://[FRONT_END_DOMAIN]"
   Header set Access-Control-Allow-Headers "Content-Type"
   # The following line forces the browser to break the cache
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   # Reverse proxy to the uwsgi server
   ProxyPreserveHost On
   ProxyRequests Off
@@ -415,7 +415,7 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   # The following line enables cors
   Header always set Access-Control-Allow-Origin "*"
   # The following line forces the browser to break the cache
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   <Directory "/[PATH]/video-labeling-tool/front-end">
     Options FollowSymLinks
     AllowOverride None
