@@ -279,7 +279,7 @@ sudo vim /etc/apache2/sites-available/[BACK_END_DOMAIN].conf
   ServerName [BACK_END_DOMAIN]
   Header always set Access-Control-Allow-Origin "http://[FRONT_END_DOMAIN]"
   Header set Access-Control-Allow-Headers "Content-Type"
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   ProxyPreserveHost On
   ProxyRequests Off
   ProxyVia Off
@@ -305,7 +305,7 @@ sudo vim /etc/apache2/sites-available/[FRONT_END_DOMAIN].conf
   ServerName [FRONT_END_DOMAIN]
   DocumentRoot /[PATH]/video-labeling-tool/front-end
   Header always set Access-Control-Allow-Origin "*"
-  Header set Cache-Control "max-age=60, public, must-revalidate"
+  Header set Cache-Control "max-age=5, public, must-revalidate"
   <Directory "/[PATH]/video-labeling-tool/front-end">
     Options FollowSymLinks
     AllowOverride None
