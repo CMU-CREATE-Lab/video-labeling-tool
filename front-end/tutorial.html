@@ -9,7 +9,7 @@
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/VideoLabelingTool.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/TutorialTool.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
@@ -19,10 +19,11 @@
   <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/GoogleAnalyticsTracker.js"></script>
-  <script src="js/VideoLabelingTool.js"></script>
+  <script src="js/TutorialTool.js"></script>
   <script src="js/GoogleAccountDialog.js"></script>
   <script src="js/VideoTestDialog.js"></script>
-  <script src="js/label.js"></script>
+  <script src="js/tutorial_data.js"></script>
+  <script src="js/tutorial.js"></script>
   <!-- Start for Google Sign-In -->
   <meta name="google-signin-scope" content="profile email">
   <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
@@ -44,7 +45,6 @@
           <a href="index.html" class="menu-highlight">Overview</a>
           <a href="gallery.html">Gallery</a>
           <a href="faq.html">FAQ</a>
-          <a href="javascript:void(0)" id="account">Account</a>
         </div>
       </div>
     </div>
@@ -55,50 +55,22 @@
         <div class="flex-row">
           <div class="flex-item flex-column">
             <p class="text no-top-margin">
-              Each video below is 3 seconds.
-              Click or tap to select videos that have smoke.
-              Click or tap again to deselect.
-              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure whether it has smoke</span>.
+              This <span class="custom-text-info-dark-theme">interactive tutorial</span> will provide guidelines about how to recognize smoke emissions with different opacities, which is expected to take less than 30 minutes.
             </p>
-            <div class="control-group">
-              <a id="tutorial" class="custom-button-flat large stretch-on-mobile" href="tutorial.html"><img src="img/book.png"><span>Take Tutorial</span></a>
-              <a id="review" class="custom-button-flat large stretch-on-mobile" href=""><img src="img/collection.png"><span>View Contribution</span></a>
-            </div>
-            <p class="text">
-              <a id="sign-in-prompt">Sign in and track your personal achievements.</a>
-              <span id="user-score-container">
-                This page shows a batch of 16 videos.
-                You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the quality check</span> (using randomly placed videos with known answers).
-              </span>
-            </p>
-            <p class="text no-top-margin" id="label-statistics">
-              So far, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> videos are fully labeled</span> (confirmed by multiple users), and <span class="num-partially-labeled-text">[...]</span> videos are partially labeled.
-              There are <span class="num-all-videos-text">[...]</span> videos in the dataset.
-            </p>
+            <hr>
           </div>
         </div>
-        <div id="labeling-tool-container"></div>
+        <div id="tutorial-tool-container"></div>
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
-            <div class="control-group add-top-margin">
-              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Submit and Continue</span></button>
+            <div class="control-group">
+              <button id="back" class="custom-button-flat large stretch-on-mobile"><img src="img/back.png"><span>Back</span></button>
+              <button id="next" class="custom-button-flat large stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
-    <p id="sign-in-text">Sign in to track your personal achievements.</p>
-    <div id="hello-text">
-      <p>
-        Hi <span id="user-name-text"></span>, thank you for signing in.
-        Your user ID is <span id="user-id-text"></span>.
-      </p>
-    </div>
-    <div id="google-sign-in-button" class="g-signin2"></div>
-    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
-    <button id="guest-button" class="custom-button">Continue as guest</button>
   </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
     <p>Video autoplay is disabled. Please enable it.</p>

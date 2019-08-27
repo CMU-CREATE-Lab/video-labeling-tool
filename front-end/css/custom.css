@@ -30,6 +30,10 @@ body,
 }
 
 .content-table hr {
+  background: #ffffff !important;
+}
+
+.content-table hr.custom-text-info-dark-theme {
   background: #3be4ff !important;
 }
 
