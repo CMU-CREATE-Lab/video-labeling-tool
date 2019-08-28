@@ -9,6 +9,34 @@
   var is_video_autoplay_tested = false;
   var user_token;
   var $next;
+  var counter = 0;
+  var max_counter = 10;
+  var count_down_duration = 400; // in milliseconds
+  var count_down_timeout;
+
+  function resetCountDown() {
+    clearTimeout(count_down_timeout);
+    $next.removeClass("count-down-" + counter);
+    counter = 0;
+  }
+
+  function countDown() {
+    if (counter == 0) {
+      $next.addClass("count-down-0");
+    }
+    count_down_timeout = setTimeout(function () {
+      $next.removeClass("count-down-" + counter);
+      if (counter == max_counter) {
+        $next.prop("disabled", false);
+        counter = 0;
+      } else {
+        $next.addClass("count-down-" + (counter + 1));
+        counter += 1;
+        countDown();
+      }
+    }, count_down_duration);
+  }
+
 
   function onLoginSuccess(data) {
     user_token = data["user_token"];
@@ -21,6 +49,7 @@
 
   function next() {
     $next.prop("disabled", true);
+    resetCountDown();
     $(window).scrollTop(0);
     tutorial_tool.next({
       success: function () {
@@ -28,7 +57,7 @@
           video_test_dialog.startVideoPlayTest(1000);
           is_video_autoplay_tested = true;
         }
-        $next.prop("disabled", false);
+        countDown();
       }
     });
   }
@@ -36,7 +65,6 @@
   function init() {
     $next = $("#next");
     $next.on("click", function () {
-      $("#tutorial-start-text").hide();
       next();
     });
     tutorial_tool = new edaplotjs.TutorialTool("#tutorial-tool-container", {
@@ -44,7 +72,6 @@
       on_tutorial_finished: function () {
         $next.hide();
         $("#label").removeClass("force-hidden");
-        $("#tutorial-start-text").hide();
         $("#tutorial-end-text").removeClass("force-hidden");
         $("#tutorial-tool-container").hide();
       }

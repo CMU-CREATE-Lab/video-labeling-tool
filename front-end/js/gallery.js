@@ -63,29 +63,36 @@
     return unpackVars(window.location.search);
   }
 
+  function updateGallery($new_content) {
+    $gallery_videos.detach(); // detatch prevents the click event from being removed
+    $gallery.empty().append($new_content);
+  }
+
   function showNoGalleryMsg() {
-    $gallery_videos.detach();
-    $gallery.empty().append($gallery_no_data_text);
+    updateGallery($gallery_no_data_text);
   }
 
   function showGalleryErrorMsg() {
-    $gallery_videos.detach();
-    $gallery.empty().append($gallery_error_text);
+    updateGallery($gallery_error_text);
   }
 
   function showGalleryLoadingMsg() {
-    $gallery_videos.detach();
-    $gallery.empty().append($gallery_loading_text);
+    updateGallery($gallery_loading_text);
   }
 
   function showGalleryNotSupportedMsg() {
-    $gallery_videos.detach();
-    $gallery.empty().append($gallery_not_supported_text);
+    updateGallery($gallery_not_supported_text);
   }
 
+  // Create a video label element
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
+  // UPDATE: starting from Safari 12, more videos are allowed
   function createVideo(v) {
     var $item = $("<a class='flex-column'></a>");
+    // "autoplay" is needed for iPhone Safari to work
+    // "preload" is ignored by mobile devices
+    // "disableRemotePlayback" prevents chrome casting
+    // "playsinline" prevents playing video fullscreen
     var $vid = $("<video autoplay loop muted playsinline disableRemotePlayback></video>");
     $item.append($vid);
     if (typeof user_id === "undefined") {
@@ -241,7 +248,7 @@
       callback: function (data, pagination) {
         if (typeof data !== "undefined" && data.length > 0) {
           $(window).scrollTop(0);
-          $gallery.empty().append($gallery_videos);
+          updateGallery($gallery_videos);
           updateVideos(data);
           if (!is_video_autoplay_tested) {
             video_test_dialog.startVideoPlayTest(1000);

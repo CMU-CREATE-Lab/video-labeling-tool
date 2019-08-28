@@ -37,9 +37,6 @@
         show_cancel_btn: false,
         width: 270
       });
-      $("#account").on("click", function () {
-        $account_dialog.dialog("open");
-      });
       initGoogleSignIn();
     }
 

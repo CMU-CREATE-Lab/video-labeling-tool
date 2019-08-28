@@ -42,7 +42,8 @@
           <img src="img/menu.png">
         </a>
         <div class="menu-items flex-row-center flex-item">
-          <a href="index.html" class="menu-highlight">Overview</a>
+          <a href="index.html">Overview</a>
+          <a href="label.html" class="menu-highlight">Label</a>
           <a href="gallery.html">Gallery</a>
           <a href="faq.html">FAQ</a>
         </div>
@@ -54,11 +55,11 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p id="tutorial-start-text" class="text no-top-margin">
-              This <span class="custom-text-info-dark-theme">interactive tutorial</span> will provide guidelines about how to recognize smoke emissions with different opacities, which is expected to take less than 30 minutes.
-            </p>
+            <h3 class="custom-text-info-dark-theme no-top-margin">Interactive Tutorial</h3>
+            <hr class="custom-text-info-dark-theme">
+            <p class="text" id="tutorial-tool-instruction"></p>
             <div id="tutorial-end-text" class="force-hidden">
-              <p class="text no-top-margin">
+              <p class="text">
                 Congratulations! <span class="custom-text-info-dark-theme">You have completed the tutorial</span> for identifying smoke emissions.
                 You can go back to this page and review the tutorial again at any time.
               </p>
@@ -80,7 +81,7 @@
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
             <div class="control-group">
-              <button id="next" class="custom-button-flat large stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
+              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/next.png"><span>Next Step</span></button>
               <a id="label" class="custom-button-flat large stretch-on-mobile force-hidden" href="label.html"><img src="img/play.png"><span>Label Real Data</span></a>
             </div>
           </div>

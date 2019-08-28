@@ -281,6 +281,16 @@
         $("#label-statistics").show();
       });
     };
+
+    // Resolve promises and call back
+    this.resolvePromises = function (promises, callback) {
+      callback = safeGet(callback, {});
+      $.when.apply($, promises).done(function () {
+        if (typeof callback["success"] === "function") callback["success"]();
+      }).fail(function (xhr) {
+        if (typeof callback["error"] === "function") callback["error"](xhr);
+      })
+    };
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////

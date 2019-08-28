@@ -41,10 +41,10 @@
           <img src="img/menu.png">
         </a>
         <div class="menu-items flex-row-center flex-item">
-          <a href="index.html" class="menu-highlight">Overview</a>
+          <a href="index.html">Overview</a>
+          <a href="label.html" class="menu-highlight">Label</a>
           <a href="gallery.html">Gallery</a>
           <a href="faq.html">FAQ</a>
-          <a href="javascript:void(0)" id="account">Account</a>
         </div>
       </div>
     </div>
@@ -61,19 +61,17 @@
               <span class="custom-text-danger-dark-theme">Skip a video if you are not sure whether it has smoke</span>.
             </p>
             <div class="control-group">
+              <a id="sign-in-prompt" class="custom-button-flat large stretch-on-mobile"><img src="img/setting.png"><span>Sign In</span></a>
               <a id="tutorial" class="custom-button-flat large stretch-on-mobile" href="tutorial.html"><img src="img/book.png"><span>Take Tutorial</span></a>
               <a id="review" class="custom-button-flat large stretch-on-mobile" href=""><img src="img/collection.png"><span>View Contribution</span></a>
             </div>
-            <p class="text">
-              <a id="sign-in-prompt">Sign in and track your personal achievements.</a>
-              <span id="user-score-container">
-                This page shows a batch of 16 videos.
-                You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the quality check</span> (using randomly placed videos with known answers).
-              </span>
-            </p>
-            <p class="text no-top-margin" id="label-statistics">
+            <p class="text" id="label-statistics">
               So far, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> videos are fully labeled</span> (confirmed by multiple users), and <span class="num-partially-labeled-text">[...]</span> videos are partially labeled.
               There are <span class="num-all-videos-text">[...]</span> videos in the dataset.
+            </p>
+            <p class="text no-top-margin" id="user-score-container">
+              This batch has 16 videos.
+              You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the quality check</span> (using randomly placed videos with answers).
             </p>
           </div>
         </div>

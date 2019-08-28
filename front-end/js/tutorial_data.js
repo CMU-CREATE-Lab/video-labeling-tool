@@ -1,5 +1,5 @@
 var tutorial_data = [{
-  "instruction": "Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select the ones that contain smoke by clicking or tapping.",
+  "instruction": "This tutorial provides guidelines about how to recognize smoke, which is expected to take less than 30 minutes. Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select the ones that contain smoke by clicking or tapping.",
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=11462&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Correct! This one has smoke.",
@@ -32,9 +32,9 @@ var tutorial_data = [{
     "wrong": "Oops! This one has high-opacity smoke and needs to be selected. High-opacity smoke can block most of the background.",
     "label": 1
   }, {
-    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6007,1008,6509,1510&width=180&height=180&startFrame=13586&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Correct! This one has low-opacity smoke, and you can still see the background. The emission source is not visible.",
-    "wrong": "Oops! Because this one has low-opacity smoke, which also needs to be selected, even its emission source is not visible. For low-opacity smoke, you can still see the background.",
+    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5329,1033,5831,1535&width=180&height=180&startFrame=10346&format=mp4&fps=12&tileFormat=mp4&nframes=36",
+    "correct": "Correct! This one has low-opacity smoke and steam.",
+    "wrong": "Oops! This one has low-opacity smoke and steam, which needs to be selected.",
     "label": 1
   }]
 }, {
@@ -53,9 +53,9 @@ var tutorial_data = [{
 }, {
   "instruction": "Some of the following videos show bad weather, which should not be selected. Please select the ones that contain smoke.",
   "data": [{
-    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5329,1033,5831,1535&width=180&height=180&startFrame=10346&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Correct! This one has low-opacity smoke and steam.",
-    "wrong": "Oops! This one has low-opacity smoke and steam, which needs to be selected.",
+    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6007,1008,6509,1510&width=180&height=180&startFrame=13586&format=mp4&fps=12&tileFormat=mp4&nframes=36",
+    "correct": "Correct! This one has low-opacity smoke, and you can still see the background. The emission source is not visible.",
+    "wrong": "Oops! Because this one has low-opacity smoke, which also needs to be selected, even its emission source is not visible. For low-opacity smoke, you can still see the background.",
     "label": 1
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-17.timemachine/&boundsLTRB=4365,994,4867,1496&width=180&height=180&startFrame=7902&format=mp4&fps=12&tileFormat=mp4&nframes=36",
@@ -132,7 +132,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "You did great! Now let's label a full batch of 16 videos. Please select the ones that contain smoke.",
+  "instruction": "You did great! Now let's do a final practice to label a full batch of 16 videos. Please select the ones that contain smoke.",
   "until_all_correct": "You made progress! Let's aim for getting all of the labels correct. Please select the ones that contain smoke.",
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=6304,884,6807,1387&width=180&height=180&startFrame=5983&format=mp4&fps=12&tileFormat=mp4&nframes=36",

@@ -16,7 +16,6 @@
   var $user_score_container;
   var $user_score_text;
   var $user_raw_score_text;
-  var api_url_root = util.getRootApiUrl();
   var count_down_timeout;
 
   function resetCountDown() {
@@ -137,7 +136,7 @@
         video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
-            $sign_in_prompt.hide();
+            $sign_in_prompt.find("span").text("Sign Out");
             $user_score_container.show();
           },
           error: function (xhr) {
@@ -150,7 +149,7 @@
         video_labeling_tool.updateUserIdByClientId(ga_tracker.getClientId(), {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
-            $sign_in_prompt.show();
+            $sign_in_prompt.find("span").text("Sign In");
             $user_score_container.hide();
           },
           error: function (xhr) {
