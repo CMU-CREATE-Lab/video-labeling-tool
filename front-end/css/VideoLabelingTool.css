@@ -91,7 +91,7 @@
 }
 
 .video-labeling-tool a.selected video {
-  border: 10px solid red;
+  border: 10px solid #ff5e5e;
 }
 
 .video-labeling-tool a>div {
@@ -103,7 +103,7 @@
 }
 
 .video-labeling-tool a.selected>div {
-  color: red;
+  color: #ff5e5e;
 }
 
 @media screen and (min-width: 500px) {

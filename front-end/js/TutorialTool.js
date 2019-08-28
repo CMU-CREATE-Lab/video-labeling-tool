@@ -21,6 +21,7 @@
     var on_tutorial_finished = settings["on_tutorial_finished"];
     var data = settings["data"];
     var current_idx = -1;
+    var is_in_checking_state = false;
     var video_items = [];
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,6 +65,8 @@
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
+      var $description = $("<p></p>");
+      $description.hide();
       // "autoplay" is needed for iPhone Safari to work
       // "preload" is ignored by mobile devices
       // "disableRemotePlayback" prevents chrome casting
@@ -72,8 +75,23 @@
       $item.on("click", function () {
         toggleSelect($(this));
       });
-      $item.append($vid).append($caption);
+      $item.append($vid).append($caption).append($description);
       return $item;
+    }
+
+    function updateDescription(video_data) {
+      for (var i = 0; i < video_items.length; i++) {
+        var v = video_data[i];
+        var $item = video_items[i];
+        var c = "";
+        var m = v["correct"];
+        var label = $item.hasClass("selected") ? 1 : 0;
+        if (label !== v["label"]) {
+          var c = "class='custom-text-info-dark-theme'";
+          var m = v["wrong"];
+        }
+        $item.find("p").html("<span " + c + ">" + m + "</span>").show();
+      }
     }
 
     function updateVideos(video_data, callback) {
@@ -91,6 +109,7 @@
           $item = video_items[i];
           removeSelect($item);
         }
+        $item.find("p").html("").hide();
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
           // Play the video
@@ -154,15 +173,22 @@
     this.next = function (callback) {
       callback = safeGet(callback, {});
       if (util.browserSupported()) {
-        if (current_idx == data.length - 1) {
+        if (current_idx == data.length - 1 && !is_in_checking_state) {
           $(window).off("beforeunload", leaveCheck);
           $tool_instruction.hide();
           if (typeof on_tutorial_finished === "function") on_tutorial_finished();
         } else {
-          current_idx += 1;
-          var d = data[current_idx];
-          updateVideos(util.shuffleArray(d["data"]), callback);
-          $tool_instruction.text(d["instruction"]);
+          if (is_in_checking_state) {
+            updateDescription(data[current_idx]["data"]);
+            if (typeof callback["success"] === "function") callback["success"](data);
+            is_in_checking_state = false;
+          } else {
+            current_idx += 1;
+            var d = data[current_idx];
+            updateVideos(util.shuffleArray(d["data"]), callback);
+            $tool_instruction.text(d["instruction"]);
+            is_in_checking_state = true;
+          }
         }
       } else {
         showNotSupportedMsg();

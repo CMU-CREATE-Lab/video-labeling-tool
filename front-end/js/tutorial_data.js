@@ -65,7 +65,6 @@ var tutorial_data = [{
   }]
 }, {
   "instruction": "Great! You have learned how to label smoke! Now let's try some challenging cases. Please select the ones that contain smoke.",
-  "until_all_correct": "You made progress! Let's aim for getting all of the labels correct. Please select the ones that contain smoke.",
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=3271,1116,3774,1619&width=180&height=180&startFrame=9518&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Correct! This one has high-opacity smoke.",
@@ -99,7 +98,6 @@ var tutorial_data = [{
   }]
 }, {
   "instruction": "Excellent! Besides what you learned so far, smoke can also have different colors under various lighting and weather conditions. Please select the ones that contain smoke.",
-  "until_all_correct": "You made progress! Let's aim for getting all of the labels correct. Please select the ones that contain smoke.",
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=9367&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Correct! This one has black smoke.",

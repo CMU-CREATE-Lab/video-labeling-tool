@@ -16,7 +16,7 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
   align-content: stretch;
   box-sizing: border-box;
   width: 100%;
@@ -72,7 +72,11 @@
 }
 
 .tutorial-tool a.selected video {
-  border: 10px solid red;
+  border: 10px solid #ff5e5e;
+}
+
+.tutorial-tool a.highlight video {
+  border: 10px solid #3be4ff;
 }
 
 .tutorial-tool a>div {
@@ -84,7 +88,17 @@
 }
 
 .tutorial-tool a.selected>div {
-  color: red;
+  color: #ff5e5e;
+}
+
+.tutorial-tool a>p {
+  text-align: left;
+  color: white;
+  font-size: 18px;
+  line-height: 18px;
+  padding: 5px 10px;
+  margin: 0;
+  line-height: 1.5;
 }
 
 @media screen and (min-width: 500px) {
