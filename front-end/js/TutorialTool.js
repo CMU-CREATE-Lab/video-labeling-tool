@@ -161,7 +161,7 @@
         } else {
           current_idx += 1;
           var d = data[current_idx];
-          updateVideos(d["data"], callback);
+          updateVideos(util.shuffleArray(d["data"]), callback);
           $tool_instruction.text(d["instruction"]);
         }
       } else {
