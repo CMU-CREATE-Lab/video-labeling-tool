@@ -266,6 +266,21 @@
 
       return ((docViewTop < elemBottom) && (elemTop < docViewBottom));
     };
+
+    // Update label statistics
+    this.updateLabelStatistics = function () {
+      $.getJSON(getRootApiUrl() + "get_label_statistics", function (data) {
+        var num_all_videos = data["num_all_videos"];
+        $(".num-all-videos-text").text(num_all_videos);
+        var num_fully_labeled = data["num_fully_labeled"];
+        var num_fully_labeled_p = Math.round(num_fully_labeled / num_all_videos * 10000) / 100;
+        $(".num-fully-labeled-text").text(num_fully_labeled + " (" + num_fully_labeled_p + "%)");
+        var num_partially_labeled = data["num_partially_labeled"];
+        var num_partially_labeled_p = Math.round(num_partially_labeled / num_all_videos * 10000) / 100;
+        $(".num-partially-labeled-text").text(num_partially_labeled + " (" + num_partially_labeled_p + "%)");
+        $("#label-statistics").show();
+      });
+    };
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////

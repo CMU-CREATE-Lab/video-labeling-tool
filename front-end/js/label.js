@@ -53,7 +53,7 @@
           is_video_autoplay_tested = true;
         }
         countDown();
-        updateLabelStatistics();
+        util.updateLabelStatistics();
       },
       abort: function () {
         $next.prop("disabled", false);
@@ -94,20 +94,6 @@
       // Otherwise the server will return an invalid signature error
       nextBatch(true);
     }
-  }
-
-  function updateLabelStatistics() {
-    $.getJSON(api_url_root + "get_label_statistics", function (data) {
-      var num_all_videos = data["num_all_videos"];
-      $(".num-all-videos-text").text(num_all_videos);
-      var num_fully_labeled = data["num_fully_labeled"];
-      var num_fully_labeled_p = Math.round(num_fully_labeled / num_all_videos * 10000) / 100;
-      $(".num-fully-labeled-text").text(num_fully_labeled + " (" + num_fully_labeled_p + "%)");
-      var num_partially_labeled = data["num_partially_labeled"];
-      var num_partially_labeled_p = Math.round(num_partially_labeled / num_all_videos * 10000) / 100;
-      $(".num-partially-labeled-text").text(num_partially_labeled + " (" + num_partially_labeled_p + "%)");
-      $("#label-statistics").show();
-    });
   }
 
   function onUserNotSignedIn(client_id) {
@@ -197,7 +183,7 @@
         });
       }
     });
-    updateLabelStatistics();
+    util.updateLabelStatistics();
   }
 
   $(init);

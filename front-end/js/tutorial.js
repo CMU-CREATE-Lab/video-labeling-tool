@@ -12,7 +12,7 @@
 
   function onLoginSuccess(data) {
     user_token = data["user_token"];
-    console.log("onLoginSuccess", user_token);
+    console.log("onLoginSuccess");
   }
 
   function onLoginComplete() {
@@ -36,10 +36,18 @@
   function init() {
     $next = $("#next");
     $next.on("click", function () {
+      $("#tutorial-start-text").hide();
       next();
     });
     tutorial_tool = new edaplotjs.TutorialTool("#tutorial-tool-container", {
-      data: tutorial_data // this is in tutorial_data.js
+      data: tutorial_data, // this is in tutorial_data.js
+      on_tutorial_finished: function () {
+        $next.hide();
+        $("#label").removeClass("force-hidden");
+        $("#tutorial-start-text").hide();
+        $("#tutorial-end-text").removeClass("force-hidden");
+        $("#tutorial-tool-container").hide();
+      }
     });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
       no_ui: true
@@ -78,6 +86,7 @@
         });
       }
     });
+    util.updateLabelStatistics();
   }
 
   $(init);
