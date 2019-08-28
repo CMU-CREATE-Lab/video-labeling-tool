@@ -11,7 +11,7 @@
   var $next;
   var counter = 0;
   var max_counter = 10;
-  var count_down_duration = 0; // in milliseconds
+  var count_down_duration = 400; // in milliseconds
   var count_down_timeout;
 
   function resetCountDown() {
