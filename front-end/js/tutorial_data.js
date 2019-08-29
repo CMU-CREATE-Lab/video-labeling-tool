@@ -1,5 +1,6 @@
 var general_wrong_txt = "Uh oh! Some answers are incorrect. Don't worry! You still made good progress. We provide detailed comments below each video and highlight mistakes with color.";
 var general_correct_txt = "Excellent! Your answers are all correct! We provide detailed comments and explanations below each video.";
+var general_until_all_correct_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Please select the ones that contain smoke.";
 var tutorial_data = [{
   "instruction": "This tutorial provides guidelines about how to recognize smoke, which is expected to take less than 30 minutes. Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select the one that contains smoke by clicking or tapping.",
   "wrong": general_wrong_txt,
@@ -76,9 +77,10 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Great! You have learned how to label smoke! We took a while to get here, I know, but don't worry, it will be worth it. Now let's try some challenging cases. Please select the videos that contain smoke. You can select multiple ones.",
+  "instruction": "Great! You have learned how to label smoke! Now let's try some challenging cases. Please select the videos that contain smoke. You can select multiple ones.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
+  "until_all_correct": general_until_all_correct_txt,
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=3271,1116,3774,1619&width=180&height=180&startFrame=9518&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Correct! This one has high-opacity smoke.",
@@ -114,6 +116,7 @@ var tutorial_data = [{
   "instruction": "Besides what you learned so far, smoke can also have different colors under various lighting and weather conditions. Please select the ones that contain smoke.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
+  "until_all_correct": general_until_all_correct_txt,
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=9367&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Correct! This one has black smoke.",
@@ -146,29 +149,29 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "You did great and are getting close to master the skill of recognizing smoke! Now let's do a final practice to label a full batch. In the real task, you will see 16 videos in a batch. Please select the ones that contain smoke.",
+  "instruction": "You did great and will master the skill of recognizing smoke! We took a while to get here, I know, but don't worry, it will be worth it. Now let's do a final practice to mimic the real task of labeling 16 videos at once. Please select the ones that contain smoke.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
-  "until_all_correct": "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Please select the ones that contain smoke.",
+  "until_all_correct": general_until_all_correct_txt,
   "data": [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=6304,884,6807,1387&width=180&height=180&startFrame=5983&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Correct! This one has high-opacity smoke.",
-    "wrong": "Oops! This one has high-opacity smoke and needs to be selected.",
+    "correct": "Correct! This one has high-opacity smoke (emitted from the stack).",
+    "wrong": "Oops! This one has high-opacity smoke (emitted from the stack) and needs to be selected.",
     "label": 1
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=3271,1116,3774,1619&width=180&height=180&startFrame=4433&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Correct! This one has high-opacity smoke.",
-    "wrong": "Oops! This one has high-opacity smoke and needs to be selected.",
+    "correct": "Correct! This one has high-opacity smoke (bottom-left).",
+    "wrong": "Oops! This one has high-opacity smoke (bottom-left) and needs to be selected.",
     "label": 1
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-08-06.timemachine/&boundsLTRB=6304,964,6807,1467&width=180&height=180&startFrame=11563&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Correct! This one has high-opacity smoke.",
-    "wrong": "Oops! This one has high-opacity smoke and needs to be selected.",
+    "correct": "Correct! This one has high-opacity smoke (bottom-left).",
+    "wrong": "Oops! This one has high-opacity smoke (bottom-left) and needs to be selected.",
     "label": 1
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=5648,924,6150,1426&width=180&height=180&startFrame=7747&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Correct! This one has low-opacity smoke.",
-    "wrong": "Oops! This one has low-opacity smoke and needs to be selected.",
+    "correct": "Correct! This one has low-opacity smoke (emitted from the stack).",
+    "wrong": "Oops! This one has low-opacity smoke (emitted from the stack) and needs to be selected.",
     "label": 1
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-10-07.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=6461&format=mp4&fps=12&tileFormat=mp4&nframes=36",

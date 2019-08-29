@@ -24,12 +24,14 @@
     var is_in_checking_state = false;
     var video_items = [];
     var is_all_answers_correct = true;
+    var $next;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
     //
     function init() {
+      $next = $("#next");
       $tool_instruction = $("#tutorial-tool-instruction");
       $tool = $('<div class="tutorial-tool"></div>');
       $tool_videos = $('<div class="tutorial-tool-videos"></div>');
@@ -198,11 +200,14 @@
             }
             if (!("until_all_correct" in d) || is_all_answers_correct) {
               current_idx += 1;
+            } else {
+              $next.find("span").text("Try Again");
             }
             is_in_checking_state = false;
           } else {
             var d = data[current_idx];
             updateVideos(util.shuffleArray(d["data"]), callback);
+            $next.find("span").text("Next Step");
             if (!("until_all_correct" in d) || is_all_answers_correct) {
               $tool_instruction.text(d["instruction"]);
             } else {
