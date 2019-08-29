@@ -20,9 +20,10 @@
     var $not_supported_text = $('<span class="not-supported-text">We are sorry!<br>Your browser is not supported.</span>');
     var on_tutorial_finished = settings["on_tutorial_finished"];
     var data = settings["data"];
-    var current_idx = -1;
+    var current_idx = 0;
     var is_in_checking_state = false;
     var video_items = [];
+    var is_all_answers_correct = true;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -72,23 +73,24 @@
       // "disableRemotePlayback" prevents chrome casting
       // "playsinline" prevents playing video fullscreen
       var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
-      $item.on("click", function () {
-        toggleSelect($(this));
-      });
       $item.append($vid).append($caption).append($description);
       return $item;
     }
 
     function updateDescription(video_data) {
+      is_all_answers_correct = true;
       for (var i = 0; i < video_items.length; i++) {
         var v = video_data[i];
         var $item = video_items[i];
+        $item.off("click");
+        $item.css("cursor", "default");
         var c = "";
         var m = v["correct"];
         var label = $item.hasClass("selected") ? 1 : 0;
         if (label !== v["label"]) {
           var c = "class='custom-text-info-dark-theme'";
           var m = v["wrong"];
+          is_all_answers_correct = false;
         }
         $item.find("p").html("<span " + c + ">" + m + "</span>").show();
       }
@@ -109,6 +111,10 @@
           $item = video_items[i];
           removeSelect($item);
         }
+        $item.on("click", function () {
+          toggleSelect($(this));
+        });
+        $item.css("cursor", "pointer");
         $item.find("p").html("").hide();
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
@@ -173,20 +179,35 @@
     this.next = function (callback) {
       callback = safeGet(callback, {});
       if (util.browserSupported()) {
-        if (current_idx == data.length - 1 && !is_in_checking_state) {
+        if (current_idx == data.length && !is_in_checking_state) {
           $(window).off("beforeunload", leaveCheck);
           $tool_instruction.hide();
           if (typeof on_tutorial_finished === "function") on_tutorial_finished();
         } else {
           if (is_in_checking_state) {
-            updateDescription(data[current_idx]["data"]);
+            var d = data[current_idx];
+            updateDescription(d["data"]);
+            if (is_all_answers_correct) {
+              $tool_instruction.text(d["correct"]);
+            } else {
+              $tool_instruction.text(d["wrong"]);
+            }
             if (typeof callback["success"] === "function") callback["success"](data);
+            if (!("until_all_correct" in d)) {
+              is_all_answers_correct = true;
+            }
+            if (!("until_all_correct" in d) || is_all_answers_correct) {
+              current_idx += 1;
+            }
             is_in_checking_state = false;
           } else {
-            current_idx += 1;
             var d = data[current_idx];
             updateVideos(util.shuffleArray(d["data"]), callback);
-            $tool_instruction.text(d["instruction"]);
+            if (!("until_all_correct" in d) || is_all_answers_correct) {
+              $tool_instruction.text(d["instruction"]);
+            } else {
+              $tool_instruction.text(d["until_all_correct"]);
+            }
             is_in_checking_state = true;
           }
         }
