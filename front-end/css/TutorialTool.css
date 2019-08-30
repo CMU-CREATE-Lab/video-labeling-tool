@@ -101,6 +101,10 @@
   line-height: 1.5;
 }
 
+.tutorial-tool a>p.hint {
+  text-align: center;
+}
+
 @media screen and (min-width: 500px) {
   .tutorial-tool a {
     flex: 1 0 50%;

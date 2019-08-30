@@ -23,7 +23,7 @@
     var current_idx = 0;
     var is_in_checking_state = false;
     var video_items = [];
-    var is_all_answers_correct = true;
+    var wrong_times = 0;
     var $next;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,19 +68,29 @@
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
-      var $description = $("<p></p>");
+      var $hint = $("<p class='hint'></p>");
+      var $description = $("<p class='description'></p>");
       $description.hide();
+      $hint.hide();
       // "autoplay" is needed for iPhone Safari to work
       // "preload" is ignored by mobile devices
       // "disableRemotePlayback" prevents chrome casting
       // "playsinline" prevents playing video fullscreen
       var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
-      $item.append($vid).append($caption).append($description);
+      $item.append($vid).append($caption).append($hint).append($description);
       return $item;
     }
 
+    function updateHint(video_data) {
+      for (var i = 0; i < video_items.length; i++) {
+        var v = video_data[i];
+        var $item = video_items[i];
+        $item.find("p.hint").html(v["hint"]).show();
+      }
+    }
+
     function updateDescription(video_data) {
-      is_all_answers_correct = true;
+      var is_all_answers_correct = true;
       for (var i = 0; i < video_items.length; i++) {
         var v = video_data[i];
         var $item = video_items[i];
@@ -94,8 +104,10 @@
           var m = v["wrong"];
           is_all_answers_correct = false;
         }
-        $item.find("p").html("<span " + c + ">" + m + "</span>").show();
+        $item.find("p.hint").html("").hide();
+        $item.find("p.description").html("<span " + c + ">" + m + "</span>").show();
       }
+      return is_all_answers_correct;
     }
 
     function updateVideos(video_data, callback) {
@@ -188,30 +200,35 @@
         } else {
           if (is_in_checking_state) {
             var d = data[current_idx];
-            updateDescription(d["data"]);
+            var is_all_answers_correct = updateDescription(d["data"]);
             if (is_all_answers_correct) {
-              $tool_instruction.text(d["correct"]);
+              $tool_instruction.html(d["correct"]);
             } else {
-              $tool_instruction.text(d["wrong"]);
+              wrong_times += 1;
+              $tool_instruction.html(d["wrong"]);
             }
             if (typeof callback["success"] === "function") callback["success"](data);
-            if (!("until_all_correct" in d)) {
-              is_all_answers_correct = true;
-            }
-            if (!("until_all_correct" in d) || is_all_answers_correct) {
-              current_idx += 1;
-            } else {
+            if (!is_all_answers_correct && wrong_times == 1 && "try_again" in d) {
               $next.find("span").text("Try Again");
+            } else if (!is_all_answers_correct && wrong_times == 2 && "final_try" in d) {
+              $next.find("span").text("Try Again (with hints)");
+            } else {
+              current_idx += 1;
+              wrong_times = 0;
             }
             is_in_checking_state = false;
           } else {
             var d = data[current_idx];
-            updateVideos(util.shuffleArray(d["data"]), callback);
+            var video_data = util.shuffleArrayInPlace(d["data"]);
+            updateVideos(video_data, callback);
             $next.find("span").text("Next Step");
-            if (!("until_all_correct" in d) || is_all_answers_correct) {
-              $tool_instruction.text(d["instruction"]);
+            if (wrong_times == 1 && "try_again" in d) {
+              $tool_instruction.html(d["try_again"]);
+            } else if (wrong_times == 2 && "final_try" in d) {
+              $tool_instruction.html(d["final_try"]);
+              updateHint(video_data);
             } else {
-              $tool_instruction.text(d["until_all_correct"]);
+              $tool_instruction.html(d["instruction"]);
             }
             is_in_checking_state = true;
           }
