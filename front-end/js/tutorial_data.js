@@ -10,7 +10,8 @@ var tutorial_data = [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=11462&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Nice! This one has smoke.",
     "wrong": "Oops! This one has smoke and needs to be selected.",
-    "label": 1
+    "label": 1,
+    "bound": "84,84 79,71 68,59 60,53 49,38 37,24 23,18 9,15 0,15 0,70 13,76 31,88 50,90 64,88 76,87"
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-14.timemachine/&boundsLTRB=2053,1123,2556,1626&width=180&height=180&startFrame=9689&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Great! This one does not have smoke.",
@@ -25,12 +26,14 @@ var tutorial_data = [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-02-03.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=7352&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Good job! This one has high-opacity smoke, which can block most of the background.",
     "wrong": "Oops! This one has high-opacity smoke and needs to be selected. High-opacity smoke can block most of the background.",
-    "label": 1
+    "label": 1,
+    "bound": "93,85 91,74 89,57 84,36 71,28 51,28 39,37 34,50 30,66 32,77 50,84 59,85 74,85 84,87"
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=8105&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Great! This one has low-opacity smoke. You can still see most of the background.",
     "wrong": "Oops! This one has low-opacity smoke, which needs to be selected. You can still see most of the background.",
-    "label": 1
+    "label": 1,
+    "bound": "100,83 67,82 54,78 17,75 0,74 0,41 17,45 35,43 54,35 68,28 83,22 100,24"
   }]
 }, {
   "instruction": "Smoke can also have different colors under various lighting and weather conditions. Please select all the videos that <u>have smoke</u>.",
@@ -40,12 +43,14 @@ var tutorial_data = [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=3012,1045,3515,1548&width=180&height=180&startFrame=9367&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Good job! This one has black smoke.",
     "wrong": "Oops! This one has black smoke, which needs to be selected.",
-    "label": 1
+    "label": 1,
+    "bound": "83,82 88,65 95,54 102,45 103,0 0,0 0,27 14,41 16,55 18,72 21,84 32,87 57,88 73,87"
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=3012,1145,3515,1648&width=180&height=180&startFrame=10634&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "That's right! This one has bluish and grayish smoke.",
     "wrong": "Oops! This one has bluish and grayish smoke, which needs to be selected.",
-    "label": 1
+    "label": 1,
+    "bound": "97,85 84,70 78,59 66,39 53,20 40,9 28,6 8,7 0,11 0,42 7,51 17,60 33,74 49,85 68,91 83,95 94,92"
   }]
 }, {
   "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. Please select the one that <u>has smoke</u>.",
@@ -55,7 +60,8 @@ var tutorial_data = [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-11.timemachine/&boundsLTRB=6304,884,6807,1387&width=180&height=180&startFrame=8863&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Nice! This one has smoke. Compared to steam, smoke disappears slower. Smoke also has various colors, unclear edges, and different opacities.",
     "wrong": "Oops! This one has smoke and needs to be selected. Compared to steam, smoke disappears slower. Smoke also has various colors, unclear edges, and different opacities.",
-    "label": 1
+    "label": 1,
+    "bound": "76,50 85,42 98,39 103,36 102,0 31,0 31,17 36,33 44,44 59,50 66,51"
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-22.timemachine/&boundsLTRB=1196,1035,1699,1538&width=180&height=180&startFrame=6140&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "That's right! This one shows mainly steam and should not be selected. Steam disappears faster and has sharp edges when compared to smoke. Steam also has extremely high opacity, which makes its background not visible.",
@@ -70,7 +76,8 @@ var tutorial_data = [{
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=3271,1116,3774,1619&width=180&height=180&startFrame=5441&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Great! This one has grayish smoke. Sometimes looking at the color is sufficient to tell the difference between steam and smoke.",
     "wrong": "Oops! This one has grayish smoke, which needs to be selected. Sometimes looking at the color is sufficient to tell the difference between steam and smoke.",
-    "label": 1
+    "label": 1,
+    "bound": "100,58 84,69 75,81 66,103 0,100 0,15 17,12 40,10 64,10 85,15 100,17"
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2019-01-22.timemachine/&boundsLTRB=3981,1004,4484,1507&width=180&height=180&startFrame=6068&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Nice! This one shows mainly steam. In this case, steam may look like smoke. But if you look at its edge, steam fades almost immediately.",

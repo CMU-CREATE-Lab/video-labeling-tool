@@ -79,6 +79,28 @@
   border: 10px solid #3be4ff;
 }
 
+.tutorial-tool a .mask {
+  position: relative;
+}
+
+.tutorial-tool a .mask svg {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+}
+
+.tutorial-tool a .mask svg mask rect {
+  opacity: 0.6;
+}
+
+.tutorial-tool a .mask svg mask polygon {
+  opacity: 1;
+  stroke: white;
+  stroke-width: 0.5;
+}
+
+
 .tutorial-tool a>div {
   width: 100%;
   text-align: center;

@@ -25,6 +25,7 @@
     var video_items = [];
     var wrong_times = 0;
     var $next;
+    var smoke_polygon = ""; // for drawing polygons to indicate smoke
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -68,16 +69,29 @@
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
       var $caption = $("<div>" + (i + 1) + "</div>");
-      var $hint = $("<p class='hint'></p>");
-      var $description = $("<p class='description'></p>");
-      $description.hide();
-      $hint.hide();
+      var $hint = $("<p class='hint'></p>").hide();
+      var $description = $("<p class='description'></p>").hide();
       // "autoplay" is needed for iPhone Safari to work
       // "preload" is ignored by mobile devices
       // "disableRemotePlayback" prevents chrome casting
       // "playsinline" prevents playing video fullscreen
-      var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
+      var $vid = $('<div class="mask"><video autoplay preload loop muted playsinline disableRemotePlayback></video></div>');
       $item.append($vid).append($caption).append($hint).append($description);
+      /********* start debug *********/
+      smoke_polygon = "";
+      $vid.on("click", function (event) {
+        var $v = $vid.find("video");
+        var vw = $v.width();
+        var vh = $v.height();
+        var margin_x = ($vid.width() - vw) / 2;
+        var margin_y = ($vid.height() - vh) / 2;
+        var x = event.offsetX + margin_x - 3;
+        var y = event.offsetY + margin_y - 3;
+        $vid.append($("<div class='smoke-polygon' style='width: 6px; height: 6px; background: red; position: absolute; left:" + x + "px; top:" + y + "px;'></div>"))
+        smoke_polygon += Math.round(x / vw * 100) + "," + Math.round(y / vh * 100) + " ";
+        console.log(smoke_polygon);
+      });
+      /********* end debug *********/
       return $item;
     }
 
@@ -106,6 +120,19 @@
         }
         $item.find("p.hint").html("").hide();
         $item.find("p.description").html("<span " + c + ">" + m + "</span>").show();
+        if ("bound" in v) {
+          var svg = "";
+          svg += '<svg viewBox="0 0 100 100">';
+          svg += '  <defs>';
+          svg += '    <mask id="mask-' + i + '" x="0" y="0" width="100%" height="100%">';
+          svg += '      <rect x="0" y="0" width="100%" height="100%" fill="white"/>';
+          svg += '      <polygon class="mask-polygon" points="' + v["bound"] + '"/>';
+          svg += '    </mask>';
+          svg += '  </defs>';
+          svg += '  <rect x="0" y="0" width="100%" height="100%" style="mask: url(#mask-' + i + ');" />';
+          svg += '</svg>';
+          $item.find(".mask").append($(svg));
+        }
       }
       return is_all_answers_correct;
     }
@@ -129,7 +156,9 @@
           toggleSelect($(this));
         });
         $item.css("cursor", "pointer");
+        $item.find("svg").remove();
         $item.find("p").html("").hide();
+        $item.find(".smoke-polygon").remove();
         var $vid = $item.find("video");
         $vid.one("canplay", function () {
           // Play the video
