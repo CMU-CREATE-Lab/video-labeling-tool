@@ -215,13 +215,14 @@
             } else {
               current_idx += 1;
               wrong_times = 0;
+              $next.find("span").text("Next Step");
             }
             is_in_checking_state = false;
           } else {
             var d = data[current_idx];
             var video_data = util.shuffleArrayInPlace(d["data"]);
             updateVideos(video_data, callback);
-            $next.find("span").text("Next Step");
+            $next.find("span").text("Check Answer");
             if (wrong_times == 1 && "try_again" in d) {
               $tool_instruction.html(d["try_again"]);
             } else if (wrong_times == 2 && "final_try" in d) {

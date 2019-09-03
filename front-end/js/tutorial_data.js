@@ -1,9 +1,9 @@
-var general_wrong_txt = "Uh oh! Some answers are incorrect. Don't worry! You still made good progress. We provide detailed comments below each video and highlight mistakes with color.";
+var general_wrong_txt = "<span class='custom-text-info-dark-theme'>Uh oh! Some answers are incorrect.</span> Don't worry! You still made good progress. We provide detailed comments below each video and highlight mistakes with color.";
 var general_correct_txt = "Excellent! Your answers are all correct! We provide detailed comments and explanations below each video.";
-var general_try_again_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Please select the ones that contain smoke.";
-var general_final_try_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Hints are also provided under each video. Please select the ones that contain smoke.";
+var general_try_again_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Please select the ones that <u>have smoke</u>.";
+var general_final_try_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Hints are also provided under each video. Please select the ones that <u>have smoke</u>.";
 var tutorial_data = [{
-  "instruction": "This tutorial provides guidelines about how to recognize smoke, which will take about 20 minutes. Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select the one that contains smoke by clicking or tapping.",
+  "instruction": "This tutorial provides guidelines about how to recognize smoke, which will take about 20 minutes. Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select the one that <u>has smoke</u> by clicking or tapping.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -18,7 +18,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Smoke can have high and low opacities, which all need to be selected. Please select all the videos that contain smoke, even when the emission source is not visible.",
+  "instruction": "Smoke can have high and low opacities, which all need to be selected. Please select all the videos that <u>have smoke</u>, even when the emission source is not visible.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -27,13 +27,13 @@ var tutorial_data = [{
     "wrong": "Oops! This one has high-opacity smoke and needs to be selected. High-opacity smoke can block most of the background.",
     "label": 1
   }, {
-    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=5329,1033,5831,1535&width=180&height=180&startFrame=10346&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "Great! This one has low-opacity smoke and steam. You can still see most of the background.",
-    "wrong": "Oops! This one has low-opacity smoke and steam, which needs to be selected. You can still see most of the background.",
+    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=8105&format=mp4&fps=12&tileFormat=mp4&nframes=36",
+    "correct": "Great! This one has low-opacity smoke. You can still see most of the background.",
+    "wrong": "Oops! This one has low-opacity smoke, which needs to be selected. You can still see most of the background.",
     "label": 1
   }]
 }, {
-  "instruction": "Smoke can also have different colors under various lighting and weather conditions. Please select all the videos that contain smoke.",
+  "instruction": "Smoke can also have different colors under various lighting and weather conditions. Please select all the videos that <u>have smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -48,7 +48,7 @@ var tutorial_data = [{
     "label": 1
   }]
 }, {
-  "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. Please select the one that contains smoke.",
+  "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. Please select the one that <u>has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -63,7 +63,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "More practice of smoke and steam! Recall that smoke has various colors, unclear edges, and different opacities. Please select the one that has smoke.",
+  "instruction": "More practice of smoke and steam! Recall that smoke has various colors, unclear edges, and different opacities. Please select the one that <u>has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -78,7 +78,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Let's try another case when smoke and steam appear at the same time. Please select the one that contains smoke, even when steam is also present.",
+  "instruction": "Let's try another case when smoke and steam appear at the same time. Please select the one that <u>has smoke</u>, even when steam is also present.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -88,12 +88,12 @@ var tutorial_data = [{
     "label": 1
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-12-13.timemachine/&boundsLTRB=4365,994,4867,1496&width=180&height=180&startFrame=5678&format=mp4&fps=12&tileFormat=mp4&nframes=36",
-    "correct": "That's right! This one shows mainly steam and should not be selected. Note that steam's high opacity can block its background.",
-    "wrong": "Oops! This one should not be selected because it shows only steam. Note that steam's high opacity can block its background.",
+    "correct": "That's right! This one shows mainly steam (with cloud shadow on the background) and should not be selected. Note that steam's high opacity can block its background.",
+    "wrong": "Oops! This one should not be selected because it shows only steam (with cloud shadow on the background). Note that steam's high opacity can block its background.",
     "label": 0
   }]
 }, {
-  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar. Please select the one that has smoke, even when steam is also present.",
+  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar. Please select the one that <u>has smoke</u>, even when steam is also present.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -108,7 +108,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Videos that show bad weather should be ignored. In general, when labeling real data, ignore the video if you are not sure whether it has smoke under bad weather conditions. Please select the one that contains smoke.",
+  "instruction": "Videos that show bad weather should be ignored. In general, when labeling real data, ignore the video if you are not sure whether it has smoke under bad weather conditions. Please select the one that <u>has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -123,7 +123,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Great! You have learned how to label smoke! Now let's try some challenging cases. Please select the videos that contain smoke. You can select multiple ones.",
+  "instruction": "Great! You have learned how to label smoke! Now let's try some challenging cases. Please select the videos that <u>have smoke</u>. You can select multiple ones.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "try_again": general_try_again_txt,
@@ -166,7 +166,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "You did great and will master the skill of recognizing smoke! We took a while to get here, I know, but don't worry, it will be worth it. Now let's do a final practice to mimic the real task of labeling 16 videos at once. Please select the ones that contain smoke.",
+  "instruction": "You did great and will master the skill of recognizing smoke! We took a while to get here, I know, but don't worry, it will be worth it. Now let's do a final practice to mimic the real task of labeling 16 videos at once. Please select the ones that <u>have smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "try_again": general_try_again_txt,
