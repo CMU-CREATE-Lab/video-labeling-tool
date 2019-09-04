@@ -27,7 +27,7 @@ var tutorial_data = [{
     "correct": "Good job! This one has high-opacity smoke, which can block most of the background.",
     "wrong": "Oops! This one has high-opacity smoke and needs to be selected. High-opacity smoke can block most of the background.",
     "label": 1,
-    "bound": "82,80 72,86 56,84 36,74 26,64 18,47 23,35 32,29 49,14 60,7 61,3 100,2 100,49 100,59 87,73"
+    "bound": "82,80 72,86 56,84 36,74 26,64 18,47 23,35 32,29 49,14 60,7 61,0 100,0 100,49 100,59 87,73"
   }, {
     "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=8105&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Great! This one has low-opacity smoke. You can still see most of the background.",

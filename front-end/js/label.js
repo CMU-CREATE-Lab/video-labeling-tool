@@ -137,8 +137,8 @@
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
             $sign_in_prompt.find("span").text("Sign Out");
-            if ($sign_in_prompt.hasClass("pulse")) {
-              $sign_in_prompt.removeClass("pulse")
+            if ($sign_in_prompt.hasClass("pulse-white")) {
+              $sign_in_prompt.removeClass("pulse-white")
             }
             $user_score_container.show();
           },
@@ -153,8 +153,8 @@
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
             $sign_in_prompt.find("span").text("Sign In");
-            if (!$sign_in_prompt.hasClass("pulse")) {
-              $sign_in_prompt.addClass("pulse")
+            if (!$sign_in_prompt.hasClass("pulse-white")) {
+              $sign_in_prompt.addClass("pulse-white")
             }
             $user_score_container.hide();
           },

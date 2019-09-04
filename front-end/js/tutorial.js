@@ -11,8 +11,9 @@
   var $next;
   var counter = 0;
   var max_counter = 10;
-  var count_down_duration = 300; // in milliseconds
+  var count_down_duration = 0; // in milliseconds
   var count_down_timeout;
+  var api_url_root = util.getRootApiUrl();
 
   function resetCountDown() {
     clearTimeout(count_down_timeout);
@@ -37,10 +38,26 @@
     }, count_down_duration);
   }
 
+  // Add tutorial record based on action types
+  // 0: take the tutorial
+  // 1: pass the last batch (16 videos) in the tutorial during the first try
+  // 2: pass the last batch during the second try after showing the answers
+  // 3: pass the last batch (16 videos) during the third try with hints
+  // 4: did not pass the last batch in the tutorial
+  function addTutorialRecord(action_type) {
+    util.postJSON(api_url_root + "add_tutorial_record", {
+      "user_token": user_token,
+      "action_type": action_type
+    }, {
+      error: function (xhr) {
+        console.error("Error when adding tutorial record!");
+      }
+    });
+  }
 
   function onLoginSuccess(data) {
     user_token = data["user_token"];
-    console.log("onLoginSuccess");
+    addTutorialRecord(0);
   }
 
   function onLoginComplete() {
@@ -69,11 +86,12 @@
     });
     tutorial_tool = new edaplotjs.TutorialTool("#tutorial-tool-container", {
       data: tutorial_data, // this is in tutorial_data.js
-      on_tutorial_finished: function () {
+      on_tutorial_finished: function (num_tries_to_pass) {
         $next.hide();
         $("#label").removeClass("force-hidden");
         $("#tutorial-end-text").removeClass("force-hidden");
         $("#tutorial-tool-container").hide();
+        addTutorialRecord(num_tries_to_pass);
       }
     });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({

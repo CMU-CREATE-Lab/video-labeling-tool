@@ -25,6 +25,7 @@
     var video_items = [];
     var wrong_times = 0;
     var $next;
+    var num_tries_to_pass = 1; // number of tries to pass the last batch of the tutorial
     //var smoke_polygon = ""; // for drawing polygons to indicate smoke (debug)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,7 +226,7 @@
         if (current_idx == data.length && !is_in_checking_state) {
           $(window).off("beforeunload", leaveCheck);
           $tool_instruction.hide();
-          if (typeof on_tutorial_finished === "function") on_tutorial_finished();
+          if (typeof on_tutorial_finished === "function") on_tutorial_finished(num_tries_to_pass);
         } else {
           if (is_in_checking_state) {
             var d = data[current_idx];
@@ -235,6 +236,9 @@
             } else {
               wrong_times += 1;
               $tool_instruction.html(d["wrong"]);
+              if (current_idx == data.length - 1) {
+                num_tries_to_pass += 1;
+              }
             }
             if (typeof callback["success"] === "function") callback["success"](data);
             if (!is_all_answers_correct && wrong_times == 1 && "try_again" in d) {

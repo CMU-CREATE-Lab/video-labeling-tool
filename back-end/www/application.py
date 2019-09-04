@@ -245,6 +245,26 @@ class View(db.Model):
         return ("<View id=%r connection_id=%r video_id=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.video_id, self.query_type, self.time)
 
 """
+The table to track if a user took or passed the tutorial
+"""
+class Tutorial(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # The connection id in the Connection table
+    connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"), nullable=False)
+    # The action type for the tutorial
+    # 0: take the tutorial
+    # 1: pass the last batch (16 videos) in the tutorial during the first try
+    # 2: pass the last batch during the second try after showing the answers
+    # 3: pass the last batch (16 videos) during the third try with hints
+    # 4: did not pass the last batch in the tutorial
+    action_type = db.Column(db.Integer, nullable=False)
+    # The epochtime (in seconds) when the tutorial is taken or passed
+    time = db.Column(db.Integer, default=get_current_time)
+
+    def __repr__(self):
+        return ("<Tutorial id=%r connection_id=%r action_type=%r time=%r>") % (self.id, self.connection_id, self.action_type, self.time)
+
+"""
 The schema for the video table, used for jsonify
 """
 class VideoSchema(ma.ModelSchema):
@@ -535,6 +555,37 @@ def get_label_statistics():
         "num_fully_labeled": num_fully_labeled,
         "num_partially_labeled": num_partially_labeled}
     return jsonify(return_json)
+
+"""
+Add tutorial record to the database
+"""
+@app.route("/api/v1/add_tutorial_record", methods=["POST"])
+def add_tutorial_record():
+    if request.json is None:
+        e = InvalidUsage("Missing json", status_code=400)
+        return handle_invalid_usage(e)
+    if "action_type" not in request.json:
+        e = InvalidUsage("Missing field: action_type", status_code=400)
+        return handle_invalid_usage(e)
+    if "user_token" not in request.json:
+        e = InvalidUsage("Missing field: user_token", status_code=400)
+        return handle_invalid_usage(e)
+    # Decode user jwt
+    try:
+        user_jwt = decode_jwt(request.json["user_token"])
+    except jwt.InvalidSignatureError as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    # Update database
+    try:
+        add_tutorial(action_type=request.json["action_type"], connection_id=user_jwt["connection_id"])
+        return make_response("", 204)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=400)
+        return handle_invalid_usage(e)
 
 """
 Log after each request
@@ -896,6 +947,14 @@ def add_view(**kwargs):
     view = add_row(View(**kwargs))
     log("Add view: %r" % view)
     return view
+
+"""
+Add a tutorial taken or passed record to the database
+"""
+def add_tutorial(**kwargs):
+    tutorial = add_row(Tutorial(**kwargs))
+    log("Add tutorial: %r" % tutorial)
+    return tutorial
 
 """
 Query a batch of videos for labeling by using active learning or random sampling
