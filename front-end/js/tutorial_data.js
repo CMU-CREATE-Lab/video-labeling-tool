@@ -21,7 +21,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Smoke can have high and low opacities, which all need to be selected. Please select all the videos that <u>have smoke</u>, even when the emission source is not visible.",
+  "instruction": "Smoke can have high and low opacities, which all need to be selected. Opacity means the percent of light absorbed, scattered, or blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select all the videos that <u>have smoke</u>, even when the <u>emission source is not visible</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -87,7 +87,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Let's try another case when smoke and steam appear at the same time. Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>, even when steam is also present.",
+  "instruction": "Let's try another case when smoke and steam appear at the same time. Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -103,7 +103,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar.  Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>, even when steam is also present.",
+  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar.  Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
