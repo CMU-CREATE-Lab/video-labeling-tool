@@ -39,11 +39,11 @@
   }
 
   // Add tutorial record based on action types
-  // 0: take the tutorial
+  // 0: took the tutorial
   // 1: did not pass the last batch in the tutorial
-  // 2: pass the last batch (16 videos) during the 3rd try with hints
-  // 3: pass the last batch during the 2nd try after showing the answers
-  // 4: pass the last batch (16 videos) in the tutorial during the 1st try
+  // 2: passed the last batch (16 videos) during the 3rd try with hints
+  // 3: passed the last batch during the 2nd try after showing the answers
+  // 4: passed the last batch (16 videos) in the tutorial during the 1st try
   function addTutorialRecord(action_type) {
     util.postJSON(api_url_root + "add_tutorial_record", {
       "user_token": user_token,

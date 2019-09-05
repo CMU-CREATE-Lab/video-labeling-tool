@@ -156,12 +156,20 @@ class User(db.Model):
     score = db.Column(db.Integer, nullable=False, default=0)
     # The raw score that the user obtained so far (number of unlabeled video that the user went through so far)
     raw_score = db.Column(db.Integer, nullable=False, default=0)
+    # The best action_type in the tutorial table
+    # -1: did not take the tutorial
+    # 0: took the tutorial
+    # 1: did not pass the last batch in the tutorial
+    # 2: passed the last batch (16 videos) during the third try with hints
+    # 3: passed the last batch during the second try after showing the answers
+    # 4: passed the last batch (16 videos) in the tutorial during the first try
+    best_tutorial_action = db.Column(db.Integer, nullable=False, default=-1)
     # Relationships
     label = db.relationship("Label", backref=db.backref("user", lazy=True), lazy=True)
     connection = db.relationship("Connection", backref=db.backref("user", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r raw_score=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score, self.raw_score)
+        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r raw_score=%r best_tutorial_action=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score, self.raw_score, self.best_tutorial_action)
 
 """
 The class for the label history table
@@ -252,11 +260,11 @@ class Tutorial(db.Model):
     # The connection id in the Connection table
     connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"), nullable=False)
     # The action type for the tutorial
-    # 0: take the tutorial
+    # 0: took the tutorial
     # 1: did not pass the last batch in the tutorial
-    # 2: pass the last batch (16 videos) during the third try with hints
-    # 3: pass the last batch during the second try after showing the answers
-    # 4: pass the last batch (16 videos) in the tutorial during the first try
+    # 2: passed the last batch (16 videos) during the third try with hints
+    # 3: passed the last batch during the second try after showing the answers
+    # 4: passed the last batch (16 videos) in the tutorial during the first try
     action_type = db.Column(db.Integer, nullable=False)
     # The epochtime (in seconds) when the tutorial is taken or passed
     time = db.Column(db.Integer, default=get_current_time)
@@ -581,7 +589,15 @@ def add_tutorial_record():
         return handle_invalid_usage(e)
     # Update database
     try:
-        add_tutorial(action_type=request.json["action_type"], connection_id=user_jwt["connection_id"])
+        # Add tutorial record
+        action_type = request.json["action_type"]
+        add_tutorial(action_type=action_type, connection_id=user_jwt["connection_id"])
+        # Update user
+        user = User.query.filter(User.id==user_jwt["user_id"]).first()
+        if action_type > user.best_tutorial_action:
+            user.best_tutorial_action = action_type
+            log("Update user: %r" % user)
+            update_db()
         return make_response("", 204)
     except Exception as ex:
         e = InvalidUsage(ex.args[0], status_code=400)
