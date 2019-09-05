@@ -75,8 +75,20 @@
   border: 10px solid #ff5e5e;
 }
 
-.tutorial-tool a.highlight video {
-  border: 10px solid #3be4ff;
+.tutorial-tool a.selected.highlight-white video {
+  border-color: #ffffff;
+}
+
+.tutorial-tool a.selected.highlight-info video {
+  border-color: #3be4ff;
+}
+
+.tutorial-tool a.highlight-white .description {
+  color: #ffffff;
+}
+
+.tutorial-tool a.highlight-info .description {
+  color: #3be4ff;
 }
 
 .tutorial-tool a .mask {
@@ -111,6 +123,15 @@
 
 .tutorial-tool a.selected>div {
   color: #ff5e5e;
+}
+
+
+.tutorial-tool a.highlight-white>div {
+  color: #ffffff !important;
+}
+
+.tutorial-tool a.highlight-info>div {
+  color: #3be4ff !important;
 }
 
 .tutorial-tool a>p {

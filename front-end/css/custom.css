@@ -21,7 +21,7 @@ body,
 }
 
 .content-table p {
-  color: white !important;
+  color: white;
 }
 
 .content-table h3 {
@@ -35,12 +35,12 @@ body,
 }
 
 .content-table ul {
-  color: white !important;
+  color: white;
   font-size: 18px;
 }
 
 .content-table hr {
-  background: #ffffff !important;
+  background: #ffffff;
 }
 
 .content-table hr.custom-text-info-dark-theme {

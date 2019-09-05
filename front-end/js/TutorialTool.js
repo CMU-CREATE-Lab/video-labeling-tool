@@ -115,12 +115,14 @@
         var m = v["correct"];
         var label = $item.hasClass("selected") ? 1 : 0;
         if (label !== v["label"]) {
-          var c = "class='custom-text-info-dark-theme'";
-          var m = v["wrong"];
+          m = v["wrong"];
           is_all_answers_correct = false;
+          addHighlight($item, false);
+        } else {
+          addHighlight($item, true);
         }
         $item.find("p.hint").html("").hide();
-        $item.find("p.description").html("<span " + c + ">" + m + "</span>").show();
+        $item.find("p.description").html(m).show();
         if ("bound" in v) {
           var svg = "";
           svg += '<svg viewBox="0 0 100 100">';
@@ -213,6 +215,21 @@
     function removeSelect($element) {
       if ($element.hasClass("selected")) {
         $element.removeClass("selected");
+      }
+      if ($element.hasClass("highlight-white")) {
+        $element.removeClass("highlight-white");
+      }
+      if ($element.hasClass("highlight-info")) {
+        $element.removeClass("highlight-info");
+      }
+    }
+
+    function addHighlight($element, is_answer_correct) {
+      if (is_answer_correct && !$element.hasClass("highlight-white")) {
+        $element.addClass("highlight-white");
+      }
+      if (!is_answer_correct && !$element.hasClass("highlight-info")) {
+        $element.addClass("highlight-info");
       }
     }
 
