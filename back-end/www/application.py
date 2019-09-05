@@ -253,10 +253,10 @@ class Tutorial(db.Model):
     connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"), nullable=False)
     # The action type for the tutorial
     # 0: take the tutorial
-    # 1: pass the last batch (16 videos) in the tutorial during the first try
-    # 2: pass the last batch during the second try after showing the answers
-    # 3: pass the last batch (16 videos) during the third try with hints
-    # 4: did not pass the last batch in the tutorial
+    # 1: did not pass the last batch in the tutorial
+    # 2: pass the last batch (16 videos) during the third try with hints
+    # 3: pass the last batch during the second try after showing the answers
+    # 4: pass the last batch (16 videos) in the tutorial during the first try
     action_type = db.Column(db.Integer, nullable=False)
     # The epochtime (in seconds) when the tutorial is taken or passed
     time = db.Column(db.Integer, default=get_current_time)

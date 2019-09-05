@@ -40,10 +40,10 @@
 
   // Add tutorial record based on action types
   // 0: take the tutorial
-  // 1: pass the last batch (16 videos) in the tutorial during the first try
-  // 2: pass the last batch during the second try after showing the answers
-  // 3: pass the last batch (16 videos) during the third try with hints
-  // 4: did not pass the last batch in the tutorial
+  // 1: did not pass the last batch in the tutorial
+  // 2: pass the last batch (16 videos) during the 3rd try with hints
+  // 3: pass the last batch during the 2nd try after showing the answers
+  // 4: pass the last batch (16 videos) in the tutorial during the 1st try
   function addTutorialRecord(action_type) {
     util.postJSON(api_url_root + "add_tutorial_record", {
       "user_token": user_token,
@@ -91,7 +91,7 @@
         $("#label").removeClass("force-hidden");
         $("#tutorial-end-text").removeClass("force-hidden");
         $("#tutorial-tool-container").hide();
-        addTutorialRecord(num_tries_to_pass);
+        addTutorialRecord(5 - num_tries_to_pass);
       }
     });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
