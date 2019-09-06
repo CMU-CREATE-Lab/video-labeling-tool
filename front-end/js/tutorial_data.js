@@ -1,7 +1,8 @@
+var general_prompt = "<ul><li>Smoke shows <u>various colors</u>, while steam is mostly whitish.</li><li>Smoke has <u>unclear edges</u> that fade away slower than steam.</li><li>Smoke has <u>various opacities</u>, while steam has extremely high opacity.</li></ul>";
 var general_wrong_txt = "<span class='custom-text-info-dark-theme'>Uh oh! Some answers are incorrect.</span> Don't worry! You still made good progress. We provide detailed comments below each video and highlight mistakes with color.";
 var general_correct_txt = "Excellent! Your answers are all correct! We provide detailed comments and explanations below each video.";
-var general_try_again_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Please select the ones that <u>have smoke</u>.";
-var general_final_try_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Hints are also provided under each video. Please select the ones that <u>have smoke</u>.";
+var general_try_again_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Recall that:" + general_prompt + "Please select the ones that <u>have smoke</u>.";
+var general_final_try_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Recall that:" + general_prompt + "Hints are also provided under each video. Please select the ones that <u>have smoke</u>.";
 var general_need_to_select_head = "Oops! You should have selected this one because it ";
 var general_not_to_select_head = "Oops! You should NOT have selected this one because it ";
 var tutorial_data = [{
@@ -21,7 +22,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Smoke can have high and low opacities, which all need to be selected. Opacity means the percent of light absorbed, scattered, or blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select all the videos that <u>have smoke</u>, even when the <u>emission source is not visible</u>.",
+  "instruction": "Smoke can have <u>high and low opacities</u>, which all need to be selected. Opacity means the percent of light absorbed, scattered, or blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select all the videos that <u>have smoke</u>, even when the <u>emission source is not visible</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -38,7 +39,7 @@ var tutorial_data = [{
     "bound": "100,83 67,82 54,78 17,75 0,74 0,41 17,45 35,43 54,35 68,28 83,22 100,24"
   }]
 }, {
-  "instruction": "Smoke can also have different colors under various lighting and weather conditions. Please select all the videos that <u>have smoke</u>.",
+  "instruction": "Smoke can also have <u>different colors</u> under various lighting and weather conditions. Please select all the videos that <u>have smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -55,7 +56,7 @@ var tutorial_data = [{
     "bound": "97,85 84,70 78,59 66,39 53,20 40,9 28,6 8,7 0,11 0,42 7,51 17,60 33,74 49,85 68,91 83,95 94,92"
   }]
 }, {
-  "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. There are in general three rules: <ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>.",
+  "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. There are in general three rules:" + general_prompt + "Please select the one that <u>has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -71,7 +72,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "More practice of smoke and steam! Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>.",
+  "instruction": "More practice of smoke and steam! Recall that:" + general_prompt + "Please select the one that <u>has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -87,7 +88,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Let's try another case when smoke and steam appear at the same time. Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
+  "instruction": "Let's try another case when smoke and steam appear at the same time. Recall that:" + general_prompt + "Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -103,7 +104,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar.  Recall that:<ul><li>Smoke shows various colors, while steam is mostly whitish.</li><li>Smoke has unclear edges that fade away slower than steam.</li><li>Smoke has various opacities, while steam has extremely high opacity.</li></ul>Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
+  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar.  Recall that:" + general_prompt + "Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -119,7 +120,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Videos that show bad weather should be ignored. In general, when labeling real data, ignore the video if you are not sure whether it has smoke under bad weather conditions. Please select the one that <u>has smoke</u>.",
+  "instruction": "Videos that show bad weather <u>should be ignored</u>. In general, when labeling real data, ignore the video if you are not sure whether it has smoke under bad weather conditions. Please select the one that <u>has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
