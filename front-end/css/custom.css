@@ -172,6 +172,8 @@ body,
   margin-top: 17px !important;
   background-color: #7d7d7d !important;
   border-color: #7d7d7d !important;
+  color: white !important;
+  line-height: 25px;
 }
 
 #google-sign-in-button {

@@ -301,7 +301,7 @@
       if (typeof data !== "undefined") {
         user_score = data["data"]["score"]["user"];
         user_raw_score = data["data"]["score"]["raw"];
-        if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score);
+        if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score, data["data"]["score"]["batch"]);
       }
       // Get a new batch
       getVideoBatch({
@@ -393,6 +393,10 @@
 
     this.isAdmin = function () {
       return is_admin;
+    };
+
+    this.userToken = function () {
+      return user_token;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

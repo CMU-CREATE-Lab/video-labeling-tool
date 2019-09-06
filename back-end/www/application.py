@@ -266,11 +266,16 @@ class Tutorial(db.Model):
     # 3: passed the last batch during the second try after showing the answers
     # 4: passed the last batch (16 videos) in the tutorial during the first try
     action_type = db.Column(db.Integer, nullable=False)
+    # The query type of the tutorial
+    # 0: users enter the tutorial page (can come from multiple sources or different button clicks)
+    # 1: users click the tutorial button on the webpage (not the prompt dialog)
+    # 2: users click the tutorial button in the prompt dialog (not the webpage)
+    query_type = db.Column(db.Integer, nullable=False)
     # The epochtime (in seconds) when the tutorial is taken or passed
     time = db.Column(db.Integer, default=get_current_time)
 
     def __repr__(self):
-        return ("<Tutorial id=%r connection_id=%r action_type=%r time=%r>") % (self.id, self.connection_id, self.action_type, self.time)
+        return ("<Tutorial id=%r connection_id=%r action_type=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.action_type, self.query_type, self.time)
 
 """
 The schema for the video table, used for jsonify
@@ -575,6 +580,9 @@ def add_tutorial_record():
     if "action_type" not in request.json:
         e = InvalidUsage("Missing field: action_type", status_code=400)
         return handle_invalid_usage(e)
+    if "query_type" not in request.json:
+        e = InvalidUsage("Missing field: query_type", status_code=400)
+        return handle_invalid_usage(e)
     if "user_token" not in request.json:
         e = InvalidUsage("Missing field: user_token", status_code=400)
         return handle_invalid_usage(e)
@@ -591,7 +599,8 @@ def add_tutorial_record():
     try:
         # Add tutorial record
         action_type = request.json["action_type"]
-        add_tutorial(action_type=action_type, connection_id=user_jwt["connection_id"])
+        query_type = request.json["query_type"]
+        add_tutorial(action_type=action_type, connection_id=user_jwt["connection_id"], query_type=query_type)
         # Update user
         user = User.query.filter(User.id==user_jwt["user_id"]).first()
         if action_type > user.best_tutorial_action:

@@ -47,7 +47,8 @@
   function addTutorialRecord(action_type) {
     util.postJSON(api_url_root + "add_tutorial_record", {
       "user_token": user_token,
-      "action_type": action_type
+      "action_type": action_type,
+      "query_type": 0 // this means that users enter the tutorial page
     }, {
       error: function (xhr) {
         console.error("Error when adding tutorial record!");
