@@ -1,4 +1,4 @@
-.video-labeling-tool {
+.tutorial-tool {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -11,20 +11,19 @@
   min-height: 200px;
 }
 
-.video-labeling-tool .video-labeling-tool-videos {
+.tutorial-tool .tutorial-tool-videos {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: flex-start;
-  align-items: center;
+  align-items: flex-start;
   align-content: stretch;
   box-sizing: border-box;
   width: 100%;
   padding: 0;
 }
 
-.video-labeling-tool .error-text,
-.video-labeling-tool .not-supported-text {
+.tutorial-tool .not-supported-text {
   color: #ff5e5e;
   text-align: center;
   flex: 1 0 100%;
@@ -33,25 +32,7 @@
   padding: 10px 0;
 }
 
-.video-labeling-tool .no-data-text {
-  color: #63ff5e;
-  text-align: center;
-  flex: 1 0 100%;
-  max-width: 100%;
-  font-size: 18px;
-  padding: 10px 0;
-}
-
-.video-labeling-tool .bad-video-text {
-  color: #3be4ff;
-  text-align: center;
-  flex: 1 0 100%;
-  max-width: 100%;
-  font-size: 18px;
-  padding: 10px 0;
-}
-
-.video-labeling-tool .loading-text {
+.tutorial-tool .loading-text {
   color: #3be4ff;
   text-align: center;
   flex: 1 0 100%;
@@ -65,7 +46,8 @@
   background-position: center;
 }
 
-.video-labeling-tool a {
+.tutorial-tool a {
+  position: relative;
   color: black;
   text-decoration: none;
   padding: 10px;
@@ -78,7 +60,7 @@
   user-select: none;
 }
 
-.video-labeling-tool a video {
+.tutorial-tool a video {
   border-radius: 2px;
   width: 100%;
   box-sizing: border-box;
@@ -90,11 +72,60 @@
   min-height: 100px;
 }
 
-.video-labeling-tool a.selected video {
+.tutorial-tool a.selected video {
   border: 10px solid #ff5e5e;
 }
 
-.video-labeling-tool a>div {
+.tutorial-tool a.selected.highlight-white video {
+  border-color: #ffffff;
+}
+
+.tutorial-tool a.selected.highlight-info video {
+  border-color: #3be4ff;
+}
+
+.tutorial-tool a.selected.highlight-white .mask svg {
+  border-color: #ffffff;
+}
+
+.tutorial-tool a.selected.highlight-info .mask svg {
+  border-color: #3be4ff;
+}
+
+
+.tutorial-tool a.highlight-white .description {
+  color: #ffffff;
+}
+
+.tutorial-tool a.highlight-info .description {
+  color: #3be4ff;
+}
+
+.tutorial-tool a .mask {
+  position: relative;
+  width: 100%;
+  display: grid;
+}
+
+.tutorial-tool a .mask svg {
+  position: absolute;
+  border: 10px solid #212121;
+  box-sizing: border-box;
+  width: 100%;
+  left: 0;
+  top: 0;
+}
+
+.tutorial-tool a .mask svg mask rect {
+  opacity: 0.7;
+}
+
+.tutorial-tool a .mask svg mask polygon {
+  opacity: 1;
+}
+
+
+.tutorial-tool a .number {
   width: 100%;
   text-align: center;
   color: white;
@@ -102,19 +133,38 @@
   line-height: 24px;
 }
 
-.video-labeling-tool a.selected>div {
+.tutorial-tool a.selected .number {
   color: #ff5e5e;
 }
 
+
+.tutorial-tool a.highlight-white .number {
+  color: #ffffff !important;
+}
+
+.tutorial-tool a.highlight-info .number {
+  color: #3be4ff !important;
+}
+
+.tutorial-tool a>p {
+  text-align: left;
+  color: white;
+  font-size: 18px;
+  line-height: 18px;
+  padding: 5px 10px;
+  margin: 0;
+  line-height: 1.5;
+}
+
 @media screen and (min-width: 500px) {
-  .video-labeling-tool a {
+  .tutorial-tool a {
     flex: 1 0 50%;
     max-width: 50%;
   }
 }
 
 @media screen and (max-width: 500px) {
-  .video-labeling-tool a {
+  .tutorial-tool a {
     flex: 1 0 100%;
     max-width: 100%;
   }

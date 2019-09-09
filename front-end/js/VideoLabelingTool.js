@@ -187,6 +187,7 @@
           deferreds.push(deferred);
         }
         $vid.prop("src", v["url_root"] + v["url_part"]);
+        util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
         if ($item.hasClass("force-hidden")) {
           $item.removeClass("force-hidden");
         }
@@ -200,9 +201,9 @@
       }
       // Load and show videos
       callback = safeGet(callback, {});
-      resolvePromises(deferreds, {
+      util.resolvePromises(deferreds, {
         success: function (data) {
-          $tool.empty().append($tool_videos);
+          updateTool($tool_videos);
           if (typeof callback["success"] === "function") callback["success"](data);
         },
         error: function (xhr) {
@@ -230,34 +231,34 @@
       }
     }
 
+    function updateTool($new_content) {
+      $tool_videos.detach(); // detatch prevents the click event from being removed
+      $tool.empty().append($new_content);
+    }
+
     // Show not supported message
     function showNotSupportedMsg() {
-      $tool_videos.detach();
-      $tool.empty().append($not_supported_text);
+      updateTool($not_supported_text);
     }
 
     // Show error message
     function showErrorMsg() {
-      $tool_videos.detach();
-      $tool.empty().append($error_text);
+      updateTool($error_text);
     }
 
     // Show no data message
     function showNoDataMsg() {
-      $tool_videos.detach();
-      $tool.empty().append($no_data_text);
+      updateTool($no_data_text);
     }
 
     // Show bad video requests message
     function showBadVideoMsg() {
-      $tool_videos.detach();
-      $tool.empty().append($bad_video_text);
+      updateTool($bad_video_text);
     }
 
     // Show loading message
     function showLoadingMsg() {
-      $tool_videos.detach();
-      $tool.empty().append($loading_text);
+      updateTool($loading_text);
     }
 
     function safeGet(v, default_val) {
@@ -267,16 +268,6 @@
     // Read the payload in a JWT
     function getJwtPayload(jwt) {
       return JSON.parse(window.atob(jwt.split('.')[1]));
-    }
-
-    // Resolve promises and call back
-    function resolvePromises(promises, callback) {
-      callback = safeGet(callback, {});
-      $.when.apply($, promises).done(function () {
-        if (typeof callback["success"] === "function") callback["success"]();
-      }).fail(function (xhr) {
-        if (typeof callback["error"] === "function") callback["error"](xhr);
-      })
     }
 
     // When getting a batch of videos successfully, update videos
@@ -310,7 +301,7 @@
       if (typeof data !== "undefined") {
         user_score = data["data"]["score"]["user"];
         user_raw_score = data["data"]["score"]["raw"];
-        if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score);
+        if (typeof on_user_score_update === "function") on_user_score_update(user_score, user_raw_score, data["data"]["score"]["batch"]);
       }
       // Get a new batch
       getVideoBatch({
@@ -402,6 +393,10 @@
 
     this.isAdmin = function () {
       return is_admin;
+    };
+
+    this.userToken = function () {
+      return user_token;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -9,7 +9,7 @@
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
-  <link href="css/VideoLabelingTool.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/TutorialTool.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
@@ -19,11 +19,11 @@
   <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/GoogleAnalyticsTracker.js"></script>
-  <script src="js/VideoLabelingTool.js"></script>
+  <script src="js/TutorialTool.js"></script>
   <script src="js/GoogleAccountDialog.js"></script>
   <script src="js/VideoTestDialog.js"></script>
-  <script src="js/TutorialPromptDialog.js"></script>
-  <script src="js/label.js"></script>
+  <script src="js/tutorial_data.js"></script>
+  <script src="js/tutorial.js"></script>
   <!-- Start for Google Sign-In -->
   <meta name="google-signin-scope" content="profile email">
   <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
@@ -55,57 +55,43 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p class="text no-top-margin" id="label-statistics">
-              So far, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> videos are fully labeled</span> (confirmed by multiple users), and <span class="num-partially-labeled-text">[...]</span> videos are partially labeled.
-              There are <span class="num-all-videos-text">[...]</span> videos in the dataset.
-            </p>
-            <p class="text no-top-margin" id="user-score-container">
-              This batch has 16 videos.
-              You have <span class="custom-text-info-dark-theme">reviewed <span class="user-raw-score-text">[...]</span> batches</span>, of which <span class="custom-text-info-dark-theme"><span class="user-score-text">[...]</span> have passed the quality check</span> (using randomly placed videos with answers).
-            </p>
-            <div class="control-group">
-              <a id="sign-in-prompt" class="custom-button-flat large stretch-on-mobile pulse-white"><img src="img/user.png"><span>Sign In</span></a>
-              <button id="tutorial" class="custom-button-flat large stretch-on-mobile"><img src="img/book.png"><span>Tutorial</span></button>
-              <a id="review" class="custom-button-flat large stretch-on-mobile" href=""><img src="img/collection.png"><span>My Contribution</span></a>
+            <h3 class="no-top-margin">Tutorial</h3>
+            <hr>
+            <p class="text" id="tutorial-tool-instruction"></p>
+            <div id="tutorial-end-text" class="force-hidden">
+              <p class="text no-bottom-margin">
+                <span class="custom-text-info-dark-theme">Congratulations! You have completed the tutorial</span> for identifying smoke emissions.
+                Please also let us know which aspects are working well and which could be improved via our <a href="https://docs.google.com/forms/d/e/1FAIpQLSf5yrCEfwR5wXLQh8jE_icZXHmPfAs19tNbx9KaAeGKg3B6Xw/viewform?usp=sf_link" target="_blank">Feedback Form</a>.
+              </p>
+              <div class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
+              <p id="label-statistics" class="text no-top-margin">
+                Currently, the dataset has <span class="num-all-videos-text">[...]</span> videos.
+                Among them, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> are fully labeled</span> and confirmed by multiple users so far.
+                Also, <span class="num-partially-labeled-text">[...]</span> are partially labeled.
+              </p>
+              <p class="text no-top-margin">
+                <span class="custom-text-info-dark-theme">Please help us label the real data!</span>
+                Your contributions can greatly help train the artificial intelligence model to recognize smoke emissions, which can benefit communities who suffer from industrial air pollution.
+                We appreciate your support!
+              </p>
             </div>
-            <p class="text">
-              Each video below is 3 seconds.
-              Click or tap to select videos that <u>have smoke</u>.
-              Click or tap again to deselect.
-              <span class="custom-text-danger-dark-theme">Skip a video if you are not sure whether it has smoke</span>.
-            </p>
           </div>
         </div>
-        <div id="labeling-tool-container"></div>
+        <div id="tutorial-tool-container"></div>
         <div class="flex-row">
           <div class="flex-item flex-column full-width">
             <div class="control-group">
-              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/play.png"><span>Submit and Continue</span></button>
+              <button id="next" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/next.png"><span>Check Answer</span></button>
+              <a id="label" class="custom-button-flat large stretch-on-mobile force-hidden" href="label.html"><img src="img/play.png"><span>Label Real Data</span></a>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div id="account-dialog" class="custom-dialog-large" title="Account" data-role="none">
-    <p id="sign-in-text">Sign in to track your personal achievements.</p>
-    <div id="hello-text">
-      <p>
-        Hi <span id="user-name-text"></span>, thank you for signing in.
-        Your user ID is <span id="user-id-text"></span>.
-      </p>
-    </div>
-    <div id="google-sign-in-button" class="g-signin2"></div>
-    <button id="google-sign-out-button" class="custom-button">Sign out from Google</button>
-    <button id="guest-button" class="custom-button">Continue as guest</button>
-  </div>
   <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
     <p>Video autoplay is disabled. Please enable it.</p>
     <button id="play-video-button" class="custom-button">Enable video autoplay</button>
-  </div>
-  <div id="tutorial-prompt-dialog" class="custom-dialog-large" title="Tutorial" data-role="none">
-    <p>Found smoke labeling difficult? Try our tutorial!</p>
-    <button id="take-tutorial-button" class="custom-button">Take Tutorial</button>
   </div>
 </body>
 

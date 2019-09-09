@@ -128,7 +128,8 @@
       var url_hostname = window.location.hostname;
       var is_localhost = url_hostname.indexOf("localhost");
       var is_staging = url_hostname.indexOf("staging");
-      if (is_localhost >= 0) {
+      var is_testing = url_hostname.indexOf("192.168");
+      if (is_localhost >= 0 || is_testing >= 0) {
         ga_id = "UA-10682694-25";
       } else {
         if (is_staging >= 0) {
@@ -265,6 +266,44 @@
       var elemBottom = elemTop + $(elem).height();
 
       return ((docViewTop < elemBottom) && (elemTop < docViewBottom));
+    };
+
+    // Update label statistics
+    this.updateLabelStatistics = function () {
+      $.getJSON(getRootApiUrl() + "get_label_statistics", function (data) {
+        var num_all_videos = data["num_all_videos"];
+        $(".num-all-videos-text").text(num_all_videos);
+        var num_fully_labeled = data["num_fully_labeled"];
+        var num_fully_labeled_p = Math.round(num_fully_labeled / num_all_videos * 10000) / 100;
+        $(".num-fully-labeled-text").text(num_fully_labeled + " (" + num_fully_labeled_p + "%)");
+        var num_partially_labeled = data["num_partially_labeled"];
+        var num_partially_labeled_p = Math.round(num_partially_labeled / num_all_videos * 10000) / 100;
+        $(".num-partially-labeled-text").text(num_partially_labeled + " (" + num_partially_labeled_p + "%)");
+        $("#label-statistics").show();
+      });
+    };
+
+    // Resolve promises and call back
+    this.resolvePromises = function (promises, callback) {
+      callback = safeGet(callback, {});
+      $.when.apply($, promises).done(function () {
+        if (typeof callback["success"] === "function") callback["success"]();
+      }).fail(function (xhr) {
+        if (typeof callback["error"] === "function") callback["error"](xhr);
+      })
+    };
+
+
+    // Randomize array element order in-place
+    // Using Durstenfeld shuffle algorithm with O(n) time complexity
+    this.shuffleArrayInPlace = function (array) {
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+      return array;
     };
   };
 

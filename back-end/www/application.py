@@ -156,12 +156,20 @@ class User(db.Model):
     score = db.Column(db.Integer, nullable=False, default=0)
     # The raw score that the user obtained so far (number of unlabeled video that the user went through so far)
     raw_score = db.Column(db.Integer, nullable=False, default=0)
+    # The best action_type in the tutorial table
+    # -1: did not take the tutorial
+    # 0: took the tutorial
+    # 1: did not pass the last batch in the tutorial
+    # 2: passed the last batch (16 videos) during the third try with hints
+    # 3: passed the last batch during the second try after showing the answers
+    # 4: passed the last batch (16 videos) in the tutorial during the first try
+    best_tutorial_action = db.Column(db.Integer, nullable=False, default=-1)
     # Relationships
     label = db.relationship("Label", backref=db.backref("user", lazy=True), lazy=True)
     connection = db.relationship("Connection", backref=db.backref("user", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r raw_score=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score, self.raw_score)
+        return ("<User id=%r client_id=%r client_type=%r register_time=%r score=%r raw_score=%r best_tutorial_action=%r>") % (self.id, self.client_id, self.client_type, self.register_time, self.score, self.raw_score, self.best_tutorial_action)
 
 """
 The class for the label history table
@@ -243,6 +251,31 @@ class View(db.Model):
 
     def __repr__(self):
         return ("<View id=%r connection_id=%r video_id=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.video_id, self.query_type, self.time)
+
+"""
+The table to track if a user took or passed the tutorial
+"""
+class Tutorial(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # The connection id in the Connection table
+    connection_id = db.Column(db.Integer, db.ForeignKey("connection.id"), nullable=False)
+    # The action type for the tutorial
+    # 0: took the tutorial
+    # 1: did not pass the last batch in the tutorial
+    # 2: passed the last batch (16 videos) during the third try with hints
+    # 3: passed the last batch during the second try after showing the answers
+    # 4: passed the last batch (16 videos) in the tutorial during the first try
+    action_type = db.Column(db.Integer, nullable=False)
+    # The query type of the tutorial
+    # 0: users enter the tutorial page (can come from multiple sources or different button clicks)
+    # 1: users click the tutorial button on the webpage (not the prompt dialog)
+    # 2: users click the tutorial button in the prompt dialog (not the webpage)
+    query_type = db.Column(db.Integer, nullable=False)
+    # The epochtime (in seconds) when the tutorial is taken or passed
+    time = db.Column(db.Integer, default=get_current_time)
+
+    def __repr__(self):
+        return ("<Tutorial id=%r connection_id=%r action_type=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.action_type, self.query_type, self.time)
 
 """
 The schema for the video table, used for jsonify
@@ -535,6 +568,49 @@ def get_label_statistics():
         "num_fully_labeled": num_fully_labeled,
         "num_partially_labeled": num_partially_labeled}
     return jsonify(return_json)
+
+"""
+Add tutorial record to the database
+"""
+@app.route("/api/v1/add_tutorial_record", methods=["POST"])
+def add_tutorial_record():
+    if request.json is None:
+        e = InvalidUsage("Missing json", status_code=400)
+        return handle_invalid_usage(e)
+    if "action_type" not in request.json:
+        e = InvalidUsage("Missing field: action_type", status_code=400)
+        return handle_invalid_usage(e)
+    if "query_type" not in request.json:
+        e = InvalidUsage("Missing field: query_type", status_code=400)
+        return handle_invalid_usage(e)
+    if "user_token" not in request.json:
+        e = InvalidUsage("Missing field: user_token", status_code=400)
+        return handle_invalid_usage(e)
+    # Decode user jwt
+    try:
+        user_jwt = decode_jwt(request.json["user_token"])
+    except jwt.InvalidSignatureError as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=401)
+        return handle_invalid_usage(e)
+    # Update database
+    try:
+        # Add tutorial record
+        action_type = request.json["action_type"]
+        query_type = request.json["query_type"]
+        add_tutorial(action_type=action_type, connection_id=user_jwt["connection_id"], query_type=query_type)
+        # Update user
+        user = User.query.filter(User.id==user_jwt["user_id"]).first()
+        if action_type > user.best_tutorial_action:
+            user.best_tutorial_action = action_type
+            log("Update user: %r" % user)
+            update_db()
+        return make_response("", 204)
+    except Exception as ex:
+        e = InvalidUsage(ex.args[0], status_code=400)
+        return handle_invalid_usage(e)
 
 """
 Log after each request
@@ -896,6 +972,14 @@ def add_view(**kwargs):
     view = add_row(View(**kwargs))
     log("Add view: %r" % view)
     return view
+
+"""
+Add a tutorial taken or passed record to the database
+"""
+def add_tutorial(**kwargs):
+    tutorial = add_row(Tutorial(**kwargs))
+    log("Add tutorial: %r" % tutorial)
+    return tutorial
 
 """
 Query a batch of videos for labeling by using active learning or random sampling

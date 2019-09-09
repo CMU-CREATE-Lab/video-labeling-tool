@@ -21,15 +21,29 @@ body,
 }
 
 .content-table p {
-  color: white !important;
+  color: white;
+}
+
+.content-table h3 {
+  color: white;
+  font-weight: normal;
+}
+
+.content-table h2 {
+  color: white;
+  font-weight: normal;
 }
 
 .content-table ul {
-  color: white !important;
+  color: white;
   font-size: 18px;
 }
 
 .content-table hr {
+  background: #ffffff;
+}
+
+.content-table hr.custom-text-info-dark-theme {
   background: #3be4ff !important;
 }
 
@@ -70,6 +84,17 @@ body,
 }
 
 #labeling-tool-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  align-content: stretch;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+#tutorial-tool-container {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -147,6 +172,8 @@ body,
   margin-top: 17px !important;
   background-color: #7d7d7d !important;
   border-color: #7d7d7d !important;
+  color: white !important;
+  line-height: 25px;
 }
 
 #google-sign-in-button {

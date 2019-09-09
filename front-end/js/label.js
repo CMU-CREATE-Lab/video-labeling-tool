@@ -5,6 +5,7 @@
   var video_labeling_tool;
   var google_account_dialog;
   var video_test_dialog;
+  var tutorial_prompt_dialog;
   var $next;
   var counter = 0;
   var max_counter = 10;
@@ -16,8 +17,9 @@
   var $user_score_container;
   var $user_score_text;
   var $user_raw_score_text;
-  var api_url_root = util.getRootApiUrl();
   var count_down_timeout;
+  var consecutive_failed_batches = 0;
+  var api_url_root = util.getRootApiUrl();
 
   function resetCountDown() {
     clearTimeout(count_down_timeout);
@@ -53,7 +55,7 @@
           is_video_autoplay_tested = true;
         }
         countDown();
-        updateLabelStatistics();
+        util.updateLabelStatistics();
       },
       abort: function () {
         $next.prop("disabled", false);
@@ -96,20 +98,6 @@
     }
   }
 
-  function updateLabelStatistics() {
-    $.getJSON(api_url_root + "get_label_statistics", function (data) {
-      var num_all_videos = data["num_all_videos"];
-      $(".num-all-videos-text").text(num_all_videos);
-      var num_fully_labeled = data["num_fully_labeled"];
-      var num_fully_labeled_p = Math.round(num_fully_labeled / num_all_videos * 10000) / 100;
-      $(".num-fully-labeled-text").text(num_fully_labeled + " (" + num_fully_labeled_p + "%)");
-      var num_partially_labeled = data["num_partially_labeled"];
-      var num_partially_labeled_p = Math.round(num_partially_labeled / num_all_videos * 10000) / 100;
-      $(".num-partially-labeled-text").text(num_partially_labeled + " (" + num_partially_labeled_p + "%)");
-      $("#label-statistics").show();
-    });
-  }
-
   function onUserNotSignedIn(client_id) {
     video_labeling_tool.updateUserIdByClientId(client_id, {
       success: function (obj) {
@@ -127,7 +115,20 @@
     $user_score_text = $(".user-score-text");
     $user_raw_score_text = $(".user-raw-score-text");
     video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container", {
-      on_user_score_update: function (score, raw_score) {
+      on_user_score_update: function (score, raw_score, batch_score) {
+        // Update failed times of quality check
+        // batch_score == null means that the user is a reseacher client
+        if (typeof batch_score !== "undefined" && batch_score !== null) {
+          if (batch_score == 0) {
+            consecutive_failed_batches += 1;
+            if (consecutive_failed_batches >= 3) {
+              tutorial_prompt_dialog.getDialog().dialog("open");
+            }
+          } else {
+            consecutive_failed_batches = 0;
+          }
+        }
+        // Update user score (number of batches that passed the quality check)
         if (typeof $user_score_text !== "undefined") {
           if (video_labeling_tool.isAdmin()) {
             $user_score_text.text("(researcher)");
@@ -137,6 +138,7 @@
             }
           }
         }
+        // Update user raw score (number of totally reviewed batches)
         if (typeof $user_raw_score_text !== "undefined" && typeof raw_score !== "undefined" && raw_score !== null) {
           if (video_labeling_tool.isAdmin()) {
             $user_raw_score_text.text(raw_score / 16);
@@ -151,7 +153,10 @@
         video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
-            $sign_in_prompt.hide();
+            $sign_in_prompt.find("span").text("Sign Out");
+            if ($sign_in_prompt.hasClass("pulse-white")) {
+              $sign_in_prompt.removeClass("pulse-white")
+            }
             $user_score_container.show();
           },
           error: function (xhr) {
@@ -164,7 +169,10 @@
         video_labeling_tool.updateUserIdByClientId(ga_tracker.getClientId(), {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
-            $sign_in_prompt.show();
+            $sign_in_prompt.find("span").text("Sign In");
+            if (!$sign_in_prompt.hasClass("pulse-white")) {
+              $sign_in_prompt.addClass("pulse-white")
+            }
             $user_score_container.hide();
           },
           error: function (xhr) {
@@ -180,6 +188,9 @@
     });
     $user_score_container = $("#user-score-container");
     video_test_dialog = new edaplotjs.VideoTestDialog();
+    tutorial_prompt_dialog = new edaplotjs.TutorialPromptDialog({
+      video_labeling_tool: video_labeling_tool
+    });
     ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
@@ -197,7 +208,23 @@
         });
       }
     });
-    updateLabelStatistics();
+    util.updateLabelStatistics();
+    $("#tutorial").on("click", function () {
+      // Add tutorial record based on action types
+      util.postJSON(api_url_root + "add_tutorial_record", {
+        "user_token": video_labeling_tool.userToken(),
+        "action_type": 0, // this means that users take the tutorial
+        "query_type": 1 // this means that users click the tutorial button on the webpage (not the prompt dialog)
+      }, {
+        success: function () {
+          $("#tutorial").prop("disabled", true);
+          $(location).attr("href", "tutorial.html");
+        },
+        error: function (xhr) {
+          console.error("Error when adding tutorial record!");
+        }
+      });
+    });
   }
 
   $(init);
