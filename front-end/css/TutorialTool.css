@@ -47,6 +47,7 @@
 }
 
 .tutorial-tool a {
+  position: relative;
   color: black;
   text-decoration: none;
   padding: 10px;
@@ -83,6 +84,15 @@
   border-color: #3be4ff;
 }
 
+.tutorial-tool a.selected.highlight-white .mask svg {
+  border-color: #ffffff;
+}
+
+.tutorial-tool a.selected.highlight-info .mask svg {
+  border-color: #3be4ff;
+}
+
+
 .tutorial-tool a.highlight-white .description {
   color: #ffffff;
 }
@@ -93,13 +103,17 @@
 
 .tutorial-tool a .mask {
   position: relative;
+  width: 100%;
+  display: grid;
 }
 
 .tutorial-tool a .mask svg {
   position: absolute;
-  top: 10px;
-  left: 10px;
-  width: calc(100% - 20px);
+  border: 10px solid #212121;
+  box-sizing: border-box;
+  width: 100%;
+  left: 0;
+  top: 0;
 }
 
 .tutorial-tool a .mask svg mask rect {
@@ -108,12 +122,10 @@
 
 .tutorial-tool a .mask svg mask polygon {
   opacity: 1;
-  stroke: white;
-  stroke-width: 0.5;
 }
 
 
-.tutorial-tool a>div {
+.tutorial-tool a .number {
   width: 100%;
   text-align: center;
   color: white;
@@ -121,16 +133,16 @@
   line-height: 24px;
 }
 
-.tutorial-tool a.selected>div {
+.tutorial-tool a.selected .number {
   color: #ff5e5e;
 }
 
 
-.tutorial-tool a.highlight-white>div {
+.tutorial-tool a.highlight-white .number {
   color: #ffffff !important;
 }
 
-.tutorial-tool a.highlight-info>div {
+.tutorial-tool a.highlight-info .number {
   color: #3be4ff !important;
 }
 

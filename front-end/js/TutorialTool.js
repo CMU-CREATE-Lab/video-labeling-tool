@@ -69,7 +69,7 @@
     // UPDATE: starting from Safari 12, more videos are allowed
     function createVideo(i) {
       var $item = $("<a href='javascript:void(0)' class='flex-column'></a>");
-      var $caption = $("<div>" + (i + 1) + "</div>");
+      var $caption = $("<div class='number'>" + (i + 1) + "</div>");
       var $hint = $("<p class='hint'></p>").hide();
       var $description = $("<p class='description'></p>").hide();
       // "autoplay" is needed for iPhone Safari to work
