@@ -22,7 +22,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Smoke can have <u>high and low opacities</u>, which all need to be selected. Opacity means the percent of light absorbed, scattered, or blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select all the videos that <u>have smoke</u>, even when the <u>emission source is not visible</u>.",
+  "instruction": "Smoke can have <u>high and low opacities</u>, which all need to be selected. Opacity means the percent of light (or the background) blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select all the videos that <u>have smoke</u>, even with low opacity.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -32,9 +32,26 @@ var tutorial_data = [{
     "label": 1,
     "bound": "82,80 72,86 56,84 36,74 26,64 18,47 23,35 32,29 49,14 60,7 61,0 100,0 100,49 100,59 87,73"
   }, {
-    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=8105&format=mp4&fps=12&tileFormat=mp4&nframes=36",
+    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6007,1008,6509,1510&width=180&height=180&startFrame=10526&format=mp4&fps=12&tileFormat=mp4&nframes=36",
     "correct": "Great! This one has low-opacity smoke. Most of its background is still visible.",
     "wrong": general_need_to_select_head + "has low-opacity smoke. Most of its background is still visible.",
+    "label": 1,
+    "bound": "93,72 90,80 75,85 48,85 35,84 25,79 18,67 14,53 13,34 16,21 24,15 36,12 55,10 67,13 79,18 87,27 90,37 92,50 92,60"
+  }]
+}, {
+  "instruction": "The emission source of smoke can be outside of the video's view, which still needs to be selected. Please select all the videos that <u>have smoke</u>, even when the <u>emission source is not in the video</u>.",
+  "wrong": general_wrong_txt,
+  "correct": general_correct_txt,
+  "data": [{
+    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&boundsLTRB=6304,964,6807,1467&width=180&height=180&startFrame=8762&format=mp4&fps=12&tileFormat=mp4&nframes=36",
+    "correct": "Good job! This one has high-opacity smoke, which can block most of the background. The emission source is not shown in this video.",
+    "wrong": general_need_to_select_head + "has high-opacity smoke, which can block most of the background. The emission source is not shown in this video.",
+    "label": 1,
+    "bound": "100,0 28,0 32,25 41,41 44,65 41,85 57,96 89,92 93,92 100,85 100,62"
+  }, {
+    "url": "https://thumbnails-v2.createlab.org/thumbnail?root=http://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-07-07.timemachine/&boundsLTRB=5648,1004,6150,1506&width=180&height=180&startFrame=8105&format=mp4&fps=12&tileFormat=mp4&nframes=36",
+    "correct": "Great! This one has low-opacity smoke. The background is still visible. The emission source is not shown in this video.",
+    "wrong": general_need_to_select_head + "has low-opacity smoke. The background is still visible. The emission source is not shown in this video.",
     "label": 1,
     "bound": "100,83 67,82 54,78 17,75 0,74 0,41 17,45 35,43 54,35 68,28 83,22 100,24"
   }]
