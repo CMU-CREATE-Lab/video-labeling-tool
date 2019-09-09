@@ -673,3 +673,34 @@ $.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
 # curl example
 curl http://localhost:5000/api/v1/get_label_statistics
 ```
+
+### Add a record when a user takes or passes the tutorial
+When a user takes or passes the tutorial of smoke labeling, you can send a post request via this API call to add a record in the database. This call returns HTTP status 204 when succeed.
+- Paths:
+  - **/api/v1/add_tutorial_record**
+- Available methods:
+  - POST
+- Required fields:
+  - "user_token": from /api/v1/login or the gallery page
+  - "action_type": an integer ranging from 0 to 4
+    - 0: took the tutorial
+    - 1: did not pass the last batch in the tutorial
+    - 2: passed the last batch (16 videos) during the third try with hints
+    - 3: passed the last batch during the second try after showing the answers
+    - 4: passed the last batch (16 videos) in the tutorial during the first try
+  - "query_type": an integer ranging from 0 to 2
+    - 0: entered the tutorial page (can come from multiple sources or different button clicks)
+    - 1: clicked the tutorial button on the webpage (not the prompt dialog)
+    - 2: clicked the tutorial button in the prompt dialog (not the webpage)
+```JavaScript
+// jQuery examples
+$.ajax({
+  url: "http://localhost:5000/api/v1/add_tutorial_record",
+  type: "POST",
+  data: JSON.stringify({"user_token":"your_user_token","action_type":1,"query_type":2}),
+  contentType: "application/json",
+  dataType: "json",
+  success: function (data) {console.log(data)},
+  error: function (xhr) {console.error(xhr)}
+});
+```
