@@ -1,4 +1,6 @@
-TODO: add interactive tutorial
+TODO: improve security
+  - if the user make 6 wrong batches in a row, mark it as an unreliable user for one day
+  - if a video jwt is rejected due to insufficient nbf, mark the client as a spammer
 
 TODO: design user feedback system after labeling a batch (e.g., dialog box)
   - poor performance when labels are rejected
@@ -33,3 +35,4 @@ OPTIONAL: add a playback timeline bar to show the video playback time
 OPTIONAL: add a link back to time machine viewer (or a larger video) on the labeling page (also gallery page)
 OPTIONAL: prevent the case that multiple people label the same data
   - add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
+OPTIONAL: design a sticker at the side to remind people the three rules to label smoke
