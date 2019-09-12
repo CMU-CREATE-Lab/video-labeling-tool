@@ -331,9 +331,8 @@
           success: function () {
             console.log("Set label state successfully:");
             console.log(admin_marked_item["data"]);
-            var v_id = admin_marked_item["data"][0]["video_id"];
             var v_label = admin_marked_item["data"][0]["label"];
-            var txt = v_id + ": " + safeGet(label_state_map[v_label], "Undefined");
+            var txt = "Scientist: " + safeGet(label_state_map[v_label], "Undefined");
             $(admin_marked_item["p"].find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
           },
           error: function () {
