@@ -1,13 +1,11 @@
 TODO: improve security
-  - if the user make 6 wrong batches in a row, mark it as an unreliable user for one day
-  - if a video jwt is rejected due to insufficient nbf, mark the client as a spammer
+  - if the user make 6 wrong batches in a row, mark it as an unreliable user for one day?
+  - if a video jwt is rejected due to insufficient nbf (impossible for normal users), mark the client as a spammer
+  - detect and mark spamming (e.g., all not selected, all selected) in the database
 
 TODO: design user feedback system after labeling a batch (e.g., dialog box)
   - give user a green check mark award with a "good job! the last batch passed!"
-  - (what to do if they fail the quality check?)
-  - poor performance when labels are rejected
-  - if the user made too many bad batches, ask the user to retake the tutorial
-  - detect and mark spamming (e.g., all not selected, all selected) in the database
+  - what to do if they fail the quality check?
 
 TODO: design features for sharing achievements
   - add a leaderboard for showing user id and scores
@@ -16,15 +14,17 @@ TODO: design features for sharing achievements
   - allow users to share the badge with their achievement on social media
 
 TODO: add the feature for labeling smoke opacity
-  - add a compass to show sun direction for each video (when labeling opacity)
-TODO: add the feature for cropping videos to a region
+  - add a compass to show sun direction for each video?
+
+TODO: add the feature for selecting the shape and size of the smoke emission
+  - multiple options with graphs (of various shape and size)?
 
 TODO: refactor code based on https://codeburst.io/jwt-authorization-in-flask-c63c1acf4eeb
 
 TODO: as users gain enough scores, advance them to the harder mode
   - laypeople mode: select videos that have smoke
-  - amateur mode: label smoke opacity (low, medium, high)
-  - expert mode: crop videos to a region
+  - amateur mode: selecting the shape and size of the smoke emission
+  - expert mode: label smoke opacity (low, medium, high)
   - how to invalidate previous user tokens with different permissions?
   - need to add a table to record the promotion history
   - need to encode client type in the user token, and check if this matches the database record
