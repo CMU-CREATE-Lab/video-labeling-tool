@@ -6,7 +6,7 @@ var general_final_try_txt = "Let's try again and aim for getting all the labels 
 var general_need_to_select_head = "Oops! You should have selected this one because it ";
 var general_not_to_select_head = "Oops! You should NOT have selected this one because it ";
 var tutorial_data = [{
-  "instruction": "This tutorial provides guidelines about how to recognize smoke, which will take about 20 minutes. Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select the one that <u>has smoke</u> by clicking or tapping.",
+  "instruction": "This tutorial provides guidelines about how to recognize smoke, which will take about 10 to 20 minutes. Each video is 3 seconds, which represents about 6 minutes in real-world time. Please select <u>the video that has smoke</u> by clicking or tapping.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -22,7 +22,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Smoke can have <u>high and low opacities</u>, which all need to be selected. Opacity means the percent of light (or the background) blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select all the videos that <u>have smoke</u>, even with low opacity.",
+  "instruction": "Smoke can have <u>high and low opacities</u>, which all need to be selected. Opacity means the percent of light (or the background) blocked by the smoke plume. In other words, high-opacity smoke can make most of its background not visible. Please select <u>all the videos that have smoke</u>, even with low opacity.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -39,7 +39,7 @@ var tutorial_data = [{
     "bound": "93,72 90,80 75,85 48,85 35,84 25,79 18,67 14,53 13,34 16,21 24,15 36,12 55,10 67,13 79,18 87,27 90,37 92,50 92,60"
   }]
 }, {
-  "instruction": "The emission source of smoke can be outside of the video's view, which still needs to be selected. Please select all the videos that <u>have smoke</u>, even when the <u>emission source is not in the video</u>.",
+  "instruction": "The emission source of smoke can be outside of the video's view, which still needs to be selected. Please select <u>all the videos that have smoke</u>, even when the <u>emission source is not in the video</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -56,7 +56,7 @@ var tutorial_data = [{
     "bound": "100,83 67,82 54,78 17,75 0,74 0,41 17,45 35,43 54,35 68,28 83,22 100,24"
   }]
 }, {
-  "instruction": "Smoke can also have <u>different colors</u> under various lighting and weather conditions. Please select all the videos that <u>have smoke</u>.",
+  "instruction": "Smoke can also have <u>different colors</u> under various lighting and weather conditions. Please select <u>all the videos that have smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -73,7 +73,7 @@ var tutorial_data = [{
     "bound": "97,85 84,70 78,59 66,39 53,20 40,9 28,6 8,7 0,11 0,42 7,51 17,60 33,74 49,85 68,91 83,95 94,92"
   }]
 }, {
-  "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. There are in general three rules:" + general_prompt + "Please select the one that <u>has smoke</u>.",
+  "instruction": "It can sometimes be difficult to tell the difference between smoke and steam. There are in general three rules:" + general_prompt + "Please select <u>the video that has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -89,7 +89,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "More practice of smoke and steam! Recall that:" + general_prompt + "Please select the one that <u>has smoke</u>.",
+  "instruction": "More practice of smoke and steam! Recall that:" + general_prompt + "Please select <u>the video that has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -105,7 +105,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Let's try another case when smoke and steam appear at the same time. Recall that:" + general_prompt + "Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
+  "instruction": "Let's try another case when smoke and steam appear at the same time. Recall that:" + general_prompt + "Please select <u>the video that has smoke</u>, even when <u>steam is also present</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -121,7 +121,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar.  Recall that:" + general_prompt + "Please select the one that <u>has smoke</u>, even when <u>steam is also present</u>.",
+  "instruction": "In harder cases, smoke and steam can appear together, especially when they look very similar.  Recall that:" + general_prompt + "Please select <u>the video that has smoke</u>, even when <u>steam is also present</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -137,7 +137,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Videos that show bad weather <u>should be ignored</u>. In general, when labeling real data, ignore the video if you are not sure whether it has smoke under bad weather conditions. Please select the one that <u>has smoke</u>.",
+  "instruction": "Videos that show bad weather <u>should be ignored</u>. In general, when labeling real data, ignore the video if you are not sure whether it has smoke under bad weather conditions. Please select <u>the video that has smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "data": [{
@@ -153,7 +153,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "Great! You have learned how to label smoke! Now let's try some challenging cases. Please select the videos that <u>have smoke</u>. You can select multiple ones.",
+  "instruction": "Great! You have learned how to label smoke! Now let's try some challenging cases. Please select <u>all the videos that have smoke</u>. You can select multiple ones.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "try_again": general_try_again_txt,
@@ -199,7 +199,7 @@ var tutorial_data = [{
     "label": 0
   }]
 }, {
-  "instruction": "You did great and will master the skill of recognizing smoke! We took a while to get here, I know, but don't worry, it will be worth it. Now let's do a final practice to mimic the real task of labeling 16 videos at once. Please select the ones that <u>have smoke</u>.",
+  "instruction": "You did great and will master the skill of recognizing smoke! We took a while to get here, I know, but don't worry, it will be worth it. Now let's do a final practice to mimic the real task. Please select <u>all the videos that have smoke</u>.",
   "wrong": general_wrong_txt,
   "correct": general_correct_txt,
   "try_again": general_try_again_txt,

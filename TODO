@@ -3,6 +3,8 @@ TODO: improve security
   - if a video jwt is rejected due to insufficient nbf, mark the client as a spammer
 
 TODO: design user feedback system after labeling a batch (e.g., dialog box)
+  - give user a green check mark award with a "good job! the last batch passed!"
+  - (what to do if they fail the quality check?)
   - poor performance when labels are rejected
   - if the user made too many bad batches, ask the user to retake the tutorial
   - detect and mark spamming (e.g., all not selected, all selected) in the database
@@ -10,6 +12,7 @@ TODO: design user feedback system after labeling a batch (e.g., dialog box)
 TODO: design features for sharing achievements
   - add a leaderboard for showing user id and scores
   - generate PDF certificates of label statistics for each user upon request
+  - add open badges (complete tutorial, label X effective batches, keep labeling for X days)
   - allow users to share the badge with their achievement on social media
 
 TODO: add the feature for labeling smoke opacity
@@ -27,6 +30,9 @@ TODO: as users gain enough scores, advance them to the harder mode
   - need to encode client type in the user token, and check if this matches the database record
   - for a user that did not login via google, always treat them as laypeople
 
+TODO: improve the tutorial
+  - add the "back" button to go back to a previous step
+
 BUG: when changing the client type of a user, previous tokens with different permissions are still working
   - need to invalidate previous issued tokens?
 
@@ -36,3 +42,4 @@ OPTIONAL: add a link back to time machine viewer (or a larger video) on the labe
 OPTIONAL: prevent the case that multiple people label the same data
   - add the last_queried_time to video and query the ones with last_queried_time <= current_time - lock_time
 OPTIONAL: design a sticker at the side to remind people the three rules to label smoke
+OPTIONAL: think about how to engage online audience for smoke labeling
