@@ -127,6 +127,10 @@ class Video(db.Model):
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # The most recent epochtime that the label state is updated
     label_update_time = db.Column(db.Integer)
+    # The view id within the same camera id
+    view_id = db.Column(db.Integer, nullable=False, default=-1)
+    # The camera id of the video
+    camera_id = db.Column(db.Integer, nullable=False, default=-1)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
     view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
