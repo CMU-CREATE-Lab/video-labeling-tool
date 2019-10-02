@@ -22,11 +22,11 @@ def upgrade():
     op.add_column('video', sa.Column('view_id', sa.Integer(), nullable=False))
     db = op.get_bind()
     video = sa.sql.table('video', sa.sql.column('id'), sa.sql.column('camera_id'),
-            sa.sql.column('view_id'), sa.sql.column('url_part'))
+            sa.sql.column('view_id'), sa.sql.column('url_part'), sa.sql.column('file_name'))
     for b in db.execute(video.select()):
-        #TODO: also need to update file_name
         print("Update video id: " + str(b.id))
         url_part = b.url_part
+        file_name = b.file_name
         camera_id = -1
         view_id = -1
         if "clairton1" in url_part:
@@ -61,10 +61,12 @@ def upgrade():
                 view_id = 13
             elif "763,1132,1265,1634" in url_part or "763,1032,1265,1534" in url_part or "763,1252,1265,1754" in url_part or "763,1032,1265,1534" in url_part or "814,1076,1308,1570" in url_part:
                 view_id = 14
+            file_name = file_name.replace("clairton1", str(camera_id) + "-" + str(view_id))
         elif "braddock1" in url_part:
             camera_id = 1
             if "3018,478,3536,996" in url_part:
                 view_id = 0
+            file_name = file_name.replace("braddock1", str(camera_id) + "-" + str(view_id))
         elif "westmifflin1" in url_part:
             camera_id = 2
             if "2617,1625,3124,2132" in url_part:
@@ -73,7 +75,8 @@ def upgrade():
                 view_id = 1
             elif "488,1550,994,2056" in url_part:
                 view_id = 2
-        db.execute(video.update().where(video.c.id == b.id).values(camera_id=camera_id, view_id=view_id))
+            file_name = file_name.replace("westmifflin1", str(camera_id) + "-" + str(view_id))
+        db.execute(video.update().where(video.c.id == b.id).values(camera_id=camera_id, view_id=view_id, file_name=file_name))
     # ### end Alembic commands ###
 
 
