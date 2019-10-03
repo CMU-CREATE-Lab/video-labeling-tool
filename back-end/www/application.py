@@ -136,7 +136,7 @@ class Video(db.Model):
     view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r, label_update_time=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin, self.label_update_time)
+        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r, label_update_time=%r view_id=%r camera_id=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin, self.label_update_time, self.view_id, self.camera_id)
 
 """
 The class for the user table
