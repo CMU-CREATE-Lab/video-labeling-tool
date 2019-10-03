@@ -120,7 +120,6 @@
       on_user_score_update: function (score, raw_score, batch_score) {
         // Update the number of batches that did not pass the quality check
         // batch_score == null means that the user is a reseacher client
-        console.log(batch_score);
         if (typeof batch_score !== "undefined" && batch_score !== null) {
           if (batch_score == 0) {
             // Fail the quality check
