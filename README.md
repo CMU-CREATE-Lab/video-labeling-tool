@@ -559,11 +559,12 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### Get videos with positive or negative labels
-When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
+### Get videos with positive, maybe positive, or negative labels (for all users)
+These calls are available for all users. When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
 - Paths:
   - **/api/v1/get_pos_labels**
   - **/api/v1/get_neg_labels**
+  - **/api/v1/get_maybe_pos_labels**
 - Available methods:
   - GET, POST
 - Optional fields:
@@ -591,9 +592,10 @@ $.ajax({
 curl http://localhost:5000/api/v1/get_pos_labels
 curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
 curl http://localhost:5000/api/v1/get_neg_labels
+curl http://localhost:5000/api/v1/get_maybe_pos_labels
 ```
-### Get videos with other types of labels
-This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
+### Get videos with other types of labels (for only expert and researcher type users)
+These calls are only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
 - Paths:
   - **/api/v1/get_pos_gold_labels**
   - **/api/v1/get_neg_gold_labels**
