@@ -282,23 +282,30 @@ class Tutorial(db.Model):
         return ("<Tutorial id=%r connection_id=%r action_type=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.action_type, self.query_type, self.time)
 
 """
-The schema for the video table, used for jsonify
+The schema for the video table, used for jsonify (for normal users in label mode)
 """
 class VideoSchema(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
         fields = ("id", "url_part") # fields to expose
-video_schema = VideoSchema()
 videos_schema = VideoSchema(many=True)
 
 """
-The schema for the video table, used for jsonify without label_state
+The schema for the video table, used for jsonify (for normal users in gallery mode)
+"""
+class VideoSchemaWithDetail(ma.ModelSchema):
+    class Meta:
+        model = Video # the class for the model
+        fields = ("id", "url_part", "start_time", "view_id", "camera_id") # fields to expose
+videos_schema_with_detail = VideoSchemaWithDetail(many=True)
+
+"""
+The schema for the video table, used for jsonify (for admin users)
 """
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name") # fields to expose
-video_schema_is_admin = VideoSchemaIsAdmin()
+        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name", "view_id", "camera_id") # fields to expose
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
 """
@@ -667,7 +674,7 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
             q = get_video_query(labels, page_number, page_size, use_admin_label_state)
             if not is_researcher: # ignore researcher
                 add_video_views(q.items, user_jwt, query_type=0)
-            return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
+            return jsonify_videos(q.items, total=q.total, is_admin=is_admin, with_detail=True)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researcher)
         if not is_researcher: # ignore researcher
@@ -719,6 +726,7 @@ def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researche
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
     else:
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
+    # Exclude gold standards
     q = q.from_self(Video).join(Video).distinct().filter(Video.label_state_admin!=0b101111)
     q = q.order_by(desc(Video.label_update_time))
     if page_number is not None and page_size is not None:
@@ -730,12 +738,15 @@ Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None, with_detail=False):
     if len(videos) == 0: return make_response("", 204)
     if is_admin:
         videos_json, errors = videos_schema_is_admin.dump(videos)
     else:
-        videos_json, errors = videos_schema.dump(videos)
+        if with_detail:
+            videos_json, errors = videos_schema_with_detail.dump(videos)
+        else:
+            videos_json, errors = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
