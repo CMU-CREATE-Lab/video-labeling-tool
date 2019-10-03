@@ -3,10 +3,6 @@ TODO: improve security
   - if a video jwt is rejected due to insufficient nbf (impossible for normal users), mark the client as a spammer
   - detect and mark spamming (e.g., all not selected, all selected) in the database
 
-TODO: design user feedback system after labeling a batch (e.g., dialog box)
-  - give user a green check mark award with a "good job! the last batch passed!"
-  - what to do if they fail the quality check?
-
 TODO: design features for sharing achievements
   - add a leaderboard for showing user id and scores
   - generate PDF certificates of label statistics for each user upon request
