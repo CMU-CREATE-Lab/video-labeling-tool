@@ -47,6 +47,10 @@ body,
   background: #3be4ff !important;
 }
 
+#quality-check-passed-text {
+  display: none;
+}
+
 .text {
   font-size: 18px;
 }

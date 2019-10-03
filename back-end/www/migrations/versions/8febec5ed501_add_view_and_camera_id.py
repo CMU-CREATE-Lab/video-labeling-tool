@@ -24,7 +24,7 @@ def upgrade():
     video = sa.sql.table('video', sa.sql.column('id'), sa.sql.column('camera_id'),
             sa.sql.column('view_id'), sa.sql.column('url_part'), sa.sql.column('file_name'))
     for b in db.execute(video.select()):
-        print("Update video id: " + str(b.id))
+        #print("Update video id: " + str(b.id))
         url_part = b.url_part
         file_name = b.file_name
         camera_id = -1

@@ -20,6 +20,7 @@
   var count_down_timeout;
   var consecutive_failed_batches = 0;
   var api_url_root = util.getRootApiUrl();
+  var $quality_check_passed_text;
 
   function resetCountDown() {
     clearTimeout(count_down_timeout);
@@ -112,19 +113,25 @@
   }
 
   function init() {
+    $quality_check_passed_text = $("#quality-check-passed-text");
     $user_score_text = $(".user-score-text");
     $user_raw_score_text = $(".user-raw-score-text");
     video_labeling_tool = new edaplotjs.VideoLabelingTool("#labeling-tool-container", {
       on_user_score_update: function (score, raw_score, batch_score) {
-        // Update failed times of quality check
+        // Update the number of batches that did not pass the quality check
         // batch_score == null means that the user is a reseacher client
+        console.log(batch_score);
         if (typeof batch_score !== "undefined" && batch_score !== null) {
           if (batch_score == 0) {
+            // Fail the quality check
+            $quality_check_passed_text.hide();
             consecutive_failed_batches += 1;
             if (consecutive_failed_batches >= 3) {
               tutorial_prompt_dialog.getDialog().dialog("open");
             }
           } else {
+            // Pass the quality check
+            $quality_check_passed_text.show();
             consecutive_failed_batches = 0;
           }
         }
