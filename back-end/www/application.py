@@ -535,7 +535,7 @@ Get videos with insufficient user-provided positive labels
 This type of label will only be set by citizens
 """
 maybe_pos_labels = [0b101]
-@app.route("/api/v1/get_maybe_pos_labels", methods=["POST"])
+@app.route("/api/v1/get_maybe_pos_labels", methods=["GET", "POST"])
 def get_maybe_pos_labels():
     return get_video_labels(maybe_pos_labels)
 
