@@ -496,7 +496,7 @@ Get videos with negative labels (only admin can use this call)
 neg_labels = [0b10000, 0b1100, 0b10100]
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    return get_video_labels(neg_labels, only_admin=True)
+    return get_video_labels(neg_labels)
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
