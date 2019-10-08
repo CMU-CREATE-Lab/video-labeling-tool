@@ -150,8 +150,8 @@
       // "autoplay" is needed for iPhone Safari to work
       // "preload" is ignored by mobile devices
       // "disableRemotePlayback" prevents chrome casting
-      // "playsinline" prevents playing video fullscreen
-      var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
+      // "playsinline" and "playsInline" prevents playing video fullscreen
+      var $vid = $("<video autoplay preload loop muted playsinline playsInline disableRemotePlayback></video>");
       $item.on("click", function () {
         toggleSelect($(this));
       });

@@ -60,11 +60,15 @@
         $("video:visible").each(function () {
           var vid = $(this)[0];
           if (util.isScrolledIntoView(vid)) {
-            util.handleVideoPromise(vid, "play", function () {
-              startVideoPlayTest(1000);
-            });
+            if (vid.paused) {
+              util.handleVideoPromise(vid, "play", function () {
+                startVideoPlayTest(1000);
+              });
+            }
           } else {
-            util.handleVideoPromise(vid, "pause");
+            if (!vid.paused) {
+              util.handleVideoPromise(vid, "pause");
+            }
           }
         });
       });

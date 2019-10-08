@@ -92,8 +92,8 @@
     // "autoplay" is needed for iPhone Safari to work
     // "preload" is ignored by mobile devices
     // "disableRemotePlayback" prevents chrome casting
-    // "playsinline" prevents playing video fullscreen
-    var $vid = $("<video autoplay loop muted playsinline disableRemotePlayback></video>");
+    // "playsinline" and "playsInline" prevents playing video fullscreen
+    var $vid = $("<video autoplay loop muted playsinline playsInline disableRemotePlayback></video>");
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
@@ -185,7 +185,13 @@
         $i.text("");
       }
     }
-    $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
+    var $vid = $item.find("video");
+    $vid.one("canplay", function () {
+      // Play the video
+      util.handleVideoPromise(this, "play");
+    });
+    $vid.prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
+    util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
     return $item;
   }
 
@@ -437,6 +443,7 @@
   }
 
   function init() {
+    util.addVideoClearEvent();
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
     var query_paras = getQueryParas();

@@ -113,6 +113,7 @@
   }
 
   function init() {
+    util.addVideoClearEvent();
     $quality_check_passed_text = $("#quality-check-passed-text");
     $user_score_text = $(".user-score-text");
     $user_raw_score_text = $(".user-raw-score-text");

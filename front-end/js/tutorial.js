@@ -81,6 +81,7 @@
   }
 
   function init() {
+    util.addVideoClearEvent();
     $next = $("#next");
     $next.on("click", function () {
       next();
