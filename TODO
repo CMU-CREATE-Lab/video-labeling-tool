@@ -1,7 +1,14 @@
+TODO: add pollution event visualization
+  - show a timeline with events detected by the deep learning model
+  - show videos of notable events detected by the deep learning model
+
 TODO: improve security
   - if the user make 6 wrong batches in a row, mark it as an unreliable user for one day?
   - if a video jwt is rejected due to insufficient nbf (impossible for normal users), mark the client as a spammer
   - detect and mark spamming (e.g., all not selected, all selected) in the database
+
+TODO: add active learning mode for labeling
+  - implement a mode that the batches are selected from a deep learning model
 
 TODO: design features for sharing achievements
   - add a leaderboard for showing user id and scores
