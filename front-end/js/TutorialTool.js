@@ -173,7 +173,13 @@
           $vid.one("error", deferred.reject);
           deferreds.push(deferred);
         }
-        $vid.prop("src", v["url"]);
+        var src_url = v["url"];
+        // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9.
+        // The current workaround is to make the thumbnail larger.
+        if (util.getAndroidVersion() == 9) {
+          src_url = util.replaceThumbnailWidth(src_url, 320);
+        }
+        $vid.prop("src", src_url);
         util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
         if ($item.hasClass("force-hidden")) {
           $item.removeClass("force-hidden");

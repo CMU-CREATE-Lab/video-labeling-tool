@@ -307,7 +307,6 @@
       })
     };
 
-
     // Randomize array element order in-place
     // Using Durstenfeld shuffle algorithm with O(n) time complexity
     this.shuffleArrayInPlace = function (array) {
@@ -331,6 +330,18 @@
           this.src = "";
         });
       }, false);
+    };
+
+    // Get the Android version on the device
+    this.getAndroidVersion = function () {
+      if (isAndroidDevice) {
+        return parseFloat(matchAndroidVersionString[1]);
+      }
+    };
+
+    // Replace thumbnail width
+    this.replaceThumbnailWidth = function (url, new_width) {
+      return url.replace("width=180&height=180", "width=" + new_width + "&height=" + new_width);
     };
   };
 
