@@ -4,6 +4,10 @@ body,
   background-color: #212121 !important;
 }
 
+.menu-container {
+  background-color: black;
+}
+
 .content {
   max-width: 700px !important;
 }
