@@ -12,7 +12,9 @@ body,
   max-width: 700px !important;
 }
 
-.content p a {
+.content p a,
+.content ul a,
+.content ol a {
   color: #6ab2ff;
 }
 
