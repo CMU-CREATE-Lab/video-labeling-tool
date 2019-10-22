@@ -19,7 +19,7 @@ This tool is tested and worked on:
   - Firefox 68
 - iOS 12 and 13
   - Chrome 77
-  - Safari 13
+  - Safari
   - Firefox 18
 
 ### Table of Content
