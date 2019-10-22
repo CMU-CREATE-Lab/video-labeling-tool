@@ -1,7 +1,11 @@
 # video-labeling-tool
 Demo: http://smoke.createlab.org
 
-A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). This tool is tested and worked on:
+A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world).
+
+The system defines the label state by aggregating answers from both citizens and researchers. At least two volunteers or one researcher will review each video. If the answers from the two volunteers agree, the system marks the video according to the agreement. Otherwise, another volunteer or researcher will review the video, and the result is aggregated based on majority voting.
+
+This tool is tested and worked on:
 - macOS Mojave
   - Chrome 76
   - Safari 12
@@ -559,12 +563,13 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### Get videos with positive, maybe positive, or negative labels (for all users)
+### Get videos with fully or partially labeled positive or negative labels (for all users)
 These calls are available for all users. When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
 - Paths:
   - **/api/v1/get_pos_labels**
   - **/api/v1/get_neg_labels**
   - **/api/v1/get_maybe_pos_labels**
+  - **/api/v1/get_maybe_neg_labels**
 - Available methods:
   - GET, POST
 - Optional fields:
@@ -595,12 +600,14 @@ curl http://localhost:5000/api/v1/get_neg_labels
 curl http://localhost:5000/api/v1/get_maybe_pos_labels
 ```
 ### Get videos with other types of labels (for only expert and researcher type users)
-These calls are only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
+These calls are only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers/citizens. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
 - Paths:
   - **/api/v1/get_pos_gold_labels**
   - **/api/v1/get_neg_gold_labels**
   - **/api/v1/get_pos_labels_by_researcher**
   - **/api/v1/get_neg_labels_by_researcher**
+  - **/api/v1/get_pos_labels_by_citizen**
+  - **/api/v1/get_neg_labels_by_citizen**
   - **/api/v1/get_partial_labels**
   - **/api/v1/get_bad_labels**
 - Available methods:
@@ -675,7 +682,6 @@ $.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
 # curl example
 curl http://localhost:5000/api/v1/get_label_statistics
 ```
-
 ### Add a record when a user takes or passes the tutorial
 When a user takes or passes the tutorial of smoke labeling, you can send a post request via this API call to add a record in the database. This call returns HTTP status 204 when succeed.
 - Paths:
