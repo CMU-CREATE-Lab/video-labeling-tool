@@ -176,11 +176,11 @@
       }
     } else {
       var $i = $item.find("i").removeClass();
-      var s = v["label_state"];
-      if ([19, 15, 23, 47].indexOf(s) != -1) {
-        $i.text("A").addClass("custom-text-primary-dark-theme");
-      } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i.text("D").addClass("custom-text-info-dark-theme");
+      var s1 = v["label_state"];
+      var s2 = v["label_state_admin"];
+      var pos = [19, 15, 23, 47];
+      if (pos.indexOf(s1) != -1 || pos.indexOf(s2) != -1) {
+        $i.html("&#10004;").addClass("custom-text-primary-dark-theme");
       } else {
         $i.text("");
       }
