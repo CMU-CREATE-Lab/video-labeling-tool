@@ -564,12 +564,13 @@ $.ajax({
 });
 ```
 ### Get videos with fully or partially labeled positive or negative labels (for all users)
-These calls are available for all users. When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
+These calls are available for all users. When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information. You can also get videos that have partial labels (verified by only one user or by two users with disagreement).
 - Paths:
   - **/api/v1/get_pos_labels**
   - **/api/v1/get_neg_labels**
   - **/api/v1/get_maybe_pos_labels**
   - **/api/v1/get_maybe_neg_labels**
+  - **/api/v1/get_discorded_labels**
 - Available methods:
   - GET, POST
 - Optional fields:
@@ -598,9 +599,10 @@ curl http://localhost:5000/api/v1/get_pos_labels
 curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
 curl http://localhost:5000/api/v1/get_neg_labels
 curl http://localhost:5000/api/v1/get_maybe_pos_labels
+curl http://localhost:5000/api/v1/get_discorded_labels
 ```
 ### Get videos with other types of labels (for only expert and researcher type users)
-These calls are only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers/citizens. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
+These calls are only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers/citizens. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
 - Paths:
   - **/api/v1/get_pos_gold_labels**
   - **/api/v1/get_neg_gold_labels**
@@ -608,7 +610,6 @@ These calls are only available for researchers or experts (client type 0 or 1) w
   - **/api/v1/get_neg_labels_by_researcher**
   - **/api/v1/get_pos_labels_by_citizen**
   - **/api/v1/get_neg_labels_by_citizen**
-  - **/api/v1/get_partial_labels**
   - **/api/v1/get_bad_labels**
 - Available methods:
   - POST
@@ -663,15 +664,15 @@ $.ajax({
 curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_all_labels
 ```
 ### Get the statistics of labels
-Get the number of all videos (excluding the videos that were marked as "bad" data), the number of fully labeled videos (confirmed by multiple users), and the number of partially labeled videos.
+Get the number of all videos, the number of fully labeled videos (confirmed by multiple users), and the number of partially labeled videos. The statistics exclude the videos that were marked as "bad" data and gold standards.
 - Paths:
   - **/api/v1/get_label_statistics**
 - Available methods:
   - GET
 - Returned fields:
-  - "num_all_videos": number of all videos (excluding bad data)
-  - "num_fully_labeled": number of fully labeled videos
-  - "num_partially_labeled": number of partially labeled videos
+  - "num_all_videos": number of all videos (excluding bad data and gold standards)
+  - "num_fully_labeled": number of fully labeled videos (excluding bad data and gold standards)
+  - "num_partially_labeled": number of partially labeled videos (excluding bad data and gold standards)
 ```JavaScript
 // jQuery examples
 $.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
