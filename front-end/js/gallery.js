@@ -443,8 +443,8 @@
       $s.text("researcher-labeled gold standards with smoke");
     } else if (api_url_path_get == "get_neg_gold_labels") {
       $s.text("researcher-labeled gold standards with no smoke");
-    } else if (api_url_path_get == "get_partial_labels") {
-      $s.text("partially labeled videos");
+    } else if (api_url_path_get == "get_discorded_labels") {
+      $s.text("citizen-labeled videos with discord");
     } else if (api_url_path_get == "get_bad_labels") {
       $s.text("videos with bad labels");
     } else if (api_url_path_get == "get_maybe_pos_labels") {
