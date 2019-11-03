@@ -6,7 +6,7 @@
 *.swp
 *.db
 *key
-*.log
+*.log*
 google_signin_client_id
 db_url*
 schema.sql
