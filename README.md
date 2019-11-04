@@ -111,6 +111,7 @@ sudo chgrp -R [group_name] video-labeling-tool/
 ```
 Create conda environment and install packages. It is important to install pip first inside the newly created conda environment.
 ```sh
+conda env remove -n video-labeling-tool
 conda create -n video-labeling-tool
 conda activate video-labeling-tool
 conda install python=3.7
