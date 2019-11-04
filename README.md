@@ -113,6 +113,7 @@ Create conda environment and install packages. It is important to install pip fi
 ```sh
 conda create -n video-labeling-tool
 conda activate video-labeling-tool
+conda install python=3.7
 conda install pip
 which pip # make sure this is the pip inside the video-labeling-tool environment
 sh video-labeling-tool/back-end/install_packages.sh
