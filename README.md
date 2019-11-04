@@ -111,7 +111,6 @@ sudo chgrp -R [group_name] video-labeling-tool/
 ```
 Create conda environment and install packages. It is important to install pip first inside the newly created conda environment.
 ```sh
-conda env remove -n video-labeling-tool
 conda create -n video-labeling-tool
 conda activate video-labeling-tool
 conda install python=3.7
@@ -121,7 +120,7 @@ sh video-labeling-tool/back-end/install_packages.sh
 ```
 If the environment already exists and you want to remove it before installing packages, use the following:
 ```sh
-conda remove -n video-labeling-tool --all
+conda env remove -n video-labeling-tool
 ```
 Create a text file with name "google_signin_client_id" in the "back-end/data/" directory to store the client ID. For detailed documentation about how to obtain the client ID, refer to the [Google Sign-In API](https://developers.google.com/identity/sign-in/web/sign-in). In the Google Cloud Console, remember to go to "APIs & Services" -> "Credentials" and add the desired domain names (or IP addresses) to the "Authorized JavaScript origins" in the OAuth client. This makes it possible to call the Google Sign-In API from these desired domains.
 ```sh
