@@ -805,12 +805,12 @@ sign: require digital signature or not
 def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None, with_detail=False):
     if len(videos) == 0: return make_response("", 204)
     if is_admin:
-        videos_json, errors = videos_schema_is_admin.dump(videos)
+        videos_json = videos_schema_is_admin.dump(videos)
     else:
         if with_detail:
-            videos_json, errors = videos_schema_with_detail.dump(videos)
+            videos_json = videos_schema_with_detail.dump(videos)
         else:
-            videos_json, errors = videos_schema.dump(videos)
+            videos_json = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
