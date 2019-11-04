@@ -209,7 +209,7 @@ sudo mysql -u root -p video_labeling_tool_development </tmp/video_labeling_tool_
 Install [uwsgi](https://uwsgi-docs.readthedocs.io/en/latest/) using conda.
 ```sh
 conda activate video-labeling-tool
-conda install -c conda-forge uwsgi
+conda install -c conda-forge uwsgi=2.0.18
 ```
 Run the uwsgi server to check if it works.
 ```sh
