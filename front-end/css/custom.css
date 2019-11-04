@@ -284,7 +284,7 @@ body,
 }
 
 .gallery a .label-control p:first-child {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .gallery a .label-control i {
@@ -307,6 +307,14 @@ body,
   margin: 0;
   padding: 0;
   cursor: pointer;
+}
+
+.gallery a .label-control .control-group .custom-button-flat {
+  margin: 7px 0 7px 0;
+}
+
+.gallery a .label-control .control-group .custom-button-flat:not(:last-child) {
+  margin-right: 10px;
 }
 
 .gallery .gallery-videos {
@@ -336,7 +344,7 @@ body,
 }
 
 .custom-select {
-  margin: 5px 0;
+  margin: 7px 0;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif !important;
   font-size: 14px;
   font-style: normal;

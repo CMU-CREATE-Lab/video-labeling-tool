@@ -108,6 +108,7 @@
         var $link_to_viewer = $("<p class='text-small-margin'><a target='_blank'>Link to Viewer</a></p>");
         $control.append($link_to_viewer);
         if (is_researcher) {
+          // Add the dropdown select button
           var $desired_state_select = createLabelStateSelect();
           $desired_state_select.on("change", function () {
             var label_str = $desired_state_select.val();
@@ -122,6 +123,36 @@
             $set_label_confirm_dialog.dialog("open");
           });
           $control.append($desired_state_select);
+          // Add the buttons for fast confirming citizen labels
+          var $group_pos_neg = $('<div class="control-group"></div>')
+          var $pos_btn = $('<button class="custom-button-flat stretch-on-mobile">Pos</button>');
+          var $neg_btn = $('<button class="custom-button-flat stretch-on-mobile">Neg</button>');
+          var setLabelStateByButton = function (video_id, label) {
+            var desired_v = [{
+              video_id: video_id,
+              label: label
+            }];
+            setLabelState(desired_v, {
+              success: function () {
+                console.log("Set label state successfully:");
+                console.log(desired_v);
+                var txt = "Scientist: " + safeGet(label_state_map[label], "Undefined");
+                $($label_state_researcher.find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
+              },
+              error: function () {
+                console.log("Error when setting label state:");
+                console.log(desired_v);
+                $($label_state_researcher.find("i").get(0)).removeClass().addClass("custom-text-danger-dark-theme");
+              }
+            });
+          };
+          $pos_btn.on("click", function () {
+            setLabelStateByButton($(this).data("v")["id"], 23);
+          });
+          $neg_btn.on("click", function () {
+            setLabelStateByButton($(this).data("v")["id"], 16);
+          });
+          $control.append($group_pos_neg.append($pos_btn, $neg_btn));
         }
         // Append UI
         $item.append($control);
@@ -173,6 +204,7 @@
         $($a.get(0)).prop("href", href);
         // Save data to DOM
         $item.find("select").data("v", v).val("default");
+        $item.find("button").data("v", v);
       }
     } else {
       var $i = $item.find("i").removeClass();
