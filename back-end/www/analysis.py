@@ -46,7 +46,7 @@ def analyze_user():
                 df_q["num_batches"].append(nb)
                 num_batches += nb
     df_q = pd.DataFrame.from_dict(df_q)
-
+    df_q.name = "users contributed at least one batch"
     hq_enthusiasts = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]>=50)]
     hq_enthusiasts.name = "hq_enthusiasts"
     lq_enthusiasts = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]>=50)]
@@ -63,6 +63,7 @@ def analyze_user():
     print("# of total reviewed batches: %d" % num_all_batches)
     print("# of total good batches: %d" % num_batches)
     print("collaborative reliability: %.2f" % (num_batches/num_all_batches))
+    describe_user_grp(df_q, num_users, num_batches)
     describe_user_grp(hq_enthusiasts, num_users, num_batches)
     describe_user_grp(lq_enthusiasts, num_users, num_batches)
     describe_user_grp(hq_explorers, num_users, num_batches)
@@ -89,8 +90,37 @@ def describe_user_grp(df, num_users, num_batches):
     print(df.describe().round(2))
 
 
+def analyze_data():
+    pos_labels = [0b10111, 0b1111, 0b10011]
+    neg_labels = [0b10000, 0b1100, 0b10100]
+    pos_gold_labels = [0b101111]
+    neg_gold_labels = [0b100000]
+    maybe_pos_labels = [0b101]
+    maybe_neg_labels = [0b100]
+    discorded_labels = [0b11]
+    bad_labels = [-2]
+    full = pos_labels + neg_labels
+    gold = pos_gold_labels + neg_gold_labels
+
+    # Select fully labeled videos
+    v = Video.query.filter(and_(
+        Video.label_state_admin.notin_(bad_labels + gold),
+        or_(
+            Video.label_state_admin.in_(full),
+            Video.label_state.in_(full))
+        )).all()
+    v_json = videos_schema_is_admin.dump(v)
+    df_v = pd.DataFrame.from_dict(v_json)
+    gp_v = df_v.groupby(["camera_id", "view_id"])
+    for name, group in gp_v:
+        print(name)
+        print(group)
+    print(gp_v.groups.keys())
+
+
 def main(argv):
-    analyze_user()
+    #analyze_user()
+    analyze_data()
 
 
 if __name__ == "__main__":
