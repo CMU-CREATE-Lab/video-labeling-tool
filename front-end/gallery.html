@@ -42,6 +42,7 @@
         </a>
         <div class="menu-items flex-row-center flex-item">
           <a href="index.html">Overview</a>
+          <a href="learn.html">Learn</a>
           <a href="label.html">Label</a>
           <a href="gallery.html" class="menu-highlight">Gallery</a>
           <a href="faq.html">FAQ</a>
@@ -54,44 +55,51 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p class="text admin-text no-top-margin">
+            <p class="text admin-text no-bottom-margin">
               Your log in as a <span class="custom-text-info-dark-theme">researcher or expert</span>.
               The gallery is displayed in the dashboard mode.
               <a id="download-user-token">Click to download user token</a>.
               You can use the token to get the metadata of labeled videos from API calls documented on <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">GitHub</a>.
             </p>
-            <p class="text intro-text no-top-margin add-bottom-margin">
-              We greatly appreciate your effort to label smoke emissions!
-              Please let us know which aspects are working well or could be improved via our 15-minute <a href="https://www.surveymonkey.com/r/9S83V9C" target="_blank">Survey Study</a>.
-              These are the <span class="custom-text-info-dark-theme" id="video-type-text">community-labeled videos with smoke, confirmed by multiple users</span>.
+            <p class="text intro-text no-bottom-margin">
+              We greatly appreciate your effort!
+              Please help us improve this tool via our <a href="https://www.surveymonkey.com/r/J92Q3P2" target="_blank">Survey Study</a>!
+              These are the <span class="custom-text-info-dark-theme" id="video-type-text">fully labeled videos with smoke</span> (<a href="faq.html#q6" target="_blank">learn more</a>).
             </p>
-            <div class="user-text">
-              <p class="text no-top-margin">
-                We greatly appreciate your effort to label smoke emissions!
-                Please let us know which aspects are working well or could be improved via our 15-minute <a href="https://www.surveymonkey.com/r/9S83V9C" target="_blank">Survey Study</a>.
-                The following labeled smoke videos are your personal contributions.
-              </p>
-              <p class="text no-top-margin add-bottom-margin">
-                Symbol <span class="custom-text-primary-dark-theme">"A"</span> and <span class="custom-text-info-dark-theme">"D"</span> on the bottom-right corner of each video means that others <span class="custom-text-primary-dark-theme">agreed</span> or <span class="custom-text-info-dark-theme">disagreed</span> with your findings respectively.
-                Videos that have not been verified by others will not show symbols.
-              </p>
+            <p class="text user-text no-bottom-margin">
+              We greatly appreciate your effort!
+              Please help us improve this tool via our <a href="https://www.surveymonkey.com/r/J92Q3P2" target="_blank">Survey Study</a>.
+              The following labeled smoke videos are your personal contributions.
+            </p>
+            <p class="text user-text no-bottom-margin">
+              Symbol <span class="custom-text-primary-dark-theme">&#10004;</span> on the bottom-right corner of each video means that others <span class="custom-text-primary-dark-theme">agreed</span> with your findings.
+              Videos that are not verified will not show symbols.
+            </p>
+            <div class="control-group community-control add-bottom-margin add-top-margin">
+              <a class="custom-button-flat stretch-on-mobile large" href="?method=get_pos_labels">Have Smoke</a>
+              <a class="custom-button-flat stretch-on-mobile large" href="?method=get_maybe_pos_labels">Maybe Have Smoke</a>
+              <a id="review-community" class="custom-button-flat stretch-on-mobile large" href="">My Contribution</a>
             </div>
-            <div class="control-group community-control add-bottom-margin">
-              <a class="custom-button-flat" href="?method=get_pos_labels">Have Smoke</a>
-              <a class="custom-button-flat" href="?method=get_maybe_pos_labels">Maybe Have Smoke</a>
-              <a id="review-community" class="custom-button-flat" href="">My Contribution</a>
-            </div>
-            <div class="control-group admin-control add-bottom-margin">
-              <a class="custom-button-flat" href="?method=get_pos_labels">P</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels">N</a>
-              <a class="custom-button-flat" href="?method=get_pos_labels_by_researcher">P*</a>
-              <a class="custom-button-flat" href="?method=get_neg_labels_by_researcher">N*</a>
-              <a class="custom-button-flat" href="?method=get_pos_gold_labels">GP*</a>
-              <a class="custom-button-flat" href="?method=get_neg_gold_labels">GN*</a>
-              <a id="review-admin" class="custom-button-flat" href="">M</a>
-              <a class="custom-button-flat" href="?method=get_partial_labels">?</a>
-              <a class="custom-button-flat" href="?method=get_bad_labels">!</a>
-              <button id="download-data" class="custom-button-flat">All Data</button>
+            <div class="control-group admin-control add-bottom-margin add-top-margin">
+              <div class="custom-dropdown stretch-on-mobile large">
+                <a tabindex="0" href="javascript:void(0)"><span>Select Labels by a Filtering Method</span></a>
+                <div>
+                  <a href="?method=get_pos_labels">Positive Labels</a>
+                  <a href="?method=get_neg_labels">Negative Labels</a>
+                  <a href="?method=get_pos_labels_by_citizen">Positive Labels by Citizens</a>
+                  <a href="?method=get_neg_labels_by_citizen">Negative Labels by Citizens</a>
+                  <a href="?method=get_pos_labels_by_researcher">Positive Labels by Researchers</a>
+                  <a href="?method=get_neg_labels_by_researcher">Negative Labels by Researchers</a>
+                  <a href="?method=get_pos_gold_labels">Positive Gold Standards</a>
+                  <a href="?method=get_neg_gold_labels">Negative Gold Standards</a>
+                  <a href="?method=get_maybe_pos_labels">Maybe Positive Labels</a>
+                  <a href="?method=get_maybe_neg_labels">Maybe Negative Labels</a>
+                  <a href="?method=get_discorded_labels">Discorded Labels</a>
+                  <a href="?method=get_bad_labels">Bad Labels</a>
+                  <a id="review-admin" href="">My Contribution</a>
+                </div>
+              </div>
+              <button id="download-data" class="custom-button-flat stretch-on-mobile">Download All Data</button>
             </div>
           </div>
         </div>

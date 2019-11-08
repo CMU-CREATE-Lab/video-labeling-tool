@@ -87,10 +87,24 @@
         if (video.readyState > 1) {
           video.playPromise = video.play();
         } else {
-          console.warn("This video is not ready to play, will try later.");
-          setTimeout(function () {
-            handleVideoPromise(video, actionType);
-          }, 500);
+          // Do not add a new timeout if already exists
+          if (!video.handle_video_promise_timeout) {
+            console.warn("This video is not ready to play, will try later.");
+            if (typeof video.retry_times === "undefined") {
+              video.retry_times = 0
+            }
+            clearTimeout(video.handle_video_promise_timeout);
+            video.handle_video_promise_timeout = setTimeout(function () {
+              video.handle_video_promise_timeout = null;
+              video.retry_times += 1;
+              if (video.retry_times <= 3) {
+                handleVideoPromise(video, actionType, error_callback);
+              } else {
+                video.retry_times = 0
+                handleVideoPromise(video, "load", error_callback);
+              }
+            }, 1000);
+          }
           return;
         }
       }
@@ -293,7 +307,6 @@
       })
     };
 
-
     // Randomize array element order in-place
     // Using Durstenfeld shuffle algorithm with O(n) time complexity
     this.shuffleArrayInPlace = function (array) {
@@ -304,6 +317,31 @@
         array[j] = temp;
       }
       return array;
+    };
+
+    // iOS 13 Safari did not clear the video tags before switching to a different page.
+    // If we toggle between two pages that both have 16 videos for several times
+    // , the video tags will break and give media error code 3 MEDIA_ERR_DECODE.
+    // To prevent this, we need to manually clear these video tags before leaving the page.
+    this.addVideoClearEvent = function () {
+      window.addEventListener("pagehide", event => {
+        $("video").each(function () {
+          this.pause();
+          this.src = "";
+        });
+      }, false);
+    };
+
+    // Get the Android version on the device
+    this.getAndroidVersion = function () {
+      if (isAndroidDevice) {
+        return parseFloat(matchAndroidVersionString[1]);
+      }
+    };
+
+    // Replace thumbnail width
+    this.replaceThumbnailWidth = function (url, new_width) {
+      return url.replace("width=180&height=180", "width=" + new_width + "&height=" + new_width);
     };
   };
 

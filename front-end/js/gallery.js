@@ -92,8 +92,8 @@
     // "autoplay" is needed for iPhone Safari to work
     // "preload" is ignored by mobile devices
     // "disableRemotePlayback" prevents chrome casting
-    // "playsinline" prevents playing video fullscreen
-    var $vid = $("<video autoplay loop muted playsinline disableRemotePlayback></video>");
+    // "playsinline" and "playsInline" prevents playing video fullscreen
+    var $vid = $("<video autoplay loop muted playsinline playsInline disableRemotePlayback></video>");
     $item.append($vid);
     if (typeof user_id === "undefined") {
       if (is_admin) {
@@ -108,6 +108,7 @@
         var $link_to_viewer = $("<p class='text-small-margin'><a target='_blank'>Link to Viewer</a></p>");
         $control.append($link_to_viewer);
         if (is_researcher) {
+          // Add the dropdown select button
           var $desired_state_select = createLabelStateSelect();
           $desired_state_select.on("change", function () {
             var label_str = $desired_state_select.val();
@@ -122,6 +123,36 @@
             $set_label_confirm_dialog.dialog("open");
           });
           $control.append($desired_state_select);
+          // Add the buttons for fast confirming citizen labels
+          var $group_pos_neg = $('<div class="control-group"></div>')
+          var $pos_btn = $('<button class="custom-button-flat stretch-on-mobile">Pos</button>');
+          var $neg_btn = $('<button class="custom-button-flat stretch-on-mobile">Neg</button>');
+          var setLabelStateByButton = function (video_id, label) {
+            var desired_v = [{
+              video_id: video_id,
+              label: label
+            }];
+            setLabelState(desired_v, {
+              success: function () {
+                console.log("Set label state successfully:");
+                console.log(desired_v);
+                var txt = "Scientist: " + safeGet(label_state_map[label], "Undefined");
+                $($label_state_researcher.find("i").get(0)).text(txt).removeClass().addClass("custom-text-primary-dark-theme");
+              },
+              error: function () {
+                console.log("Error when setting label state:");
+                console.log(desired_v);
+                $($label_state_researcher.find("i").get(0)).removeClass().addClass("custom-text-danger-dark-theme");
+              }
+            });
+          };
+          $pos_btn.on("click", function () {
+            setLabelStateByButton($(this).data("v")["id"], 23);
+          });
+          $neg_btn.on("click", function () {
+            setLabelStateByButton($(this).data("v")["id"], 16);
+          });
+          $control.append($group_pos_neg.append($pos_btn, $neg_btn));
         }
         // Append UI
         $item.append($control);
@@ -173,19 +204,32 @@
         $($a.get(0)).prop("href", href);
         // Save data to DOM
         $item.find("select").data("v", v).val("default");
+        $item.find("button").data("v", v);
       }
     } else {
       var $i = $item.find("i").removeClass();
-      var s = v["label_state"];
-      if ([19, 15, 23, 47].indexOf(s) != -1) {
-        $i.text("A").addClass("custom-text-primary-dark-theme");
-      } else if ([20, 12, 16, 32].indexOf(s) != -1) {
-        $i.text("D").addClass("custom-text-info-dark-theme");
+      var s1 = v["label_state"];
+      var s2 = v["label_state_admin"];
+      var pos = [19, 15, 23, 47];
+      if (pos.indexOf(s1) != -1 || pos.indexOf(s2) != -1) {
+        $i.html("&#10004;").addClass("custom-text-primary-dark-theme");
       } else {
         $i.text("");
       }
     }
-    $item.find("video").prop("src", v["url_root"] + v["url_part"] + "&labelsFromDataset");
+    var $vid = $item.find("video");
+    $vid.one("canplay", function () {
+      // Play the video
+      util.handleVideoPromise(this, "play");
+    });
+    var src_url = v["url_root"] + v["url_part"] + "&labelsFromDataset";
+    // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9.
+    // The current workaround is to make the thumbnail larger.
+    if (util.getAndroidVersion() == 9) {
+      src_url = util.replaceThumbnailWidth(src_url, 320);
+    }
+    $vid.prop("src", src_url);
+    util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
     return $item;
   }
 
@@ -416,27 +460,34 @@
   function setVideoTypeText(method) {
     var $s = $("#video-type-text");
     if (method == "get_pos_labels") {
-      $s.text("community-labeled videos with smoke, confirmed by multiple users");
+      $s.text("fully labeled videos with smoke");
     } else if (method == "get_neg_labels") {
-      $s.text("community-labeled videos with no smoke, confirmed by multiple users");
+      $s.text("fully labeled videos with no smoke");
     } else if (method == "get_pos_labels_by_researcher") {
       $s.text("researcher-labeled videos with smoke");
     } else if (method == "get_neg_labels_by_researcher") {
       $s.text("researcher-labeled videos with no smoke");
+    } else if (method == "get_pos_labels_by_citizen") {
+      $s.text("citizen-labeled videos with smoke");
+    } else if (method == "get_neg_labels_by_citizen") {
+      $s.text("citizen-labeled videos with no smoke");
     } else if (api_url_path_get == "get_pos_gold_labels") {
       $s.text("researcher-labeled gold standards with smoke");
     } else if (api_url_path_get == "get_neg_gold_labels") {
       $s.text("researcher-labeled gold standards with no smoke");
-    } else if (api_url_path_get == "get_partial_labels") {
-      $s.text("partially labeled videos that maybe have or not have smoke");
+    } else if (api_url_path_get == "get_discorded_labels") {
+      $s.text("citizen-labeled videos with discord");
     } else if (api_url_path_get == "get_bad_labels") {
-      $s.text("videos with bad labels, marked by researchers");
+      $s.text("videos with bad labels");
     } else if (api_url_path_get == "get_maybe_pos_labels") {
-      $s.text("community-labeled videos that maybe have smoke (not confirmed by others)");
+      $s.text("citizen-labeled videos that may have smoke");
+    } else if (api_url_path_get == "get_maybe_neg_labels") {
+      $s.text("citizen-labeled videos that may not have smoke");
     }
   }
 
   function init() {
+    util.addVideoClearEvent();
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
     var query_paras = getQueryParas();

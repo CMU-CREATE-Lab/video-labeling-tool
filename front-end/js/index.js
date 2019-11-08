@@ -3,9 +3,9 @@
 
   var util = new edaplotjs.Util();
   var is_video_autoplay_tested = false;
-  var api_url_root = util.getRootApiUrl();
 
   function init() {
+    util.addVideoClearEvent();
     var video_test_dialog = new edaplotjs.VideoTestDialog();
     if (!is_video_autoplay_tested) {
       video_test_dialog.startVideoPlayTest(1000);

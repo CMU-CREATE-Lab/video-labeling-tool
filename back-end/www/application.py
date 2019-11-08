@@ -127,12 +127,16 @@ class Video(db.Model):
     label_state_admin = db.Column(db.Integer, nullable=False, default=-1, index=True)
     # The most recent epochtime that the label state is updated
     label_update_time = db.Column(db.Integer)
+    # The view id within the same camera id
+    view_id = db.Column(db.Integer, nullable=False, default=-1)
+    # The camera id of the video
+    camera_id = db.Column(db.Integer, nullable=False, default=-1)
     # Relationships
     label = db.relationship("Label", backref=db.backref("video", lazy=True), lazy=True)
     view = db.relationship("View", backref=db.backref("video", lazy=True), lazy=True)
 
     def __repr__(self):
-        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r, label_update_time=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin, self.label_update_time)
+        return ("<Video id=%r file_name=%r start_time=%r end_time=%r width=%r height=%r scale=%r left=%r, top=%r, url_part=%r label_state=%r, label_state_admin=%r, label_update_time=%r view_id=%r camera_id=%r>") % (self.id, self.file_name, self.start_time, self.end_time, self.width, self.height, self.scale, self.left, self.top, self.url_part, self.label_state, self.label_state_admin, self.label_update_time, self.view_id, self.camera_id)
 
 """
 The class for the user table
@@ -278,23 +282,30 @@ class Tutorial(db.Model):
         return ("<Tutorial id=%r connection_id=%r action_type=%r query_type=%r time=%r>") % (self.id, self.connection_id, self.action_type, self.query_type, self.time)
 
 """
-The schema for the video table, used for jsonify
+The schema for the video table, used for jsonify (for normal users in label mode)
 """
 class VideoSchema(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
         fields = ("id", "url_part") # fields to expose
-video_schema = VideoSchema()
 videos_schema = VideoSchema(many=True)
 
 """
-The schema for the video table, used for jsonify without label_state
+The schema for the video table, used for jsonify (for normal users in gallery mode)
+"""
+class VideoSchemaWithDetail(ma.ModelSchema):
+    class Meta:
+        model = Video # the class for the model
+        fields = ("id", "url_part", "start_time", "view_id", "camera_id") # fields to expose
+videos_schema_with_detail = VideoSchemaWithDetail(many=True)
+
+"""
+The schema for the video table, used for jsonify (for admin users)
 """
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name") # fields to expose
-video_schema_is_admin = VideoSchemaIsAdmin()
+        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name", "view_id", "camera_id") # fields to expose
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
 """
@@ -472,26 +483,35 @@ def set_label_state():
         return handle_invalid_usage(e)
 
 """
-Get videos with positive labels
+Define label set variables
 """
 pos_labels = [0b10111, 0b1111, 0b10011]
-@app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
-def get_pos_labels():
-    return get_video_labels(pos_labels, allow_user_id=True)
+neg_labels = [0b10000, 0b1100, 0b10100]
+pos_gold_labels = [0b101111]
+neg_gold_labels = [0b100000]
+maybe_pos_labels = [0b101]
+maybe_neg_labels = [0b100]
+discorded_labels = [0b11]
+bad_labels = [-2]
 
 """
-Get videos with negative labels (only admin can use this call)
+Get videos with positive labels (aggregated from both researcher and citizens)
 """
-neg_labels = [0b10000, 0b1100, 0b10100]
+@app.route("/api/v1/get_pos_labels", methods=["GET", "POST"])
+def get_pos_labels():
+    return get_video_labels("pos", allow_user_id=True)
+
+"""
+Get videos with negative labels (aggregated from both researcher and citizens)
+"""
 @app.route("/api/v1/get_neg_labels", methods=["GET", "POST"])
 def get_neg_labels():
-    return get_video_labels(neg_labels, only_admin=True)
+    return get_video_labels("neg")
 
 """
 Get videos with positive gold standard labels (only admin can use this call)
 Gold standard labels will only be set by researchers
 """
-pos_gold_labels = [0b101111]
 @app.route("/api/v1/get_pos_gold_labels", methods=["POST"])
 def get_pos_gold_labels():
     return get_video_labels(pos_gold_labels, only_admin=True, use_admin_label_state=True)
@@ -500,48 +520,66 @@ def get_pos_gold_labels():
 Get videos with negative gold standard labels (only admin can use this call)
 Gold standard labels will only be set by researchers
 """
-neg_gold_labels = [0b100000]
 @app.route("/api/v1/get_neg_gold_labels", methods=["POST"])
 def get_neg_gold_labels():
     return get_video_labels(neg_gold_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with positive labels, exclude gold standard labels (only admin can use this call)
+Get researcher-labeled positive videos, exclude gold standards (only admin can use this call)
 """
 @app.route("/api/v1/get_pos_labels_by_researcher", methods=["POST"])
 def get_pos_labels_by_researcher():
     return get_video_labels(pos_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with negative labels, exclude gold standard labels (only admin can use this call)
+Get researcher-labeled negative videos, exclude gold standards (only admin can use this call)
 """
 @app.route("/api/v1/get_neg_labels_by_researcher", methods=["POST"])
 def get_neg_labels_by_researcher():
     return get_video_labels(neg_labels, only_admin=True, use_admin_label_state=True)
 
 """
-Get videos with insufficient user-provided positive labels
+Get citizen-labeled positive videos, exclude gold standards (only admin can use this call)
+"""
+@app.route("/api/v1/get_pos_labels_by_citizen", methods=["POST"])
+def get_pos_labels_by_citizen():
+    return get_video_labels(pos_labels, only_admin=True)
+
+"""
+Get citizen-labeled negative videos, exclude gold standards (only admin can use this call)
+"""
+@app.route("/api/v1/get_neg_labels_by_citizen", methods=["POST"])
+def get_neg_labels_by_citizen():
+    return get_video_labels(neg_labels, only_admin=True)
+
+"""
+Get videos with insufficient citizen-provided positive labels
 This type of label will only be set by citizens
 """
-maybe_pos_labels = [0b101]
-@app.route("/api/v1/get_maybe_pos_labels", methods=["POST"])
+@app.route("/api/v1/get_maybe_pos_labels", methods=["GET", "POST"])
 def get_maybe_pos_labels():
     return get_video_labels(maybe_pos_labels)
 
 """
-Get videos with insufficient user-provided labels (only admin can use this call)
+Get videos with insufficient citizen-provided positive labels
+This type of label will only be set by citizens
+"""
+@app.route("/api/v1/get_maybe_neg_labels", methods=["GET", "POST"])
+def get_maybe_neg_labels():
+    return get_video_labels(maybe_neg_labels)
+
+"""
+Get videos with citizen discorded labels
 Partial labels will only be set by citizens
 """
-partial_labels = [0b11, 0b100, 0b101] # Do not include label state -1 because of too many unlabeled videos
-@app.route("/api/v1/get_partial_labels", methods=["POST"])
-def get_partial_labels():
-    return get_video_labels(partial_labels, only_admin=True)
+@app.route("/api/v1/get_discorded_labels", methods=["GET", "POST"])
+def get_discorded_labels():
+    return get_video_labels(discorded_labels)
 
 """
 Get videos that were discarded (only admin can use this call)
 Bad labels will only be set by researchers
 """
-bad_labels = [-2]
 @app.route("/api/v1/get_bad_labels", methods=["POST"])
 def get_bad_labels():
     return get_video_labels(bad_labels, only_admin=True, use_admin_label_state=True)
@@ -558,11 +596,18 @@ Get statistics of the labels
 """
 @app.route("/api/v1/get_label_statistics", methods=["GET"])
 def get_label_statistics():
-    fully_labeled = pos_labels + pos_gold_labels + neg_labels + neg_gold_labels
+    full = pos_labels + neg_labels
+    gold = pos_gold_labels + neg_gold_labels
+    partial = maybe_pos_labels + maybe_neg_labels + discorded_labels
     q = Video.query
-    num_all_videos = q.filter(~Video.label_state.in_(bad_labels)).count()
-    num_fully_labeled = q.filter(Video.label_state.in_(fully_labeled)).count()
-    num_partially_labeled = q.filter(Video.label_state.in_(partial_labels)).count()
+    num_all_videos = q.filter(Video.label_state_admin.notin_(bad_labels + gold)).count()
+    num_fully_labeled = q.filter(and_(
+        Video.label_state_admin.notin_(bad_labels + gold),
+        or_(
+            Video.label_state_admin.in_(full),
+            Video.label_state.in_(full))
+        )).count()
+    num_partially_labeled = q.filter(Video.label_state.in_(partial)).count()
     return_json = {
         "num_all_videos": num_all_videos,
         "num_fully_labeled": num_fully_labeled,
@@ -660,10 +705,10 @@ def get_video_labels(labels, allow_user_id=False, only_admin=False, use_admin_la
         if labels is None and is_admin:
             return jsonify_videos(Video.query.all(), is_admin=True)
         else:
-            q = get_video_query(labels, page_number, page_size, use_admin_label_state)
+            q = get_video_query(labels, page_number, page_size, use_admin_label_state=use_admin_label_state)
             if not is_researcher: # ignore researcher
                 add_video_views(q.items, user_jwt, query_type=0)
-            return jsonify_videos(q.items, total=q.total, is_admin=is_admin)
+            return jsonify_videos(q.items, total=q.total, is_admin=is_admin, with_detail=True)
     else:
         q = get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researcher)
         if not is_researcher: # ignore researcher
@@ -685,21 +730,51 @@ def add_video_views(videos, user_jwt, query_type=None):
 """
 Get video query from the database
 """
-def get_video_query(labels, page_number, page_size, use_admin_label_state):
+def get_video_query(labels, page_number, page_size, use_admin_label_state=False):
     page_size = max_page_size if page_size > max_page_size else page_size
     q = None
-    if len(labels) > 1:
-        if use_admin_label_state:
-            q = Video.query.filter(Video.label_state_admin.in_(labels))
-        else:
-            # Exclude gold standards for normal request
-            q = Video.query.filter(and_(Video.label_state.in_(labels), Video.label_state_admin.notin_((0b101111, 0b100000))))
-    if len(labels) == 1:
-        if use_admin_label_state:
-            q = Video.query.filter(Video.label_state_admin==labels[0])
-        else:
-            # Exclude gold standards for normal request
-            q = Video.query.filter(and_(Video.label_state==labels[0], Video.label_state_admin.notin_((0b101111, 0b100000))))
+    gold_labels = [0b101111, 0b100000]
+    pos_labels = [0b10111, 0b1111, 0b10011]
+    neg_labels = [0b10000, 0b1100, 0b10100]
+    bad_labels = [-2]
+    if type(labels) == list:
+        if len(labels) > 1:
+            if use_admin_label_state:
+                q = Video.query.filter(Video.label_state_admin.in_(labels))
+            else:
+                # Exclude gold standards and bad labels for normal request
+                q = Video.query.filter(and_(
+                    Video.label_state.in_(labels),
+                    Video.label_state_admin.notin_(gold_labels + bad_labels)))
+        elif len(labels) == 1:
+            if use_admin_label_state:
+                q = Video.query.filter(Video.label_state_admin==labels[0])
+            else:
+                # Exclude gold standards and bad labels for normal request
+                q = Video.query.filter(and_(
+                    Video.label_state==labels[0],
+                    Video.label_state_admin.notin_(gold_labels + bad_labels)))
+    elif type(labels) == str:
+        # Aggregate citizen and researcher labels
+        # Researcher labels override citizen labels
+        if labels == "pos":
+            # Exclude gold standards and bad labels for normal request
+            q = Video.query.filter(and_(
+                Video.label_state_admin.notin_(gold_labels + bad_labels),
+                or_(
+                    Video.label_state_admin.in_(pos_labels),
+                    and_(
+                        Video.label_state_admin.notin_(pos_labels + neg_labels),
+                        Video.label_state.in_(pos_labels)))))
+        elif labels == "neg":
+            # Exclude gold standards and bad labels for normal request
+            q = Video.query.filter(and_(
+                Video.label_state_admin.notin_(gold_labels + bad_labels),
+                or_(
+                    Video.label_state_admin.in_(neg_labels),
+                    and_(
+                        Video.label_state_admin.notin_(pos_labels + neg_labels),
+                        Video.label_state.in_(neg_labels)))))
     q = q.order_by(desc(Video.label_update_time))
     if page_number is not None and page_size is not None:
         q = q.paginate(page_number, page_size, False)
@@ -715,6 +790,7 @@ def get_pos_video_query_by_user_id(user_id, page_number, page_size, is_researche
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label.in_([1, 0b10111, 0b1111, 0b10011])))
     else:
         q = Label.query.filter(and_(Label.user_id==user_id, Label.label==1))
+    # Exclude gold standards
     q = q.from_self(Video).join(Video).distinct().filter(Video.label_state_admin!=0b101111)
     q = q.order_by(desc(Video.label_update_time))
     if page_number is not None and page_size is not None:
@@ -726,12 +802,15 @@ Jsonify videos
 user_id: a part of the digital signature
 sign: require digital signature or not
 """
-def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None):
+def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False, user_id=None, with_detail=False):
     if len(videos) == 0: return make_response("", 204)
     if is_admin:
-        videos_json, errors = videos_schema_is_admin.dump(videos)
+        videos_json = videos_schema_is_admin.dump(videos)
     else:
-        videos_json, errors = videos_schema.dump(videos)
+        if with_detail:
+            videos_json = videos_schema_with_detail.dump(videos)
+        else:
+            videos_json = videos_schema.dump(videos)
     if sign:
         video_id_list = []
     for i in range(len(videos_json)):
@@ -1000,9 +1079,11 @@ def query_video_batch(user_id, use_admin_label_state=False):
         num_gold_neg = gold_standard_in_batch - num_gold_pos
         gold_pos = Video.query.filter(Video.label_state_admin==0b101111).order_by(func.random()).limit(num_gold_pos).all()
         gold_neg = Video.query.filter(Video.label_state_admin==0b100000).order_by(func.random()).limit(num_gold_neg).all()
-        # Exclude videos that were labeled by the same user, also the gold standards
-        gold_v_ids = Video.query.filter(Video.label_state_admin.in_((0b101111, 0b100000))).with_entities(Video.id).all()
-        q = Video.query.filter(Video.id.notin_(labeled_video_ids + gold_v_ids))
+        # Exclude videos labeled by the same user, also the gold standards and other terminal states of reseacher labels
+        # (We do not want citizens to do the double work to confirm reseacher labeled videos)
+        excluded_labels = (0b101111, 0b100000, 0b10111, 0b10000, 0b10011, 0b10100, 0b1111, 0b1100, -2)
+        excluded_v_ids = Video.query.filter(Video.label_state_admin.in_(excluded_labels)).with_entities(Video.id).all()
+        q = Video.query.filter(Video.id.notin_(labeled_video_ids + excluded_v_ids))
         # Try to include some partially labeled videos in this batch
         num_unlabeled = batch_size - gold_standard_in_batch
         num_partially_labeled = int(num_unlabeled/2)

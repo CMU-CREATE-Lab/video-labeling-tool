@@ -1,4 +1,4 @@
-var general_prompt = "<ul><li>Smoke shows <u>various colors</u>, while steam is mostly whitish.</li><li>Smoke has <u>unclear edges</u> that fade away slower than steam.</li><li>Smoke has <u>various opacities</u>, while steam has extremely high opacity.</li></ul>";
+var general_prompt = "<ul><li>Smoke shows <u>various colors</u>, while steam is mostly whitish.</li><li>Smoke has <u>unclear edges</u> and <u>fades away slower</u> than steam.</li><li>Smoke has <u>various opacities</u>, while steam usually has high opacity.</li></ul>";
 var general_wrong_txt = "<span class='custom-text-info-dark-theme'>Uh oh! Some answers are incorrect.</span> Don't worry! You still made good progress. We provide detailed comments below each video and highlight mistakes with color.";
 var general_correct_txt = "Excellent! Your answers are all correct! We provide detailed comments and explanations below each video.";
 var general_try_again_txt = "Let's try again and aim for getting all the labels correct. Now the same set of videos are randomly shuffled. Recall that:" + general_prompt + "Please select the ones that <u>have smoke</u>.";

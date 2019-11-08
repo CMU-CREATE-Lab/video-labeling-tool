@@ -150,8 +150,8 @@
       // "autoplay" is needed for iPhone Safari to work
       // "preload" is ignored by mobile devices
       // "disableRemotePlayback" prevents chrome casting
-      // "playsinline" prevents playing video fullscreen
-      var $vid = $("<video autoplay preload loop muted playsinline disableRemotePlayback></video>");
+      // "playsinline" and "playsInline" prevents playing video fullscreen
+      var $vid = $("<video autoplay preload loop muted playsinline playsInline disableRemotePlayback></video>");
       $item.on("click", function () {
         toggleSelect($(this));
       });
@@ -186,7 +186,13 @@
           $vid.one("error", deferred.reject);
           deferreds.push(deferred);
         }
-        $vid.prop("src", v["url_root"] + v["url_part"]);
+        var src_url = v["url_root"] + v["url_part"];
+        // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9.
+        // The current workaround is to make the thumbnail larger.
+        if (util.getAndroidVersion() == 9) {
+          src_url = util.replaceThumbnailWidth(src_url, 320);
+        }
+        $vid.prop("src", src_url);
         util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
         if ($item.hasClass("force-hidden")) {
           $item.removeClass("force-hidden");

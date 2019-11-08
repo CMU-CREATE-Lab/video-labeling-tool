@@ -1,21 +1,25 @@
 # video-labeling-tool
 Demo: http://smoke.createlab.org
 
-A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). This tool is tested and worked on:
+A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world).
+
+The system defines the final label by aggregating answers from citizens and researchers. At least two volunteers or one researcher will review each video. If the answers from the two volunteers agree, the system marks the video according to the agreement. Otherwise, another volunteer or researcher will review the video, and the result is aggregated based on majority voting.
+
+This tool is tested and worked on:
 - macOS Mojave
-  - Chrome 76
+  - Chrome 77
   - Safari 12
   - Firefox 68
 - Windows 10
-  - Chrome 76
+  - Chrome 77
   - Firefox 68
   - Edge 44
-- Android 8
-  - Chrome 76
+- Android 7, 8, 9, and 10
+  - Chrome 77
   - Firefox 68
-- iOS 12
-  - Chrome 76
-  - Safari 12
+- iOS 12 and 13
+  - Chrome 77
+  - Safari
   - Firefox 18
 
 ### Table of Content
@@ -78,8 +82,8 @@ drop database video_labeling_tool_development;
 # <a name="setup-back-end"></a>Setup back-end
 Install conda. This assumes that Ubuntu is installed. A detailed documentation is [here](https://conda.io/projects/conda/en/latest/user-guide/install/index.html). First visit [here](https://conda.io/miniconda.html) to obtain the downloading path. The following script install conda for all users:
 ```sh
-wget https://repo.continuum.io/miniconda/Miniconda2-4.6.14-Linux-x86_64.sh
-sudo sh Miniconda2-4.6.14-Linux-x86_64.sh -b -p /opt/miniconda3
+wget https://repo.continuum.io/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh
+sudo sh Miniconda3-4.7.12.1-Linux-x86_64.sh -b -p /opt/miniconda3
 
 sudo vim /etc/bash.bashrc
 # Add the following lines to this file
@@ -91,8 +95,8 @@ source /etc/bash.bashrc
 For Mac OS, I recommend installing conda by using [Homebrew](https://brew.sh/).
 ```sh
 brew cask install miniconda
-echo 'export PATH="/usr/local/miniconda3/bin:$PATH"' >> ~/.bash_profile
-echo '. /usr/local/miniconda3/etc/profile.d/conda.sh' >> ~/.bash_profile
+echo 'export PATH="/usr/local/Caskroom/miniconda/base/bin:$PATH"' >> ~/.bash_profile
+echo '. /usr/local/Caskroom/miniconda/base/etc/profile.d/conda.sh' >> ~/.bash_profile
 source ~/.bash_profile
 ```
 Clone this repository and set the permission.
@@ -109,13 +113,14 @@ Create conda environment and install packages. It is important to install pip fi
 ```sh
 conda create -n video-labeling-tool
 conda activate video-labeling-tool
+conda install python=3.7
 conda install pip
 which pip # make sure this is the pip inside the video-labeling-tool environment
 sh video-labeling-tool/back-end/install_packages.sh
 ```
 If the environment already exists and you want to remove it before installing packages, use the following:
 ```sh
-conda remove -n video-labeling-tool --all
+conda env remove -n video-labeling-tool
 ```
 Create a text file with name "google_signin_client_id" in the "back-end/data/" directory to store the client ID. For detailed documentation about how to obtain the client ID, refer to the [Google Sign-In API](https://developers.google.com/identity/sign-in/web/sign-in). In the Google Cloud Console, remember to go to "APIs & Services" -> "Credentials" and add the desired domain names (or IP addresses) to the "Authorized JavaScript origins" in the OAuth client. This makes it possible to call the Google Sign-In API from these desired domains.
 ```sh
@@ -204,7 +209,7 @@ sudo mysql -u root -p video_labeling_tool_development </tmp/video_labeling_tool_
 Install [uwsgi](https://uwsgi-docs.readthedocs.io/en/latest/) using conda.
 ```sh
 conda activate video-labeling-tool
-conda install -c conda-forge uwsgi
+conda install -c conda-forge uwsgi=2.0.18
 ```
 Run the uwsgi server to check if it works.
 ```sh
@@ -559,11 +564,14 @@ $.ajax({
   error: function (xhr) {console.error(xhr)}
 });
 ```
-### Get videos with positive or negative labels
-When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information.
+### Get videos with fully or partially labeled positive or negative labels (for all users)
+These calls are available for all users. When querying positive labels, you can pass in user id. If a user token is provided and the client type is expert or researcher, the returned data will contain more information. You can also get videos that have partial labels (verified by only one user or by two users with disagreement).
 - Paths:
   - **/api/v1/get_pos_labels**
   - **/api/v1/get_neg_labels**
+  - **/api/v1/get_maybe_pos_labels**
+  - **/api/v1/get_maybe_neg_labels**
+  - **/api/v1/get_discorded_labels**
 - Available methods:
   - GET, POST
 - Optional fields:
@@ -591,15 +599,18 @@ $.ajax({
 curl http://localhost:5000/api/v1/get_pos_labels
 curl http://localhost:5000/api/v1/get_pos_labels?user_id=43
 curl http://localhost:5000/api/v1/get_neg_labels
+curl http://localhost:5000/api/v1/get_maybe_pos_labels
+curl http://localhost:5000/api/v1/get_discorded_labels
 ```
-### Get videos with other types of labels
-This call is only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers. You can also get videos that have incomplete or discarded labels. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
+### Get videos with other types of labels (for only expert and researcher type users)
+These calls are only available for researchers or experts (client type 0 or 1) with valid user tokens. You can get videos that are marked as gold standards or labeled by researchers/citizens. For researchers or experts, the gallery page will be in the dashboard mode, where you can download the user token.
 - Paths:
   - **/api/v1/get_pos_gold_labels**
   - **/api/v1/get_neg_gold_labels**
   - **/api/v1/get_pos_labels_by_researcher**
   - **/api/v1/get_neg_labels_by_researcher**
-  - **/api/v1/get_partial_labels**
+  - **/api/v1/get_pos_labels_by_citizen**
+  - **/api/v1/get_neg_labels_by_citizen**
   - **/api/v1/get_bad_labels**
 - Available methods:
   - POST
@@ -654,15 +665,15 @@ $.ajax({
 curl -d 'user_token=your_user_token' -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' -X POST http://localhost:5000/api/v1/get_all_labels
 ```
 ### Get the statistics of labels
-Get the number of all videos (excluding the videos that were marked as "bad" data), the number of fully labeled videos (confirmed by multiple users), and the number of partially labeled videos.
+Get the number of all videos, the number of fully labeled videos (confirmed by multiple users), and the number of partially labeled videos. The statistics exclude the videos that were marked as "bad" data and gold standards.
 - Paths:
   - **/api/v1/get_label_statistics**
 - Available methods:
   - GET
 - Returned fields:
-  - "num_all_videos": number of all videos (excluding bad data)
-  - "num_fully_labeled": number of fully labeled videos
-  - "num_partially_labeled": number of partially labeled videos
+  - "num_all_videos": number of all videos (excluding bad data and gold standards)
+  - "num_fully_labeled": number of fully labeled videos (excluding bad data and gold standards)
+  - "num_partially_labeled": number of partially labeled videos (excluding bad data and gold standards)
 ```JavaScript
 // jQuery examples
 $.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
@@ -673,7 +684,6 @@ $.getJSON("http://localhost:5000/api/v1/get_label_statistics", function (data) {
 # curl example
 curl http://localhost:5000/api/v1/get_label_statistics
 ```
-
 ### Add a record when a user takes or passes the tutorial
 When a user takes or passes the tutorial of smoke labeling, you can send a post request via this API call to add a record in the database. This call returns HTTP status 204 when succeed.
 - Paths:

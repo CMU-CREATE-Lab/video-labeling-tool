@@ -23,10 +23,27 @@
       "use strict";
       var util = new edaplotjs.Util();
 
+      function handleHashChange() {
+        var hash = window.location.hash.replace('#', '');
+        var q = hash.split("&");
+        // Remove all highlights
+        var $q_all = $("a.jump").next();
+        $q_all.find("span").removeClass("custom-text-info-dark-theme");
+        $q_all.next().removeClass("custom-text-info-dark-theme")
+        // Highlight the selected questions
+        for (var i = 0; i < q.length; i++) {
+          var $q = $("a[name='" + q[i] + "']").next();
+          $q.find("span").addClass("custom-text-info-dark-theme");
+          $q.next().addClass("custom-text-info-dark-theme");
+        }
+      }
+
       function init() {
         var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
           tracker_id: util.getGoogleAnalyticsId()
         });
+        window.addEventListener("hashchange", handleHashChange, false);
+        handleHashChange();
       }
       $(init);
     })();
@@ -45,6 +62,7 @@
         </a>
         <div class="menu-items flex-row-center flex-item">
           <a href="index.html">Overview</a>
+          <a href="learn.html">Learn</a>
           <a href="label.html">Label</a>
           <a href="gallery.html">Gallery</a>
           <a href="faq.html" class="menu-highlight">FAQ</a>
@@ -57,137 +75,185 @@
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
-            <p class="text no-top-margin">
-              We listed and answered frequently asked questions below.
-              Please let us know which aspects are working well or could be improved via our 15-minute <a href="https://www.surveymonkey.com/r/9S83V9C" target="_blank">Survey Study</a>.
+            <p class="text">
+              We answered frequently asked questions below.
+              Please let us know which aspects are working well or could be improved via our <a href="https://www.surveymonkey.com/r/J92Q3P2" target="_blank">Survey Study</a>!
               We appreciate your input!
             </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
+            <a class="jump" name="q1"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
                 Q1: What are you planning to do with all these labeled data?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A1: We will use these labeled videos to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train a deep neural network for detecting smoke emissions</a>.
-              While deep neural networks have been proven to outperform traditional models in various applications, training such large networks requires a considerable amount of labeled data, which is why we need volunteers' help.
-              As we gather more labeled videos, the AI system will begin to detect smoke emissions, and our team will design visualization for industrial pollution events.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q2: Why is it important to detect and visualize smoke emissions?
+            <hr>
+            <ul>
+              <li>
+                We will use the data to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train a deep neural network for detecting smoke emissions</a>.
+                As we gather more data, the AI system will begin to detect smoke, and our team will design visualization for industrial pollution events.
+              </li>
+            </ul>
+            <a class="jump" name="q2"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q2: Why do you need help from volunteers?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A2: Our <a href="https://arxiv.org/pdf/1804.03293.pdf" target="_blank">previous work in air quality monitoring</a> have shown that visualizing evidence of smoke emissions can influence the attitude of regulators.
-              Also, using such visual data increased the community's confidence when addressing air pollution issues.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q3: Where do these video clips come from?
+            <hr>
+            <ul>
+              <li>
+                While deep neural networks have been proven useful in various applications (e.g., object recognition), training such networks requires a considerable amount of labeled data.
+                Annotating all the data will take hundreds of hours for one reseacher, which is why we need help from volunteers.
+              </li>
+            </ul>
+            <a class="jump" name="q3"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q3: Why is it important to detect and visualize smoke emissions?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A3: We selected and cropped several windows into videos from the <a href="https://breatheproject.org/learn/breathe-cam/" target="_blank">Breathe Cams network</a> (as shown in the following image).
-              Each video contains 36 frames, which represent about 6 minutes in real-world time.
+            <hr>
+            <ul>
+              <li>
+                Our <a href="https://arxiv.org/pdf/1804.03293.pdf" target="_blank">previous work in air quality monitoring</a> shows that visualizing evidence of smoke emissions can influence the attitude of regulators.
+                Also, using such visual data increased the community's confidence when addressing air pollution.
+              </li>
+            </ul>
+            <a class="jump" name="q4"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q4: Where do these video clips come from?
+              </span>
             </p>
+            <hr>
+            <ul>
+              <li>
+                We selected and cropped several windows into videos from the <a href="https://breatheproject.org/learn/breathe-cam/" target="_blank">Breathe Cams network</a> (as shown in the following image).
+                Each video contains 36 frames, which represent about 6 minutes in real-world time.
+              </li>
+            </ul>
             <div class="image adaptive-image no-top-margin" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
-            <p class="text no-top-margin no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q4: Why sometimes a dialog box popped up and asked me to enable video autoplay?
-              </span>
-            </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A4: During labeling, videos need to play and loop automatically.
-              However, if a mobile device has data saver enabled, videos will stop autoplay.
-              Also, some mobile devices pause videos after users wake it up from sleeping mode.
-              In order to enable autoplay, browsers require user interactions, which is why the system shows the dialog box.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
+            <a class="jump" name="q5"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
                 Q5: Why my labels did not pass the quality check? How did you define the quality?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A5: For each batch (16 videos) on the page, the system randomly placed several videos with known answers, also called gold standards.
-              A batch will pass the quality check if you label these gold standards correctly.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q6: Why sometimes I saw similar videos? Were they the same?
+            <hr>
+            <ul>
+              <li>
+                For each batch (16 videos) on the page, the system randomly placed several videos with known answers, also called gold standards.
+                A batch will pass the quality check if you label these gold standards correctly.
+              </li>
+            </ul>
+            <a class="jump" name="q6"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q6: How does the system know if smoke emission is present in a video?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A6: There can be two reasons.
-              Firstly, videos that have closer times (e.g., 8 and 8:10 am) can look similar due to the same weather and lighting conditions.
-              Secondly, gold standard videos for the quality check can appear again if you label many batches.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q7: Can I build a similar system with your code?
+            <hr>
+            <ul>
+              <li>
+                The system defines the final label by aggregating answers from citizens and researchers.
+                At least two volunteers or one researcher will review each video.
+                If the answers from the two volunteers agree, the system marks the video according to the agreement.
+                Otherwise, another volunteer or researcher will review the video, and the result is aggregated based on majority voting.
+              </li>
+            </ul>
+            <a class="jump" name="q7"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q7: Why sometimes a dialog box popped up and asked me to enable video autoplay?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A7: This project is <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">open-sourced on GitHub</a>. Please feel free to reuse the code.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q8: Are there other actions that I can take to advocate for better air quality?
+            <hr>
+            <ul>
+              <li>
+                During labeling, videos need to play automatically.
+                If a mobile device has data saver enabled, videos will stop autoplay.
+                Also, some mobile devices pause videos after users wake it up from sleeping mode.
+                To enable autoplay, browsers require user interactions, which is why the system shows the dialog box.
+              </li>
+            </ul>
+            <a class="jump" name="q8"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q8: Why sometimes I saw similar videos? Were they the same?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A8: If you are interested in smoke reading (<a href="https://www.eta-is-opacity.com/resources/method-9/" target="_blank">EPA Method 9</a>), we recommend checking the <a href="https://www.eta-is-opacity.com/cms/wp-content/uploads/2016/06/ETA_VE_manual.pdf" target="_blank">smoke school training materials</a>.
-              We also recommend using the <a href="https://smellpgh.org/" target="_blank">Smell Pittsburgh</a> (or <a href="https://smellmycity.org/" target="_blank">Smell MyCity</a> if not in Pittsburgh) application to report pollution odors to the local health department.
-              More resources can be found on <a href="https://inversiondoc.com/resources/" target="_blank">Mark Dixon's website</a>.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q9: Why does this tool not support systems that are older than Android 7 and iOS 11?
+            <hr>
+            <ul>
+              <li>
+                Videos that have closer times (e.g., 8 and 8:10 am) can look similar due to the same weather and lighting conditions.
+                Also, gold standard videos for the quality check can appear again if you label many batches.
+              </li>
+            </ul>
+            <a class="jump" name="q9"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q9: Can I build a similar system with your code?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A9: When labeling smoke, this tool shows 16 videos at the same time.
-              Older devices have difficulties in playing these videos, which results in poor user experiences.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q10: How does the system know if smoke emission is present in a video?
+            <hr>
+            <ul>
+              <li>
+                This project is <a href="https://github.com/CMU-CREATE-Lab/video-labeling-tool" target="_blank">open-sourced on GitHub</a>. Please feel free to reuse the code.
+              </li>
+            </ul>
+            <a class="jump" name="q10"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q10: Are there other actions that I can take to advocate for better air quality?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A10: At least two volunteers will review each video.
-              If their answers agree, the system marks the video according to the agreement.
-              Otherwise, the video will be reviewed by an extra volunteer, and the result is aggregated based on majority voting.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q11: Why are there no nighttime videos to label?
+            <hr>
+            <ul>
+              <li>
+                We recommend checking the <a href="https://www.eta-is-opacity.com/cms/wp-content/uploads/2016/06/ETA_VE_manual.pdf" target="_blank">materials</a> for smoke reading (<a href="https://www.eta-is-opacity.com/resources/method-9/" target="_blank">EPA Method 9</a>).
+                We also recommend using the <a href="https://smellpgh.org/" target="_blank">Smell Pittsburgh</a> (or <a href="https://smellmycity.org/" target="_blank">Smell MyCity</a> if not in Pittsburgh) application to report pollution odors to the local health department.
+                More resources can be found on <a href="https://inversiondoc.com/resources/" target="_blank">Mark Dixon's website</a>.
+              </li>
+            </ul>
+            <a class="jump" name="q11"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q11: Why does this tool not support devices older than Android 7 and iOS 11?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A11: Smoke emissions in nighttime videos (captured by commercial digital cameras) are extremely tough for the computer to recognize due to insufficient light.
-              We want to focus on training the computer to detect daytime smoke emissions first.
-            </p>
-            <p class="text no-bottom-margin">
-              <span class="custom-text-info-dark-theme">
-                Q12: Who are your local partners?
+            <hr>
+            <ul>
+              <li>
+                When labeling smoke, this tool shows 16 videos at the same time.
+                Older devices have difficulties in playing these videos, which results in poor user experiences.
+              </li>
+            </ul>
+            <a class="jump" name="q12"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q12: Why are there no nighttime videos to label?
               </span>
             </p>
-            <hr class="custom-text-info-dark-theme">
-            <p class="text no-top-margin">
-              A12: We worked with the <a href="https://breatheproject.org/about/#collaborative" target="_blank">Breathe Collaborative</a> in engaging citizens to label smoke emissions with this tool.
-              We thank the <a href="https://cleanair.org/" target="_blank">Clean Air Council</a> and <a href="https://gasp-pgh.org/" target="_blank">GASP (Group Against Smog and Pollution)</a> in organizing workshops for labeling smoke events with us.
+            <hr>
+            <ul>
+              <li>
+                Smoke emissions in nighttime videos (captured by commercial digital cameras) are tough for the computer to recognize due to insufficient light.
+                We want to focus on training the computer to detect daytime smoke emissions first.
+              </li>
+            </ul>
+            <a class="jump" name="q13"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q13: Who are your local partners?
+              </span>
             </p>
+            <hr>
+            <ul>
+              <li>
+                We worked with the <a href="https://breatheproject.org/about/#collaborative" target="_blank">Breathe Collaborative</a> in engaging citizens to label smoke emissions.
+                We thank the <a href="https://cleanair.org/" target="_blank">Clean Air Council</a> and <a href="https://gasp-pgh.org/" target="_blank">GASP (Group Against Smog and Pollution)</a> in organizing workshops for labeling smoke events with us.
+              </li>
+            </ul>
           </div>
         </div>
       </div>
