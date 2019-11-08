@@ -23,5 +23,8 @@ pip install requests==2.22.0
 # MySQL
 pip install mysqlclient==1.4.4
 
+# For visualization of system data
+pip install seaborn==0.9.0
+
 # Others
 pip install pytz==2019.3

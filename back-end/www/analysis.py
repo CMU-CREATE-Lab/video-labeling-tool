@@ -1,0 +1,97 @@
+import sys
+from application import *
+import numpy as np
+import seaborn as sns
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# Check if a directory exists, if not, create it
+def check_and_create_dir(path):
+    if path is None: return
+    dir_name = os.path.dirname(path)
+    if dir_name != "" and not os.path.exists(dir_name):
+        try: # this is used to prevent race conditions during parallel computing
+            os.makedirs(dir_name)
+        except Exception as ex:
+            print(ex)
+
+
+def analyze_user():
+    p = "../data/analysis/"
+    check_and_create_dir(p)
+
+    users = User.query.all()
+    num_users = 0 # total number of users
+    num_player = 0 # reviewed at least one batch but none of them passed quality check
+    num_explorer = 0 # contributed at least one batch
+    num_batches = 0 # number of good batches (passed quality check)
+    num_all_batches = 0 # number of reviewed batches
+    df_q = {"reliability": [], "num_batches": []}
+    for u in users:
+        if u.id == 1:
+            print("="*60)
+            print("Researcher labeled %d batches" % (u.raw_score/12))
+            continue # need to exclude the researcher
+        if u.client_id == "{}": continue # bad data
+        num_users += 1
+        if u.raw_score > 0:
+            num_all_batches += u.raw_score/12
+            if u.score == 0:
+                num_player += 1
+            elif u.score > 0:
+                num_explorer += 1
+                df_q["reliability"].append(np.round(u.score/u.raw_score, 2))
+                nb = u.score/12
+                df_q["num_batches"].append(nb)
+                num_batches += nb
+    df_q = pd.DataFrame.from_dict(df_q)
+
+    hq_enthusiasts = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]>=50)]
+    hq_enthusiasts.name = "hq_enthusiasts"
+    lq_enthusiasts = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]>=50)]
+    lq_enthusiasts.name = "lq_enthusiasts"
+    hq_explorers = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]<50)]
+    hq_explorers.name = "hq_explorers"
+    lq_explorers = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]<50)]
+    lq_explorers.name = "lq_explorers"
+    print("="*60)
+    print("# of total users: %d" % num_users)
+    print("# of users reviewed at least one batch but no contribution: %d(%.2f)" % (num_player, num_player/num_users))
+    print("# of users contributed at least one batch: %d(%.2f)" % (num_explorer, num_explorer/num_users))
+    print("="*60)
+    print("# of total reviewed batches: %d" % num_all_batches)
+    print("# of total good batches: %d" % num_batches)
+    print("collaborative reliability: %.2f" % (num_batches/num_all_batches))
+    describe_user_grp(hq_enthusiasts, num_users, num_batches)
+    describe_user_grp(lq_enthusiasts, num_users, num_batches)
+    describe_user_grp(hq_explorers, num_users, num_batches)
+    describe_user_grp(lq_explorers, num_users, num_batches)
+
+    """
+    g = sns.JointGrid(x="num_batches", y="reliability", data=df_q, height=5)
+    #g.plot_joint(sns.scatterplot, alpha=0.4, s=40)
+    g.plot_joint(plt.hexbin, cmap="Blues", xscale="log", gridsize=(10, 8), vmin=0, vmax=5)
+    g.set_axis_labels("# of contributed batches", "reliability", fontsize=12)
+    g.ax_joint.set(xscale="log")
+    g.ax_marg_x.hist(x=df_q["num_batches"], bins=[10**(i*0.5) for i in range(7)], log=True, alpha=0.5)
+    g.ax_marg_y.hist(x=df_q["reliability"], bins=[0.1*i for i in range(11) if i > 0], alpha=0.5, orientation="horizontal")
+    g.savefig(p+"user_quality.png", dpi=150)
+    plt.close()
+    """
+
+
+def describe_user_grp(df, num_users, num_batches):
+    print("="*60)
+    print("# of %s: %d(%.2f)" % (df.name, len(df), len(df)/num_users))
+    nb = df["num_batches"].sum()
+    print("# of contributed batches (%s): %d(%.2f)" % (df.name, nb, nb/num_batches))
+    print(df.describe().round(2))
+
+
+def main(argv):
+    analyze_user()
+
+
+if __name__ == "__main__":
+    main(sys.argv)
