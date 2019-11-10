@@ -27,7 +27,7 @@ def analyze_user():
     num_explorer = 0 # contributed at least one batch
     num_batches = 0 # number of good batches (passed quality check)
     num_all_batches = 0 # number of reviewed batches
-    df_q = {"reliability": [], "num_batches": []}
+    df_q = {"reliability": [], "num_batches": [], "num_all_batches": []}
     for u in users:
         if u.id == 1:
             print("="*60)
@@ -36,7 +36,8 @@ def analyze_user():
         if u.client_id == "{}": continue # bad data
         num_users += 1
         if u.raw_score > 0:
-            num_all_batches += u.raw_score/12
+            nb_all = u.raw_score/12
+            num_all_batches += nb_all
             if u.score == 0:
                 num_player += 1
             elif u.score > 0:
@@ -45,15 +46,18 @@ def analyze_user():
                 nb = u.score/12
                 df_q["num_batches"].append(nb)
                 num_batches += nb
+                df_q["num_all_batches"].append(nb_all)
     df_q = pd.DataFrame.from_dict(df_q)
     df_q.name = "users contributed at least one batch"
-    hq_enthusiasts = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]>=50)]
+    mean_num_batches = np.round(df_q["num_batches"].mean())
+    print("Average number of contributed batches: %d" % mean_num_batches)
+    hq_enthusiasts = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]>=mean_num_batches)]
     hq_enthusiasts.name = "hq_enthusiasts"
-    lq_enthusiasts = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]>=50)]
+    lq_enthusiasts = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]>=mean_num_batches)]
     lq_enthusiasts.name = "lq_enthusiasts"
-    hq_explorers = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]<50)]
+    hq_explorers = df_q[(df_q["reliability"]>=0.5) & (df_q["num_batches"]<mean_num_batches)]
     hq_explorers.name = "hq_explorers"
-    lq_explorers = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]<50)]
+    lq_explorers = df_q[(df_q["reliability"]<0.5) & (df_q["num_batches"]<mean_num_batches)]
     lq_explorers.name = "lq_explorers"
     print("="*60)
     print("# of total users: %d" % num_users)
@@ -63,11 +67,11 @@ def analyze_user():
     print("# of total reviewed batches: %d" % num_all_batches)
     print("# of total good batches: %d" % num_batches)
     print("collaborative reliability: %.2f" % (num_batches/num_all_batches))
-    describe_user_grp(df_q, num_users, num_batches)
-    describe_user_grp(hq_enthusiasts, num_users, num_batches)
-    describe_user_grp(lq_enthusiasts, num_users, num_batches)
-    describe_user_grp(hq_explorers, num_users, num_batches)
-    describe_user_grp(lq_explorers, num_users, num_batches)
+    describe_user_grp(df_q, num_users, num_batches, num_all_batches)
+    describe_user_grp(hq_enthusiasts, num_users, num_batches, num_all_batches)
+    describe_user_grp(lq_enthusiasts, num_users, num_batches, num_all_batches)
+    describe_user_grp(hq_explorers, num_users, num_batches, num_all_batches)
+    describe_user_grp(lq_explorers, num_users, num_batches, num_all_batches)
 
     """
     g = sns.JointGrid(x="num_batches", y="reliability", data=df_q, height=5)
@@ -82,11 +86,14 @@ def analyze_user():
     """
 
 
-def describe_user_grp(df, num_users, num_batches):
+def describe_user_grp(df, num_users, num_batches, num_all_batches):
     print("="*60)
     print("# of %s: %d(%.2f)" % (df.name, len(df), len(df)/num_users))
     nb = df["num_batches"].sum()
-    print("# of contributed batches (%s): %d(%.2f)" % (df.name, nb, nb/num_batches))
+    nb_all = df["num_all_batches"].sum()
+    print("# of contributed batches (%s): %d (%.2f)" % (df.name, nb, nb/num_batches))
+    print("# of reviewed batches (%s): %d (%.2f)" % (df.name, nb_all, nb_all/num_all_batches))
+    print("# group reliability (%s): %.2f" % (df.name, nb/nb_all))
     print(df.describe().round(2))
 
 
@@ -119,8 +126,8 @@ def analyze_data():
 
 
 def main(argv):
-    #analyze_user()
-    analyze_data()
+    analyze_user()
+    #analyze_data()
 
 
 if __name__ == "__main__":
