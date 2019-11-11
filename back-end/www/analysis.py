@@ -97,6 +97,36 @@ def describe_user_grp(df, num_users, num_batches, num_all_batches):
     print(df.describe().round(2))
 
 
+def aggregate_label(row):
+    label_state_admin = row["label_state_admin"]
+    label_state = row["label_state"]
+    label = None
+    has_error = False
+    if label_state_admin == 47: # pos (gold standard)
+        label = 1
+    elif label_state_admin == 32: # neg (gold standard)
+        label = 0
+    elif label_state_admin == 23: # strong pos
+        label = 1
+    elif label_state_admin == 16: # strong neg
+        label = 0
+    else: # not determined by researchers
+        if label_state == 23: # strong pos
+            label = 1
+        elif label_state == 16: # strong neg
+            label = 0
+        elif label_state == 20: # weak neg
+            label = 0
+        elif label_state == 19: # weak pos
+            label = 1
+        else:
+            has_error = True
+    if has_error:
+        print("Error when aggregating label:")
+        print(row)
+    return label
+
+
 def analyze_data():
     pos_labels = [0b10111, 0b1111, 0b10011]
     neg_labels = [0b10000, 0b1100, 0b10100]
@@ -118,6 +148,13 @@ def analyze_data():
         )).all()
     v_json = videos_schema_is_admin.dump(v)
     df_v = pd.DataFrame.from_dict(v_json)
+    print("Number of videos: %d" % len(df_v))
+
+    # Add aggregated labels
+    df_v["label"] = df_v.apply(aggregate_label, axis=1)
+    print(df_v)
+
+    # Groups
     gp_v = df_v.groupby(["camera_id", "view_id"])
     for name, group in gp_v:
         print(name)
