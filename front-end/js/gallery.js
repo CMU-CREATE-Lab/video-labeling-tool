@@ -223,9 +223,9 @@
       util.handleVideoPromise(this, "play");
     });
     var src_url = v["url_root"] + v["url_part"] + "&labelsFromDataset";
-    // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9.
+    // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9 and 10.
     // The current workaround is to make the thumbnail larger.
-    if (util.getAndroidVersion() == 9) {
+    if (util.getAndroidVersion() >= 9) {
       src_url = util.replaceThumbnailWidth(src_url, 320);
     }
     $vid.prop("src", src_url);
