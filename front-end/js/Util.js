@@ -341,7 +341,7 @@
 
     // Replace thumbnail width
     this.replaceThumbnailWidth = function (url, new_width) {
-      return url.replace("width=180&height=180", "width=" + new_width + "&height=" + new_width);
+      return url.replace("/180/", "/320/").replace("-180-180-", "-320-320-");
     };
   };
 

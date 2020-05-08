@@ -23,7 +23,7 @@ from flask.logging import default_handler
 """
 Config Parameters
 """
-video_url_root = "https://thumbnails-v2.createlab.org/thumbnail"
+video_url_root = "https://staging.smoke.createlab.org/videos/180/"
 google_signin_client_id = Path("../data/google_signin_client_id").read_text().strip()
 private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
@@ -287,7 +287,7 @@ The schema for the video table, used for jsonify (for normal users in label mode
 class VideoSchema(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part") # fields to expose
+        fields = ("id", "file_name") # fields to expose
 videos_schema = VideoSchema(many=True)
 
 """
@@ -296,7 +296,7 @@ The schema for the video table, used for jsonify (for normal users in gallery mo
 class VideoSchemaWithDetail(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "start_time", "view_id", "camera_id") # fields to expose
+        fields = ("id", "start_time", "view_id", "camera_id", "file_name")
 videos_schema_with_detail = VideoSchemaWithDetail(many=True)
 
 """
@@ -305,7 +305,7 @@ The schema for the video table, used for jsonify (for admin users)
 class VideoSchemaIsAdmin(ma.ModelSchema):
     class Meta:
         model = Video # the class for the model
-        fields = ("id", "url_part", "label_state", "label_state_admin", "start_time", "file_name", "view_id", "camera_id") # fields to expose
+        fields = ("id", "label_state", "label_state_admin", "start_time", "file_name", "view_id", "camera_id")
 videos_schema_is_admin = VideoSchemaIsAdmin(many=True)
 
 """
@@ -815,6 +815,9 @@ def jsonify_videos(videos, sign=False, batch_id=None, total=None, is_admin=False
         video_id_list = []
     for i in range(len(videos_json)):
         videos_json[i]["url_root"] = video_url_root
+        fn = videos_json[i]["file_name"]
+        fns = fn.split("-")
+        videos_json[i]["url_part"] = "%s-%s-%s/%s-%s/%s.mp4" % (fns[2], fns[3], fns[4], fns[0], fns[1], fn)
         if sign:
             video_id_list.append(videos_json[i]["id"])
     return_json = {"data": videos_json}

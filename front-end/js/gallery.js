@@ -192,13 +192,14 @@
         var label_citizen = safeGet(label_state_map[v["label_state"]], "Undefined");
         $($i.get(2)).text("Citizen: " + label_citizen).addClass("custom-text-info-dark-theme");
         // Update link
-        var parsed_url = util.parseVars(v["url_part"]);
-        var b = parsed_url["boundsLTRB"];
-        var t = parseInt(parsed_url["startFrame"]) / parseInt(parsed_url["fps"]);
+        var fns = v["file_name"].split("-");
+        var b = fns[5] + "," + fns[6] + "," + fns[7] + "," + fns[8] // bounds
+        var fps = 12 // frames per second when generating these video clips
+        var t = parseInt(fns[11]) / fps; // starting time
         t = Math.round(t * 1000) / 1000
-        var parsed_root = parsed_url["root"].split("/");
-        var s = parsed_root[5];
-        var d = parsed_root[6].split(".")[0];
+        var camera_id_to_name = ["clairton1", "braddock1", "westmifflin1"]
+        var s = camera_id_to_name[fns[0]] // camera name
+        var d = fns[2] + "-" + fns[3] + "-" + fns[4]; // date
         var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
         var $a = $item.find("a").removeClass();
         $($a.get(0)).prop("href", href);
@@ -222,7 +223,7 @@
       // Play the video
       util.handleVideoPromise(this, "play");
     });
-    var src_url = v["url_root"] + v["url_part"] + "&labelsFromDataset";
+    var src_url = v["url_root"] + v["url_part"];
     // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9 and 10.
     // The current workaround is to make the thumbnail larger.
     if (util.getAndroidVersion() >= 9) {
