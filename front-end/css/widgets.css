@@ -1,11 +1,94 @@
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
- * Version: v3.13
+ * Version: v3.26
  * This CSS file has widgets for building interactive web applications
  * Use this file with widgets.js
  * If you want to keep this template updated, avoid modifying this file
  * Instead, add your own CSS in the index.css
  *************************************************************************/
+
+.custom-tab {
+  margin: 15px 0;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+  box-sizing: border-box;
+}
+
+.custom-tab .custom-tab-menu {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  border-bottom: none;
+  width: fit-content;
+  width: -moz-fit-content;
+}
+
+.custom-tab .custom-tab-menu-item {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-size: 17px;
+  font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+}
+
+.custom-tab .custom-tab-menu-item:hover {
+  background-color: #ddd;
+}
+
+.custom-tab .custom-tab-menu-item.active {
+  background-color: #ccc;
+}
+
+.custom-tab .custom-tab-content {
+  padding: 20px;
+  border: 1px solid #ccc;
+  display: none;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-content: stretch;
+  box-sizing: border-box;
+}
+
+.custom-tab .custom-tab-menu.center,
+.custom-tab .custom-tab-content .image.center,
+.custom-tab .custom-tab-content p.center,
+.custom-tab .custom-tab-content table.center {
+  align-self: center;
+}
+
+.custom-tab .custom-tab-content.no-padding {
+  padding: 0;
+}
+
+.custom-tab .graph-title:first-child {
+  margin-top: 0;
+}
+
+.custom-tab .graph-title.add-top-right-left-padding {
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.custom-tab .graph-title.add-bottom-border {
+  border-bottom: 1px solid #ccc;
+}
+
+.custom-tab .image,
+.custom-tab .custom-table-container {
+  margin-top: 5px;
+  margin-bottom: 0;
+}
 
 .custom-radio {
   padding: 0;
@@ -262,7 +345,7 @@
 }
 
 .custom-dialog-flat .ui-dialog-content {
-  padding: 0 1.2em 0 1.2em;
+  padding: 0 1.2em 1.2em 1.2em;
   background-color: white;
   background-image: none;
 }
@@ -305,6 +388,15 @@
   text-indent: 0;
 }
 
+.custom-dialog-flat .ui-dialog-titlebar .ui-dialog-titlebar-close:after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  bottom: -12px;
+  left: -12px;
+  right: -12px;
+}
+
 .custom-dialog-flat .ui-dialog-titlebar .ui-dialog-titlebar-close.ui-state-default {
   background: none;
   border: none;
@@ -323,7 +415,7 @@
 .custom-dialog-flat .ui-dialog-buttonpane {
   border-width: 0;
   margin: 0;
-  padding: 1.2em 1.2em 1.2em 1.2em;
+  padding: 0em 1.2em 1.2em 1.2em;
 }
 
 .custom-dialog-flat .ui-dialog-buttonpane .ui-dialog-buttonset {
@@ -346,8 +438,8 @@
 }
 
 .custom-dialog-flat .ui-dialog-buttonpane .ui-dialog-buttonset .ui-button.ui-action-button {
-  background-color: #dc3545;
-  border: 1px solid #dc3545;
+  background-color: #007bff;
+  border: 1px solid #007bff;
 }
 
 .custom-dialog-flat .ui-dialog-buttonpane .ui-dialog-buttonset .ui-button.full-width {
@@ -356,7 +448,7 @@
 }
 
 .custom-dialog-flat .ui-dialog-buttonpane .ui-dialog-buttonset .ui-button.full-width:not(:first-child) {
-  margin-top: 0.5em;
+  margin-top: 0.8em;
 }
 
 .ui-widget-overlay {
