@@ -23,7 +23,7 @@ from flask.logging import default_handler
 """
 Config Parameters
 """
-video_url_root = "https://staging.smoke.createlab.org/videos/180/"
+video_url_root = "https://smoke.createlab.org/videos/180/"
 google_signin_client_id = Path("../data/google_signin_client_id").read_text().strip()
 private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
