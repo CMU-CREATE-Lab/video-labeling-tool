@@ -1,4 +1,4 @@
-var url_root = "https://staging.smoke.createlab.org/videos/180/";
+var url_root = "https://smoke.createlab.org/videos/180/";
 var general_prompt = "<ul><li>Smoke shows <u>various colors</u>, while steam is mostly whitish.</li><li>Smoke has <u>unclear edges</u> and <u>fades away slower</u> than steam.</li><li>Smoke has <u>various opacities</u>, while steam usually has high opacity.</li></ul>";
 var general_wrong_txt = "<span class='custom-text-info-dark-theme'>Uh oh! Some answers are incorrect.</span> Don't worry! You still made good progress. We provide detailed comments below each video and highlight mistakes with color.";
 var general_correct_txt = "Excellent! Your answers are all correct! We provide detailed comments and explanations below each video.";
