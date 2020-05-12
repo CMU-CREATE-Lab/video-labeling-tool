@@ -162,6 +162,23 @@ Add testing videos (optional) or your own videos.
 python add_video_set_small.py confirm
 python add_video_set_large.py confirm
 ```
+Note that the system uses the following folder structure to store videos:
+```
+└── front-end                            # this corresponds to video-labeling-tool/front-end/
+    └── videos
+        ├── 180                          # the resolution of the video
+        │    ├── 2018-05-11              # the video date
+        │    │   ├── 0-0                 # the video view ID
+        │    │   │   ├── [VID_1].mp4     # video file
+        │    │   │   ├── ...             # other video files
+        │    │   │   └── ...
+        │    │   ├── ...                 # other video view IDs
+        │    │   └── ...
+        │    ├── ...                     # other video dates
+        │    └── ...
+        ├── 320                          # another resolution of the video
+        │    ├── ...                     # similar structure
+```
 Run server in the conda environment for development purpose.
 ```sh
 sh development.sh
