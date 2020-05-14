@@ -95,10 +95,13 @@
     // "playsinline" and "playsInline" prevents playing video fullscreen
     var $vid = $("<video autoplay loop muted playsinline playsInline disableRemotePlayback></video>");
     $item.append($vid);
+    var $control = $("<div class='label-control'></div>");
+    // Add the date and time information
+    var $dt = $("<p class='text-small-margin'><i></i></p>");
+    $control.append($dt)
     if (typeof user_id === "undefined") {
       if (is_admin) {
         // Add the display of label states and the dropdown for changing the label states
-        var $control = $("<div class='label-control'></div>");
         var $video_id = $("<p class='text-small-margin'><i></i></p>");
         $control.append($video_id);
         var $label_state_researcher = $("<p class='text-small-margin'><i></i></p>");
@@ -154,10 +157,10 @@
           });
           $control.append($group_pos_neg.append($pos_btn, $neg_btn));
         }
-        // Append UI
-        $item.append($control);
       }
+      $item.append($control);
     } else {
+      $item.append($control);
       $item.append($("<i></i>"));
     }
     return $item;
@@ -182,23 +185,35 @@
   }
 
   function updateItem($item, v) {
+    // Update date and time information
+    var fns = v["file_name"].split("-");
+    var $i = $item.children(".label-control").find("i").removeClass();
+    var date_str = (new Date(parseInt(fns[12])*1000)).toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      hour: "2-digit",
+      minute:"2-digit",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour12: false
+    })
+    $($i.get(0)).text(date_str).addClass("custom-text-info-dark-theme");
     if (typeof user_id === "undefined") {
       if (is_admin) {
         // Update label information
-        var $i = $item.find("i").removeClass();
-        $($i.get(0)).text("ID: " + v["id"]).addClass("custom-text-info-dark-theme");
+        $($i.get(1)).text("ID: " + v["id"]).addClass("custom-text-info-dark-theme");
         var label_researcher = safeGet(label_state_map[v["label_state_admin"]], "Undefined");
-        $($i.get(1)).text("Scientist: " + label_researcher).addClass("custom-text-info-dark-theme");
+        $($i.get(2)).text("Scientist: " + label_researcher).addClass("custom-text-info-dark-theme");
         var label_citizen = safeGet(label_state_map[v["label_state"]], "Undefined");
-        $($i.get(2)).text("Citizen: " + label_citizen).addClass("custom-text-info-dark-theme");
+        $($i.get(3)).text("Citizen: " + label_citizen).addClass("custom-text-info-dark-theme");
         // Update link
-        var parsed_url = util.parseVars(v["url_part"]);
-        var b = parsed_url["boundsLTRB"];
-        var t = parseInt(parsed_url["startFrame"]) / parseInt(parsed_url["fps"]);
+        var b = fns[5] + "," + fns[6] + "," + fns[7] + "," + fns[8] // bounds
+        var fps = 12 // frames per second when generating these video clips
+        var t = parseInt(fns[11]) / fps; // starting time
         t = Math.round(t * 1000) / 1000
-        var parsed_root = parsed_url["root"].split("/");
-        var s = parsed_root[5];
-        var d = parsed_root[6].split(".")[0];
+        var camera_id_to_name = ["clairton1", "braddock1", "westmifflin1"]
+        var s = camera_id_to_name[fns[0]] // camera name
+        var d = fns[2] + "-" + fns[3] + "-" + fns[4]; // date
         var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
         var $a = $item.find("a").removeClass();
         $($a.get(0)).prop("href", href);
@@ -207,14 +222,14 @@
         $item.find("button").data("v", v);
       }
     } else {
-      var $i = $item.find("i").removeClass();
+      var $i_i = $item.children("i").removeClass();
       var s1 = v["label_state"];
       var s2 = v["label_state_admin"];
       var pos = [19, 15, 23, 47];
       if (pos.indexOf(s1) != -1 || pos.indexOf(s2) != -1) {
-        $i.html("&#10004;").addClass("custom-text-primary-dark-theme");
+        $i_i.html("&#10004;").addClass("custom-text-primary-dark-theme");
       } else {
-        $i.text("");
+        $i_i.text("");
       }
     }
     var $vid = $item.find("video");
@@ -222,7 +237,7 @@
       // Play the video
       util.handleVideoPromise(this, "play");
     });
-    var src_url = v["url_root"] + v["url_part"] + "&labelsFromDataset";
+    var src_url = v["url_root"] + v["url_part"];
     // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9 and 10.
     // The current workaround is to make the thumbnail larger.
     if (util.getAndroidVersion() >= 9) {

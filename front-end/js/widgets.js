@@ -1,6 +1,6 @@
 /*************************************************************************
  * GitHub: https://github.com/yenchiah/project-website-template
- * Version: v3.13
+ * Version: v3.26
  * This JS file has widgets for building interactive web applications
  * Use this file with widgets.css
  * If you want to keep this template updated, avoid modifying this file
@@ -35,6 +35,38 @@
     //
     // Privileged methods
     //
+    function createCustomTab(settings) {
+      settings = safeGet(settings, {});
+
+      // Specify the selector of the tab
+      var $selector = $(settings["selector"]);
+      if ($selector.length == 0) {
+        console.error("Cannot find selector: " + settings["selector"]);
+        return false;
+      }
+      if ($selector.length > 1) {
+        console.error("Multiple selectors were found. Please indicate only one at a time.");
+        return false;
+      }
+
+      // Get the menu items
+      var $menu_items = $selector.find(".custom-tab-menu-item");
+      var $all_contents = $selector.find(".custom-tab-content");
+      $menu_items.each(function (i, element) {
+        var $element = $(element);
+        var idx_content = $element.data("content");
+        var $desired_content = $selector.find(".custom-tab-content[data-content=" + idx_content + "]");
+        // Add click event
+        $element.on("click", function () {
+          $all_contents.hide();
+          $desired_content.css("display", "flex");
+          $menu_items.removeClass("active");
+          $element.addClass("active");
+        });
+      });
+      $selector.find(".custom-tab-menu-item.active").click();
+    }
+    this.createCustomTab = createCustomTab;
 
     function createCustomDialog(settings) {
       settings = safeGet(settings, {});
@@ -70,33 +102,55 @@
       // Show the close button or not
       var show_close_button = safeGet(settings["show_close_button"], true);
 
+      // Close the dialog when the action button is clicked or not
+      var close_dialog_on_action = safeGet(settings["close_dialog_on_action"], true);
+
+      // Close the dialog when the cancel button is clicked or not
+      var close_dialog_on_cancel = safeGet(settings["close_dialog_on_cancel"], true);
+
+      // Reverse the positions of the action and cancel buttons
+      var reverse_button_positions = safeGet(settings["reverse_button_positions"], false);
+
       // Specify buttons
-      var buttons = {};
+      var buttons = [];
       if (show_cancel_btn) {
-        buttons["Cancel"] = {
-          class: "ui-cancel-button",
+        var btn_class = "ui-cancel-button";
+        if (full_width_button) {
+          btn_class += " full-width";
+        }
+        buttons.push({
+          class: btn_class,
           text: cancel_text,
           click: function () {
-            $(this).dialog("close");
+            if (close_dialog_on_cancel) {
+              $(this).dialog("close");
+            }
             if (has_cancel_callback) settings["cancel_callback"]();
           }
-        }
-        if (full_width_button) {
-          buttons["Cancel"]["class"] += " full-width";
-        }
+        });
       }
       if (has_action_callback) {
-        buttons["Action"] = {
-          class: "ui-action-button",
+        var btn_class = "ui-action-button";
+        if (full_width_button) {
+          btn_class += " full-width";
+        }
+        buttons.push({
+          class: btn_class,
           text: action_text,
           click: function () {
-            $(this).dialog("close");
-            settings["action_callback"]();
+            if (close_dialog_on_action) {
+              $(this).dialog("close");
+            }
+            if (has_action_callback) settings["action_callback"]();
           }
-        }
-        if (full_width_button) {
-          buttons["Action"]["class"] += " full-width";
-        }
+        });
+      }
+
+      // Reverse button positions or not
+      if (buttons.length == 2 && reverse_button_positions) {
+        var tmp = buttons[1];
+        buttons[1] = buttons[0];
+        buttons[0] = tmp;
       }
 
       // Create dialog
@@ -199,7 +253,7 @@
         });
       }
       return $dialog;
-    };
+    }
     this.createCustomDialog = createCustomDialog;
 
     function setCustomDropdown($ui, settings) {
@@ -253,6 +307,18 @@
       return $ui;
     }
     this.setCustomDropdown = setCustomDropdown;
+
+    // Copy text in a input field
+    function copyText(element_id) {
+      // Get the text field
+      var copy = document.getElementById(element_id);
+      // Select the text field
+      copy.select();
+      copy.setSelectionRange(0, 99999); /*For mobile devices*/
+      // Copy the text inside the text field
+      document.execCommand("copy");
+    }
+    this.copyText = copyText;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //

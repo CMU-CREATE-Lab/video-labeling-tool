@@ -265,8 +265,8 @@ body,
   font-style: normal;
   font-weight: bold;
   position: absolute;
-  bottom: 10px;
-  right: 17px;
+  top: 10px;
+  left: 17px;
 }
 
 .gallery a .label-control {

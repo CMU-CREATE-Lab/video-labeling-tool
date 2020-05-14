@@ -1,7 +1,7 @@
 # video-labeling-tool
 Demo: http://smoke.createlab.org
 
-A tool for labeling video clips (both front-end and back-end). The back-end depends on the [thumbnail server](https://github.com/CMU-CREATE-Lab/timemachine-thumbnail-server) to provide video urls. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world).
+A tool for labeling video clips (both front-end and back-end). The back-end depends on an Apache server to provide video links. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world).
 
 The system defines the final label by aggregating answers from citizens and researchers. At least two volunteers or one researcher will review each video. If the answers from the two volunteers agree, the system marks the video according to the agreement. Otherwise, another volunteer or researcher will review the video, and the result is aggregated based on majority voting.
 
@@ -161,6 +161,23 @@ Add testing videos (optional) or your own videos.
 ```sh
 python add_video_set_small.py confirm
 python add_video_set_large.py confirm
+```
+Note that the system uses the following folder structure to store videos:
+```
+└── front-end                            # this corresponds to video-labeling-tool/front-end/
+    └── videos
+        ├── 180                          # the resolution of the video
+        │    ├── 2018-05-11              # the video date
+        │    │   ├── 0-0                 # the video view ID
+        │    │   │   ├── [VID_1].mp4     # video file
+        │    │   │   ├── ...             # other video files
+        │    │   │   └── ...
+        │    │   ├── ...                 # other video view IDs
+        │    │   └── ...
+        │    ├── ...                     # other video dates
+        │    └── ...
+        ├── 320                          # another resolution of the video
+        │    ├── ...                     # similar structure
 ```
 Run server in the conda environment for development purpose.
 ```sh
