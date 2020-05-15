@@ -1,7 +1,7 @@
 # video-labeling-tool
 Demo: http://smoke.createlab.org
 
-A tool for labeling video clips (both front-end and back-end). The back-end depends on an Apache server to provide video links. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). If you found this dataset and the code useful, we would greatly appreciate it if you could cite our technical report below:
+A tool for labeling video clips (both front-end and back-end). The back-end depends on an Apache server to provide video links. The back-end is based on [flask](http://flask.pocoo.org/). A flask tutorial can be found on [this blog](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world). If you found this code useful, we would greatly appreciate it if you could cite our technical report below:
 
 Yen-Chia Hsu, Ting-Hao (Kenneth) Huang, Ting-Yao Hu, Paul Dille, Sean Prendi, Ryan Hoffman, Anastasia Tsuhlares, Randy Sargent, and Illah Nourbakhsh. 2020. RISE Video Dataset: Recognizing Industrial Smoke Emissions. arXiv preprint arXiv:2005.06111. https://arxiv.org/abs/2005.06111
 
