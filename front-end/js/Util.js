@@ -340,8 +340,8 @@
     };
 
     // Replace thumbnail width
-    this.replaceThumbnailWidth = function (url, new_width) {
-      return url.replace("/180/", "/320/").replace("-180-180-", "-320-320-");
+    this.replaceThumbnailWidth = function (url) {
+      return url.replace("/180/", "/320/").replace("-180-180-", "-320-320-").replace("width=180", "width=320").replace("height=180", "height=320");
     };
   };
 

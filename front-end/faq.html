@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Smoke Hunting</title>
+  <title>Project RISE</title>
   <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
@@ -18,58 +18,19 @@
   <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/GoogleAnalyticsTracker.js"></script>
-  <script>
-    (function () {
-      "use strict";
-      var util = new edaplotjs.Util();
-
-      function handleHashChange() {
-        var hash = window.location.hash.replace('#', '');
-        var q = hash.split("&");
-        // Remove all highlights
-        var $q_all = $("a.jump").next();
-        $q_all.find("span").removeClass("custom-text-info-dark-theme");
-        $q_all.next().removeClass("custom-text-info-dark-theme")
-        // Highlight the selected questions
-        for (var i = 0; i < q.length; i++) {
-          var $q = $("a[name='" + q[i] + "']").next();
-          $q.find("span").addClass("custom-text-info-dark-theme");
-          $q.next().addClass("custom-text-info-dark-theme");
-        }
-      }
-
-      function init() {
-        var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-          tracker_id: util.getGoogleAnalyticsId()
-        });
-        window.addEventListener("hashchange", handleHashChange, false);
-        handleHashChange();
-      }
-      $(init);
-    })();
-  </script>
+  <script src="js/faq.js"></script>
+  <script src="js/menu.js"></script>
+  <style>
+    .menu-faq {
+      color: rgb(255, 255, 255) !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="menu-container">
-    <div class="menu">
-      <div class="menu-table flex-row-space-between">
-        <div class="logo flex-row-center">
-          <a href="index.html">Smoke Hunting</a>
-        </div>
-        <a class="menu-button" tabindex="0" href="javascript:void(0)">
-          <img src="img/menu.png">
-        </a>
-        <div class="menu-items flex-row-center flex-item">
-          <a href="index.html">Overview</a>
-          <a href="learn.html">Learn</a>
-          <a href="label.html">Label</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="faq.html" class="menu-highlight">FAQ</a>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="menu-container"></div>
   <div class="content-container">
     <div class="content">
       <div class="content-table flex-column">

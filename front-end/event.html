@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Project RISE</title>
+  <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="lib/pagination/pagination.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
+  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="lib/pagination/pagination.js"></script>
+  <script src="js/Util.js"></script>
+  <script src="js/event.js"></script>
+  <script src="js/menu.js"></script>
+  <style>
+    .menu-event {
+      color: rgb(255, 255, 255) !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="menu-container"></div>
+  <div class="content-container">
+    <div class="content">
+      <div class="content-table flex-column">
+        <div class="flex-row">
+          <div class="flex-item flex-column">
+            <p class="text">
+              This page shows the videos in which the Artificial Intelligence model thinks <span class="custom-text-info-dark-theme">contain hazardous smoke emissions</span>.
+            </p>
+          </div>
+        </div>
+        <div class="gallery">
+          <div class="gallery-videos"></div>
+        </div>
+        <div class="flex-row">
+          <div class="flex-item flex-column full-width">
+            <div id="page-control" class="control-group add-top-margin force-hidden">
+              <button id="page-back" class="custom-button-flat large stretch-on-mobile" disabled><img src="img/back.png"><span>Back</span></button>
+              <button id="page-next" class="custom-button-flat large stretch-on-mobile"><img src="img/next.png"><span>Next</span></button>
+              <div id="page-navigator" class="stretch-on-mobile"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

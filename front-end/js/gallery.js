@@ -188,10 +188,10 @@
     // Update date and time information
     var fns = v["file_name"].split("-");
     var $i = $item.children(".label-control").find("i").removeClass();
-    var date_str = (new Date(parseInt(fns[12])*1000)).toLocaleString("en-US", {
+    var date_str = (new Date(parseInt(fns[12]) * 1000)).toLocaleString("en-US", {
       timeZone: "America/New_York",
       hour: "2-digit",
-      minute:"2-digit",
+      minute: "2-digit",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -241,7 +241,7 @@
     // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9 and 10.
     // The current workaround is to make the thumbnail larger.
     if (util.getAndroidVersion() >= 9) {
-      src_url = util.replaceThumbnailWidth(src_url, 320);
+      src_url = util.replaceThumbnailWidth(src_url);
     }
     $vid.prop("src", src_url);
     util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
