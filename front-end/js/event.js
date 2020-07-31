@@ -13,7 +13,6 @@
   var $page_back;
   var $page_next;
   var $page_control;
-  var url_root = "https://cocalc-www.createlab.org/pardumps/video/"
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -151,12 +150,43 @@
     });
   }
 
-  function flattern_event_data(raw_data) {
+  function flatternEventData(raw_data) {
     var data_tmp = []
     for (var k in raw_data) {
       data_tmp = data_tmp.concat(raw_data[k]);
     }
     return data_tmp;
+  }
+
+  function setDateFilterDropdown(date_list) {
+    var $date_filter = $("#date-filter");
+    var default_date_str;
+    for (var i = 0; i < date_list.length; i++) {
+      var d = date_list[i]
+      var $option;
+      if (i == date_list.length - 1) {
+        $option = $('<option selected value="' + d + '">' + d + '</option>');
+        default_date_str = d;
+      } else {
+        $option = $('<option value="' + d + '">' + d + '</option>');
+      }
+      $date_filter.append($option);
+    }
+    $date_filter.on("change", function () {
+      onDateChange($(this).val());
+    });
+    onDateChange(default_date_str);
+  }
+
+  function onDateChange(date_str) {
+    $.getJSON("event/" + date_str + ".json", function (raw_data) {
+      if (typeof $page_nav !== "undefined") {
+        $page_nav.pagination("destroy");
+        $page_back.off();
+        $page_next.off();
+      }
+      initPagination(flatternEventData(raw_data));
+    });
   }
 
   function init() {
@@ -169,22 +199,8 @@
       console.warn("Browser not supported.");
       showGalleryNotSupportedMsg();
     }
-    var data = [];
-    $.when(
-      $.getJSON("event/2019-04-02.json", function (raw_data) {
-        data = data.concat(flattern_event_data(raw_data))
-      }),
-      $.getJSON("event/2019-04-15.json", function (raw_data) {
-        data = data.concat(flattern_event_data(raw_data))
-      }),
-      $.getJSON("event/2019-02-03.json", function (raw_data) {
-        data = data.concat(flattern_event_data(raw_data))
-      }),
-      $.getJSON("event/2019-02-04.json", function (raw_data) {
-        data = data.concat(flattern_event_data(raw_data))
-      })
-    ).then(function () {
-      initPagination(data);
+    $.getJSON("event/date_list.json", function (date_list) {
+      setDateFilterDropdown(date_list);
     });
   }
 
