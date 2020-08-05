@@ -13,6 +13,8 @@
   var $page_back;
   var $page_next;
   var $page_control;
+  var current_view_id = "0-2";
+  var current_date_str = "2019-03-26";
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -92,12 +94,12 @@
     }
   }
 
-  function initPagination(data_sources) {
-    $page_nav = $("#page-navigator");
-    $page_control = $("#page-control");
-    $page_back = $("#page-back");
-    $page_next = $("#page-next");
-    $page_nav.pagination({
+  function setPagination(data_sources) {
+    if (typeof data_sources === "undefined") {
+      onPagination();
+      return false;
+    }
+    $page_nav = $("#page-navigator").pagination({
       dataSource: data_sources,
       className: "paginationjs-custom",
       pageSize: 16,
@@ -108,36 +110,7 @@
       showPrevious: false,
       showNext: false,
       callback: function (data, pagination) {
-        if (typeof data !== "undefined" && data.length > 0) {
-          $(window).scrollTop(0);
-          updateGallery($gallery_videos);
-          updateVideos(data);
-        } else {
-          $(window).scrollTop(0);
-          showNoGalleryMsg();
-        }
-        // Handle UI
-        var total_page = Math.ceil(pagination["totalNumber"] / pagination["pageSize"]);
-        if (typeof total_page !== "undefined" && !isNaN(total_page) && total_page != 1) {
-          if ($page_control.hasClass("force-hidden")) {
-            $page_control.removeClass("force-hidden");
-          }
-          var page_num = pagination["pageNumber"];
-          if (page_num == 1) {
-            $page_back.prop("disabled", true);
-          } else {
-            $page_back.prop("disabled", false);
-          }
-          if (page_num == total_page) {
-            $page_next.prop("disabled", true);
-          } else {
-            $page_next.prop("disabled", false);
-          }
-        } else {
-          if (!$page_control.hasClass("force-hidden")) {
-            $page_control.addClass("force-hidden");
-          }
-        }
+        onPagination(data, pagination);
       }
     });
     $page_back.on("click", function () {
@@ -150,46 +123,121 @@
     });
   }
 
-  function flatternEventData(raw_data) {
-    var data_tmp = []
-    for (var k in raw_data) {
-      data_tmp = data_tmp.concat(raw_data[k]);
+  function onPagination(data, pagination) {
+    if (typeof data !== "undefined" && data.length > 0) {
+      $(window).scrollTop(0);
+      updateGallery($gallery_videos);
+      updateVideos(data);
+    } else {
+      $(window).scrollTop(0);
+      showNoGalleryMsg();
     }
-    return data_tmp;
+    // Handle UI
+    if (typeof pagination === "undefined") {
+      if (!$page_control.hasClass("force-hidden")) {
+        $page_control.addClass("force-hidden");
+      }
+      return false;
+    }
+    var total_page = Math.ceil(pagination["totalNumber"] / pagination["pageSize"]);
+    if (typeof total_page !== "undefined" && !isNaN(total_page) && total_page > 1) {
+      if ($page_control.hasClass("force-hidden")) {
+        $page_control.removeClass("force-hidden");
+      }
+      var page_num = pagination["pageNumber"];
+      if (page_num == 1) {
+        $page_back.prop("disabled", true);
+      } else {
+        $page_back.prop("disabled", false);
+      }
+      if (page_num == total_page) {
+        $page_next.prop("disabled", true);
+      } else {
+        $page_next.prop("disabled", false);
+      }
+    } else {
+      if (!$page_control.hasClass("force-hidden")) {
+        $page_control.addClass("force-hidden");
+      }
+    }
   }
 
   function setDateFilterDropdown(date_list) {
+    if (date_list.indexOf(current_date_str) == -1) {
+      current_date_str = undefined;
+    }
     var $date_filter = $("#date-filter");
-    var default_date_str;
     for (var i = 0; i < date_list.length; i++) {
-      var d = date_list[i]
+      var k = date_list[i]
       var $option;
-      if (i == date_list.length - 1) {
-        $option = $('<option selected value="' + d + '">' + d + '</option>');
-        default_date_str = d;
+      if (typeof current_date_str === "undefined") {
+        $option = $('<option selected value="' + k + '">' + k + '</option>');
+        current_date_str = k;
       } else {
-        $option = $('<option value="' + d + '">' + d + '</option>');
+        if (k == current_date_str) {
+          $option = $('<option selected value="' + k + '">' + k + '</option>');
+        } else {
+          $option = $('<option value="' + k + '">' + k + '</option>');
+        }
       }
       $date_filter.append($option);
     }
-    $date_filter.on("change", function () {
+    $date_filter.off().on("change", function () {
       onDateChange($(this).val());
     });
-    onDateChange(default_date_str);
+    onDateChange(current_date_str);
   }
 
-  function onDateChange(date_str) {
-    $.getJSON("event/" + date_str + ".json", function (raw_data) {
-      if (typeof $page_nav !== "undefined") {
-        $page_nav.pagination("destroy");
-        $page_back.off();
-        $page_next.off();
-      }
-      initPagination(flatternEventData(raw_data));
+  function onDateChange(desired_date_str) {
+    current_date_str = desired_date_str;
+    $.getJSON("event/" + desired_date_str + ".json", function (event_data) {
+      setViewFilterDropdown(event_data)
+    }).fail(function () {
+      onPagination();
     });
+  }
+
+  function setViewFilterDropdown(event_data) {
+    var event_data_keys = Object.keys(event_data);
+    if (event_data_keys.indexOf(current_view_id) == -1) {
+      current_view_id = undefined;
+    }
+    var $view_filter = $("#view-filter").empty();
+    for (var i = 0; i < event_data_keys.length; i++) {
+      var k = event_data_keys[i];
+      var $option;
+      if (typeof current_view_id === "undefined") {
+        $option = $('<option selected value="' + k + '">' + k + '</option>');
+        current_view_id = k;
+      } else {
+        if (k == current_view_id) {
+          $option = $('<option selected value="' + k + '">' + k + '</option>');
+        } else {
+          $option = $('<option value="' + k + '">' + k + '</option>');
+        }
+      }
+      $view_filter.append($option);
+    }
+    $view_filter.off().on("change", function () {
+      onViewChange($(this).val(), event_data);
+    });
+    onViewChange(current_view_id, event_data);
+  }
+
+  function onViewChange(desired_view_id, event_data) {
+    current_view_id = desired_view_id;
+    if (typeof $page_nav !== "undefined") {
+      $page_nav.pagination("destroy");
+      $page_back.off();
+      $page_next.off();
+    }
+    setPagination(event_data[desired_view_id]);
   }
 
   function init() {
+    $page_control = $("#page-control");
+    $page_back = $("#page-back");
+    $page_next = $("#page-next");
     util.addVideoClearEvent();
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
