@@ -15,6 +15,7 @@
   var $page_control;
   var current_view_id = "0-2";
   var current_date_str = "2019-03-26";
+  var $event_timeline;
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -100,7 +101,7 @@
       return false;
     }
     $page_nav = $("#page-navigator").pagination({
-      dataSource: data_sources["url"],
+      dataSource: data_sources,
       className: "paginationjs-custom",
       pageSize: 16,
       showPageNumbers: false,
@@ -232,24 +233,127 @@
       $page_back.off();
       $page_next.off();
     }
-    setPagination(data[desired_view_id]);
+    setPagination(data[desired_view_id]["url"]);
+    drawEventTimeline(data[desired_view_id]["event"])
+  }
+
+  function epochtimeToDate(epochtime) {
+    var d = new Date(0);
+    d.setUTCSeconds(epochtime);
+    return d;
+  }
+
+  function copyAndReplaceHMS(date_obj, hour, minute, second) {
+    var cp_date_obj = new Date(date_obj.getTime());
+    cp_date_obj.setHours(hour);
+    cp_date_obj.setMinutes(minute);
+    cp_date_obj.setSeconds(second);
+    return cp_date_obj;
+  }
+
+  function drawEventTimeline(data) {
+    var container = document.getElementById("event-timeline");
+    var $container = $(container);
+    if (typeof data === "undefined" || data.length == 0) {
+      $container.hide();
+      return false;
+    }
+    $container.empty().show(); // need this line to resize properly
+    var data_rows = [];
+    for (var i = 0; i < data.length; i++) {
+      data_rows.push(["Event", epochtimeToDate(data[i][0]), epochtimeToDate(data[i][1])]);
+    }
+    var chart = new google.visualization.Timeline(container);
+    var dataTable = new google.visualization.DataTable();
+    dataTable.addColumn({
+      type: "string",
+      id: "Event"
+    });
+    dataTable.addColumn({
+      type: "date",
+      id: "Start"
+    });
+    dataTable.addColumn({
+      type: "date",
+      id: "End"
+    });
+    dataTable.addRows(data_rows);
+
+    var options = {
+      timeline: {
+        showRowLabels: false,
+        showBarLabels: false,
+        singleColor: "#666"
+      },
+      avoidOverlappingGridLines: false,
+      tooltip: {
+        trigger: false
+      },
+      height: 140,
+      width: "100%",
+      enableInteractivity: false,
+      hAxis: {
+        format: "H",
+        minValue: copyAndReplaceHMS(data_rows[0][1], 6, 0, 0), // 6 am
+        maxValue: copyAndReplaceHMS(data_rows[0][1], 21, 0, 0) // 9 pm
+      }
+    };
+    google.visualization.events.addListener(chart, "ready", function () {
+      var labels = container.getElementsByTagName("text");
+      Array.prototype.forEach.call(labels, function (label) {
+        if (["middle", "start", "end"].indexOf(label.getAttribute("text-anchor")) > -1) {
+          label.setAttribute("fill", "#ffffff");
+          label.setAttribute("y", label.getAttribute("y") - 5);
+        }
+      });
+      var divs = container.getElementsByTagName("div");
+      Array.prototype.forEach.call(divs, function (div) {
+        if (div.getAttribute("dir") === "ltr") {
+          $(div).css("height", "60px");
+        }
+      });
+      var svgs = container.getElementsByTagName("svg");
+      Array.prototype.forEach.call(svgs, function (svg) {
+        svg.setAttribute("height", "60");
+      });
+    });
+    chart.draw(dataTable, options);
   }
 
   function init() {
+    util.addVideoClearEvent();
+
     $page_control = $("#page-control");
     $page_back = $("#page-back");
     $page_next = $("#page-next");
-    util.addVideoClearEvent();
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
+    $event_timeline = $("#event-timeline");
+
+    // Check browser support
     if (util.browserSupported()) {
       showGalleryLoadingMsg();
     } else {
       console.warn("Browser not supported.");
       showGalleryNotSupportedMsg();
     }
-    $.getJSON("event/event_metadata.json", function (data) {
-      setDateFilterDropdown(data);
+
+    // Load the Visualization API and the timeline package.
+    google.charts.load("current", {
+      packages: ["timeline"]
+    });
+
+    // Set a callback to run when the Google Visualization API is loaded.
+    google.charts.setOnLoadCallback(function () {
+      // Load event data
+      $.getJSON("event/event_metadata.json", function (data) {
+        setDateFilterDropdown(data);
+      });
+    });
+
+    // Resize the timeline chart when window size changes
+    $(window).resize(function () {
+      drawEventTimeline();
     });
   }
 

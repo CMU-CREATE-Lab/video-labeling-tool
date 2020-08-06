@@ -15,6 +15,7 @@
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="lib/pagination/pagination.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/event.js"></script>
@@ -38,12 +39,17 @@
             <p class="text">
               This page shows the videos that the AI model thinks <span class="custom-text-info-dark-theme">have hazardous smoke emissions</span>.
               The following image indicates the location of each camera view:
-              <a class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;" href="img/pan.png"></a>
+            </p>
+            <a class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;" href="img/pan.png"></a>
+            <p class="text">
+              The timeline below shows the smoke events.
+              The x-axis means the hour of the day.
               <label for="date-filter">To filter the videos, select a date</label>&nbsp;
               <select name="date-filter" id="date-filter" style="font-size: 16px;"></select>&nbsp;
               <label for="view-filter">and a camera view</label>&nbsp;
               <select name="view-filter" id="view-filter" style="font-size: 16px;"></select>
             </p>
+            <div id="event-timeline" class="image"></div>
           </div>
         </div>
         <div class="gallery">
