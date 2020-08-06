@@ -15,7 +15,7 @@
   var $page_control;
   var current_view_id = "0-2";
   var current_date_str = "2019-03-26";
-  var $event_timeline;
+  var current_event_data;
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -126,11 +126,9 @@
 
   function onPagination(data, pagination) {
     if (typeof data !== "undefined" && data.length > 0) {
-      $(window).scrollTop(0);
       updateGallery($gallery_videos);
       updateVideos(data);
     } else {
-      $(window).scrollTop(0);
       showNoGalleryMsg();
     }
     // Handle UI
@@ -255,8 +253,14 @@
     var container = document.getElementById("event-timeline");
     var $container = $(container);
     if (typeof data === "undefined" || data.length == 0) {
-      $container.hide();
-      return false;
+      if (typeof current_event_data === "undefined" || current_event_data.length == 0) {
+        $container.hide();
+        return false;
+      } else {
+        data = current_event_data;
+      }
+    } else {
+      current_event_data = data;
     }
     $container.empty().show(); // need this line to resize properly
     var data_rows = [];
@@ -322,13 +326,11 @@
 
   function init() {
     util.addVideoClearEvent();
-
     $page_control = $("#page-control");
     $page_back = $("#page-back");
     $page_next = $("#page-next");
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
-    $event_timeline = $("#event-timeline");
 
     // Check browser support
     if (util.browserSupported()) {
