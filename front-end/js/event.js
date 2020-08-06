@@ -100,7 +100,7 @@
       return false;
     }
     $page_nav = $("#page-navigator").pagination({
-      dataSource: data_sources,
+      dataSource: data_sources["url"],
       className: "paginationjs-custom",
       pageSize: 16,
       showPageNumbers: false,
@@ -162,13 +162,14 @@
     }
   }
 
-  function setDateFilterDropdown(date_list) {
-    if (date_list.indexOf(current_date_str) == -1) {
+  function setDateFilterDropdown(data) {
+    var key_list = Object.keys(data);
+    if (key_list.indexOf(current_date_str) == -1) {
       current_date_str = undefined;
     }
     var $date_filter = $("#date-filter");
-    for (var i = 0; i < date_list.length; i++) {
-      var k = date_list[i]
+    for (var i = 0; i < key_list.length; i++) {
+      var k = key_list[i]
       var $option;
       if (typeof current_date_str === "undefined") {
         $option = $('<option selected value="' + k + '">' + k + '</option>');
@@ -190,21 +191,21 @@
 
   function onDateChange(desired_date_str) {
     current_date_str = desired_date_str;
-    $.getJSON("event/" + desired_date_str + ".json", function (event_data) {
-      setViewFilterDropdown(event_data)
+    $.getJSON("event/" + desired_date_str + ".json", function (data) {
+      setViewFilterDropdown(data)
     }).fail(function () {
       onPagination();
     });
   }
 
-  function setViewFilterDropdown(event_data) {
-    var event_data_keys = Object.keys(event_data);
-    if (event_data_keys.indexOf(current_view_id) == -1) {
+  function setViewFilterDropdown(data) {
+    var key_list = Object.keys(data);
+    if (key_list.indexOf(current_view_id) == -1) {
       current_view_id = undefined;
     }
     var $view_filter = $("#view-filter").empty();
-    for (var i = 0; i < event_data_keys.length; i++) {
-      var k = event_data_keys[i];
+    for (var i = 0; i < key_list.length; i++) {
+      var k = key_list[i];
       var $option;
       if (typeof current_view_id === "undefined") {
         $option = $('<option selected value="' + k + '">' + k + '</option>');
@@ -219,19 +220,19 @@
       $view_filter.append($option);
     }
     $view_filter.off().on("change", function () {
-      onViewChange($(this).val(), event_data);
+      onViewChange($(this).val(), data);
     });
-    onViewChange(current_view_id, event_data);
+    onViewChange(current_view_id, data);
   }
 
-  function onViewChange(desired_view_id, event_data) {
+  function onViewChange(desired_view_id, data) {
     current_view_id = desired_view_id;
     if (typeof $page_nav !== "undefined") {
       $page_nav.pagination("destroy");
       $page_back.off();
       $page_next.off();
     }
-    setPagination(event_data[desired_view_id]);
+    setPagination(data[desired_view_id]);
   }
 
   function init() {
@@ -247,8 +248,8 @@
       console.warn("Browser not supported.");
       showGalleryNotSupportedMsg();
     }
-    $.getJSON("event/date_list.json", function (date_list) {
-      setDateFilterDropdown(date_list);
+    $.getJSON("event/event_metadata.json", function (data) {
+      setDateFilterDropdown(data);
     });
   }
 
