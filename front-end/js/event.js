@@ -297,7 +297,7 @@
       width: "100%",
       enableInteractivity: false,
       hAxis: {
-        format: "H",
+        format: "h a",
         minValue: copyAndReplaceHMS(data_rows[0][1], 6, 0, 0), // 6 am
         maxValue: copyAndReplaceHMS(data_rows[0][1], 21, 0, 0) // 9 pm
       }
@@ -308,6 +308,8 @@
         if (["middle", "start", "end"].indexOf(label.getAttribute("text-anchor")) > -1) {
           label.setAttribute("fill", "#ffffff");
           label.setAttribute("y", label.getAttribute("y") - 5);
+          label.setAttribute("font-weight", "normal");
+          label.setAttribute("font-family", "'Source Sans Pro', Arial");
         }
       });
       var divs = container.getElementsByTagName("div");
