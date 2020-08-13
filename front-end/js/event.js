@@ -13,7 +13,6 @@
   var $page_back;
   var $page_next;
   var $page_control;
-  var current_view_id = "0-2";
   var current_date_str = "2019-03-26";
   var current_event_data;
 
@@ -72,7 +71,7 @@
   function updateVideos(video_data) {
     // Add videos
     for (var i = 0; i < video_data.length; i++) {
-      var v = video_data[i];
+      var v = video_data[i][0];
       var $item;
       if (typeof video_items[i] === "undefined") {
         $item = createVideo(v);
@@ -191,54 +190,30 @@
   function onDateChange(desired_date_str) {
     current_date_str = desired_date_str;
     $.getJSON("event/" + desired_date_str + ".json", function (data) {
-      setViewFilterDropdown(data)
+      if (typeof $page_nav !== "undefined") {
+        $page_nav.pagination("destroy");
+        $page_back.off();
+        $page_next.off();
+      }
+      setPagination(data["url"]);
+      drawEventTimeline(data["event"])
     }).fail(function () {
       onPagination();
     });
-  }
-
-  function setViewFilterDropdown(data) {
-    var key_list = Object.keys(data);
-    if (key_list.indexOf(current_view_id) == -1) {
-      current_view_id = undefined;
-    }
-    var $view_filter = $("#view-filter").empty();
-    for (var i = 0; i < key_list.length; i++) {
-      var k = key_list[i];
-      var $option;
-      if (typeof current_view_id === "undefined") {
-        $option = $('<option selected value="' + k + '">' + k + '</option>');
-        current_view_id = k;
-      } else {
-        if (k == current_view_id) {
-          $option = $('<option selected value="' + k + '">' + k + '</option>');
-        } else {
-          $option = $('<option value="' + k + '">' + k + '</option>');
-        }
-      }
-      $view_filter.append($option);
-    }
-    $view_filter.off().on("change", function () {
-      onViewChange($(this).val(), data);
-    });
-    onViewChange(current_view_id, data);
-  }
-
-  function onViewChange(desired_view_id, data) {
-    current_view_id = desired_view_id;
-    if (typeof $page_nav !== "undefined") {
-      $page_nav.pagination("destroy");
-      $page_back.off();
-      $page_next.off();
-    }
-    setPagination(data[desired_view_id]["url"]);
-    drawEventTimeline(data[desired_view_id]["event"])
   }
 
   function epochtimeToDate(epochtime) {
     var d = new Date(0);
     d.setUTCSeconds(epochtime);
     return d;
+  }
+
+  function flatternEventData(raw_data) {
+    var data_tmp = []
+    for (var k in raw_data) {
+      data_tmp = data_tmp.concat(raw_data[k]);
+    }
+    return data_tmp;
   }
 
   function copyAndReplaceHMS(date_obj, hour, minute, second) {
