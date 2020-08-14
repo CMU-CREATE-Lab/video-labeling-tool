@@ -87,7 +87,7 @@
   // Create a video label element
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
   // UPDATE: starting from Safari 12, more videos are allowed
-  function createVideo(v) {
+  function createVideo() {
     var $item = $("<a class='flex-column'></a>");
     // "autoplay" is needed for iPhone Safari to work
     // "preload" is ignored by mobile devices
@@ -196,7 +196,7 @@
       month: "2-digit",
       day: "2-digit",
       hour12: false
-    })
+    });
     $($i.get(0)).text(date_str).addClass("custom-text-info-dark-theme");
     if (typeof user_id === "undefined") {
       if (is_admin) {
@@ -254,7 +254,7 @@
       var v = video_data[i];
       var $item;
       if (typeof video_items[i] === "undefined") {
-        $item = createVideo(v);
+        $item = createVideo();
         video_items.push($item);
         $gallery_videos.append($item);
       } else {

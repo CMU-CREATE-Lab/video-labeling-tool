@@ -37,6 +37,11 @@
     updateGallery($gallery_not_supported_text);
   }
 
+  function sec_to_min(secs) {
+    var m = secs / 60;
+    return Math.round(m * 10) / 10;
+  }
+
   // Create a video label element
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
   // UPDATE: starting from Safari 12, more videos are allowed
@@ -48,16 +53,38 @@
     // "playsinline" and "playsInline" prevents playing video fullscreen
     var $vid = $("<video autoplay loop muted playsinline playsInline disableRemotePlayback></video>");
     $item.append($vid);
+    var $control = $("<div class='label-control'></div>");
+    // Add lines for displaying video metadata
+    var n_lines = 3;
+    for (var i = 0; i < n_lines; i++) {
+      $control.append($("<p class='text-small-margin'><i></i></p>"));
+    }
+    $item.append($control);
     return $item;
   }
 
-  function updateItem($item, src_url) {
-    // Update date and time information
+  function updateItem($item, v) {
+    // Update video metadata
+    var $i = $item.children(".label-control").find("i").removeClass();
+    var date_str = (new Date(parseInt(v[3]) * 1000)).toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      hour: "2-digit",
+      minute: "2-digit",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour12: false
+    });
+    $($i.get(0)).text(date_str).addClass("custom-text-info-dark-theme");
+    $($i.get(1)).text("Duration: " + sec_to_min(v[4] - v[3]) + " min").addClass("custom-text-info-dark-theme");
+    $($i.get(2)).text("View ID: " + v[1]).addClass("custom-text-info-dark-theme");
+    // Update video
     var $vid = $item.find("video");
     $vid.one("canplay", function () {
       // Play the video
       util.handleVideoPromise(this, "play");
     });
+    var src_url = v[0];
     // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9 and 10.
     // The current workaround is to make the thumbnail larger.
     if (util.getAndroidVersion() >= 9) {
@@ -71,10 +98,10 @@
   function updateVideos(video_data) {
     // Add videos
     for (var i = 0; i < video_data.length; i++) {
-      var v = video_data[i][0];
+      var v = video_data[i];
       var $item;
       if (typeof video_items[i] === "undefined") {
-        $item = createVideo(v);
+        $item = createVideo();
         video_items.push($item);
         $gallery_videos.append($item);
       } else {
@@ -206,14 +233,6 @@
     var d = new Date(0);
     d.setUTCSeconds(epochtime);
     return d;
-  }
-
-  function flatternEventData(raw_data) {
-    var data_tmp = []
-    for (var k in raw_data) {
-      data_tmp = data_tmp.concat(raw_data[k]);
-    }
-    return data_tmp;
   }
 
   function copyAndReplaceHMS(date_obj, hour, minute, second) {
