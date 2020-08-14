@@ -333,7 +333,6 @@
     $page_next = $("#page-next");
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
-    video_test_dialog = new edaplotjs.VideoTestDialog();
 
     // Check browser support
     if (util.browserSupported()) {
@@ -343,6 +342,11 @@
       showGalleryNotSupportedMsg();
       return;
     }
+
+    video_test_dialog = new edaplotjs.VideoTestDialog();
+    var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
+      tracker_id: util.getGoogleAnalyticsId()
+    });
 
     // Load the Visualization API and the timeline package.
     google.charts.load("current", {
