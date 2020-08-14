@@ -13,7 +13,7 @@
   var $page_back;
   var $page_next;
   var $page_control;
-  var current_date_str = "2019-03-26";
+  var current_date_str = "2019-04-02";
   var current_event_data;
   var video_test_dialog;
   var is_video_autoplay_tested = false;
