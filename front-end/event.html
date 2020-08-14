@@ -9,6 +9,7 @@
   <link href="lib/pagination/pagination.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/frame.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/controls.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="css/widgets.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="css/custom.css" media="screen" rel="stylesheet" type="text/css" />
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <link href='https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700' rel='stylesheet' type='text/css'>
@@ -17,7 +18,10 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   <script src="https://www.gstatic.com/charts/loader.js"></script>
   <script src="lib/pagination/pagination.js"></script>
+  <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
+  <script src="js/GoogleAnalyticsTracker.js"></script>
+  <script src="js/VideoTestDialog.js"></script>
   <script src="js/event.js"></script>
   <script src="js/menu.js"></script>
   <style>
@@ -64,6 +68,10 @@
         </div>
       </div>
     </div>
+  </div>
+  <div id="video-test-dialog" class="custom-dialog-large" title="Autoplay" data-role="none">
+    <p>Video autoplay is disabled. Please enable it.</p>
+    <button id="play-video-button" class="custom-button">Enable video autoplay</button>
   </div>
 </body>
 

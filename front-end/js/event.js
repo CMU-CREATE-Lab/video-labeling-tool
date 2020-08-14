@@ -15,6 +15,8 @@
   var $page_control;
   var current_date_str = "2019-03-26";
   var current_event_data;
+  var video_test_dialog;
+  var is_video_autoplay_tested = false;
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -154,6 +156,10 @@
     if (typeof data !== "undefined" && data.length > 0) {
       updateGallery($gallery_videos);
       updateVideos(data);
+      if (!is_video_autoplay_tested) {
+        video_test_dialog.startVideoPlayTest(1000);
+        is_video_autoplay_tested = true;
+      }
     } else {
       showNoGalleryMsg();
     }
@@ -327,6 +333,7 @@
     $page_next = $("#page-next");
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
+    video_test_dialog = new edaplotjs.VideoTestDialog();
 
     // Check browser support
     if (util.browserSupported()) {
@@ -334,6 +341,7 @@
     } else {
       console.warn("Browser not supported.");
       showGalleryNotSupportedMsg();
+      return;
     }
 
     // Load the Visualization API and the timeline package.
