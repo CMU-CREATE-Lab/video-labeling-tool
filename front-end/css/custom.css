@@ -442,7 +442,6 @@ body,
 .paginationjs.paginationjs-custom .paginationjs-go-input>input[type=text] {
   width: 70px;
   height: 60px;
-  line-height: 60px;
   padding: 0 12px;
   font-size: 18px;
   font-family: 'Open Sans', Helvetica, Arial, sans-serif;
@@ -461,12 +460,6 @@ body,
   align-items: center;
   align-content: center;
   box-sizing: border-box;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 .paginationjs.paginationjs-custom .paginationjs-nav {
