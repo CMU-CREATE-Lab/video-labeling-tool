@@ -236,7 +236,9 @@
   }
 
   function setSmellPghLink(date_str) {
-    var url = "https://smellpgh.org/visualization?share=true&date=" + date_str.split("-").join("") + "&zoom=10&latLng=40.405759,-79.908511&city_id=1";
+    var zoom = util.isMobile() ? "11" : "10";
+    var latlng = "40.405759,-79.908511";
+    var url = "https://smellpgh.org/visualization?share=true&date=" + date_str.split("-").join("") + "&zoom=" + zoom + "&latLng=" + latlng + "&city_id=1";
     $smell_pgh_link.prop("href", url);
   }
 
