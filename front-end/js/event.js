@@ -17,6 +17,7 @@
   var current_event_data;
   var video_test_dialog;
   var is_video_autoplay_tested = false;
+  var $smell_pgh_link;
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -191,9 +192,19 @@
 
   function setDateFilterDropdown(data) {
     var key_list = Object.keys(data);
+
+    // Set current date from the query url
+    var query_paras = util.parseVars(window.location.search);
+    if ("date" in query_paras) {
+      if (key_list.indexOf(query_paras["date"]) > -1) {
+        current_date_str = query_paras["date"];
+      }
+    }
     if (key_list.indexOf(current_date_str) == -1) {
       current_date_str = undefined;
     }
+
+    // Set date dropdown
     var $date_filter = $("#date-filter");
     for (var i = 0; i < key_list.length; i++) {
       var k = key_list[i]
@@ -213,7 +224,20 @@
     $date_filter.off().on("change", function () {
       onDateChange($(this).val());
     });
+
+    // Set to the default date
     onDateChange(current_date_str);
+  }
+
+  function setShareUrl(date_str) {
+    var updated_query_url = "?date=" + date_str;
+    var replaced = window.location.protocol + "//" + window.location.hostname + window.location.pathname + updated_query_url;
+    window.history.replaceState("shareURL", "Title", replaced);
+  }
+
+  function setSmellPghLink(date_str) {
+    var url = "https://smellpgh.org/visualization?share=true&date=" + date_str.split("-").join("") + "&zoom=10&latLng=40.405759,-79.908511&city_id=1";
+    $smell_pgh_link.prop("href", url);
   }
 
   function onDateChange(desired_date_str) {
@@ -225,7 +249,9 @@
         $page_next.off();
       }
       setPagination(data["url"]);
-      drawEventTimeline(data["event"])
+      drawEventTimeline(data["event"]);
+      setSmellPghLink(desired_date_str);
+      setShareUrl(desired_date_str);
     }).fail(function () {
       onPagination();
     });
@@ -329,6 +355,7 @@
     $page_next = $("#page-next");
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
+    $smell_pgh_link = $("#smell-pgh-link");
 
     // Check browser support
     if (util.browserSupported()) {
@@ -339,7 +366,10 @@
       return;
     }
 
+    // Set video testing
     video_test_dialog = new edaplotjs.VideoTestDialog();
+
+    // Set Google Analytics
     var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
       tracker_id: util.getGoogleAnalyticsId()
     });
