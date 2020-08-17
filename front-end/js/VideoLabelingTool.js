@@ -187,7 +187,7 @@
           deferreds.push(deferred);
         }
         var src_url = v["url_root"] + v["url_part"];
-        src_url = util.replaceThumbnailWidth(src_urls); // always use high resolution videos
+        src_url = util.replaceThumbnailWidth(src_url); // always use high resolution videos
         $vid.prop("src", src_url);
         util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
         if ($item.hasClass("force-hidden")) {

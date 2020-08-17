@@ -186,6 +186,7 @@
 
   function updateItem($item, v) {
     // Update date and time information
+    var src_url = v["url_root"] + v["url_part"];
     var fns = v["file_name"].split("-");
     var $i = $item.children(".label-control").find("i").removeClass();
     var date_str = (new Date(parseInt(fns[12]) * 1000)).toLocaleString("en-US", {
@@ -197,7 +198,7 @@
       day: "2-digit",
       hour12: false
     });
-    $($i.get(0)).text(date_str).addClass("custom-text-info-dark-theme");
+    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>").addClass("custom-text-info-dark-theme");
     if (typeof user_id === "undefined") {
       if (is_admin) {
         // Update label information
@@ -237,7 +238,6 @@
       // Play the video
       util.handleVideoPromise(this, "play");
     });
-    var src_url = v["url_root"] + v["url_part"];
     src_url = util.replaceThumbnailWidth(src_url); // always use high resolution videos
     $vid.prop("src", src_url);
     util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise

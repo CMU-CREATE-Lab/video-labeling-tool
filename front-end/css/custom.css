@@ -257,6 +257,23 @@ body,
 
 .gallery a {
   position: relative;
+  cursor: default;
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  -khtml-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
+}
+
+.gallery video {
+  cursor: default;
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  -khtml-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+  user-select: auto;
 }
 
 .gallery a>i {

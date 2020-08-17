@@ -68,6 +68,7 @@
 
   function updateItem($item, v) {
     // Update video metadata
+    var src_url = v[0];
     var $i = $item.children(".label-control").find("i").removeClass();
     var date_str = (new Date(parseInt(v[3]) * 1000)).toLocaleString("en-US", {
       timeZone: "America/New_York",
@@ -78,7 +79,7 @@
       day: "2-digit",
       hour12: false
     });
-    $($i.get(0)).text(date_str).addClass("custom-text-info-dark-theme");
+    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>").addClass("custom-text-info-dark-theme");
     $($i.get(1)).text("Duration: " + sec_to_min(v[4] - v[3]) + " min").addClass("custom-text-info-dark-theme");
     $($i.get(2)).text("View ID: " + v[1]).addClass("custom-text-info-dark-theme");
     // Update video
@@ -87,7 +88,6 @@
       // Play the video
       util.handleVideoPromise(this, "play");
     });
-    var src_url = v[0];
     src_url = util.replaceThumbnailWidth(src_url); // always use high resolution videos
     $vid.prop("src", src_url);
     util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
