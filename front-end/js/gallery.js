@@ -198,7 +198,7 @@
       day: "2-digit",
       hour12: false
     });
-    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>").addClass("custom-text-info-dark-theme");
+    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>");
     if (typeof user_id === "undefined") {
       if (is_admin) {
         // Update label information

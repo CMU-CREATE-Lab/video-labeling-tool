@@ -79,9 +79,14 @@
       day: "2-digit",
       hour12: false
     });
-    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>").addClass("custom-text-info-dark-theme");
-    $($i.get(1)).text("Duration: " + sec_to_min(v[4] - v[3]) + " min").addClass("custom-text-info-dark-theme");
-    $($i.get(2)).text("View ID: " + v[1]).addClass("custom-text-info-dark-theme");
+    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>");
+    $($i.get(1)).text("Duration: " + sec_to_min(v[4] - v[3]) + " min");
+    var $view_id = $($i.get(2)).text("View ID: " + v[1]);
+    if (["0-1", "0-3", "0-5", "0-7", "0-8", "0-11", "0-13"].indexOf(v[1]) > -1) {
+      $view_id.addClass("custom-text-info2-dark-theme");
+    } else {
+      $view_id.addClass("custom-text-info-dark-theme");
+    }
     // Update video
     var $vid = $item.find("video");
     $vid.one("canplay", function () {

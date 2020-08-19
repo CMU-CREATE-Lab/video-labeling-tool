@@ -232,6 +232,10 @@ body,
   color: #ff5e5e !important;
 }
 
+.custom-text-info2-dark-theme {
+  color: #ffb460 !important;
+}
+
 .gallery-no-data-text {
   color: #3be4ff !important;
   text-align: center;
