@@ -14,10 +14,13 @@
   var $page_next;
   var $page_control;
   var current_date_str = "2019-04-02";
+  var current_view_str = "all";
+  var data_urls_for_current_date;
   var current_event_data;
   var video_test_dialog;
   var is_video_autoplay_tested = false;
   var $smell_pgh_link;
+  var event_metadata;
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -125,13 +128,28 @@
     }
   }
 
-  function setPagination(data_sources) {
+  function setPagination(data_sources, desired_view_str) {
     if (typeof data_sources === "undefined") {
       onPagination();
       return false;
     }
+
+    // Filter the urls by view ID
+    var filtered_data_sources = [];
+    if (desired_view_str == "all") {
+      filtered_data_sources = data_sources;
+    } else {
+      for (var i = 0; i < data_sources.length; i++) {
+        var c = data_sources[i];
+        if (c[1] == desired_view_str) {
+          filtered_data_sources.push(c);
+        }
+      }
+    }
+
+    // Set the pagination UI
     $page_nav = $("#page-navigator").pagination({
-      dataSource: data_sources,
+      dataSource: filtered_data_sources,
       className: "paginationjs-custom",
       pageSize: 16,
       showPageNumbers: false,
@@ -144,11 +162,11 @@
         onPagination(data, pagination);
       }
     });
-    $page_back.on("click", function () {
+    $page_back.off().on("click", function () {
       showGalleryLoadingMsg();
       $page_nav.pagination("previous");
     });
-    $page_next.on("click", function () {
+    $page_next.off().on("click", function () {
       showGalleryLoadingMsg();
       $page_nav.pagination("next");
     });
@@ -234,8 +252,41 @@
     onDateChange(current_date_str);
   }
 
-  function setShareUrl(date_str) {
-    var updated_query_url = "?date=" + date_str;
+  function setViewFilterDropdown(data) {
+    // Set current date from the query url
+    var query_paras = util.parseVars(window.location.search);
+    if ("view" in query_paras) {
+      if (data.indexOf(query_paras["view"]) > -1) {
+        current_view_str = query_paras["view"];
+      }
+    }
+    if (data.indexOf(current_view_str) == -1) {
+      current_view_str = "all";
+    }
+
+    // Set date dropdown
+    var $view_filter = $("#view-filter").empty();
+    data.push("all");
+    for (var i = 0; i < data.length; i++) {
+      var k = data[i]
+      var $option;
+      if (k == current_view_str) {
+        $option = $('<option selected value="' + k + '">' + k + '</option>');
+      } else {
+        $option = $('<option value="' + k + '">' + k + '</option>');
+      }
+      $view_filter.append($option);
+    }
+    $view_filter.off().on("change", function () {
+      onViewChange($(this).val());
+    });
+
+    // Set to the default date
+    onViewChange(current_view_str);
+  }
+
+  function setShareUrl(date_str, view_str) {
+    var updated_query_url = "?date=" + date_str + "&view=" + view_str;
     var replaced = window.location.protocol + "//" + window.location.hostname + window.location.pathname + updated_query_url;
     window.history.replaceState("shareURL", "Title", replaced);
   }
@@ -252,16 +303,22 @@
     $.getJSON("event/" + desired_date_str + ".json", function (data) {
       if (typeof $page_nav !== "undefined") {
         $page_nav.pagination("destroy");
-        $page_back.off();
-        $page_next.off();
       }
-      setPagination(data["url"]);
+      setViewFilterDropdown(event_metadata[desired_date_str]["view_list"]);
+      setPagination(data["url"], current_view_str);
+      data_urls_for_current_date = data["url"];
       drawEventTimeline(data["event"]);
       setSmellPghLink(desired_date_str);
-      setShareUrl(desired_date_str);
+      setShareUrl(desired_date_str, current_view_str);
     }).fail(function () {
       onPagination();
     });
+  }
+
+  function onViewChange(desired_view_str) {
+    current_view_str = desired_view_str;
+    setPagination(data_urls_for_current_date, desired_view_str);
+    setShareUrl(current_date_str, desired_view_str);
   }
 
   function epochtimeToDate(epochtime) {
@@ -390,6 +447,7 @@
     google.charts.setOnLoadCallback(function () {
       // Load event data
       $.getJSON("event/event_metadata.json", function (data) {
+        event_metadata = data;
         setDateFilterDropdown(data);
       });
     });
