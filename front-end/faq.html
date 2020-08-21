@@ -42,14 +42,15 @@
             <a class="jump" name="q1"></a>
             <p class="text no-bottom-margin add-top-margin">
               <span>
-                Q1: What are you planning to do with all these labeled data?
+                Q1: How do you use all these labeled data?
               </span>
             </p>
             <hr>
             <ul>
               <li>
-                We will use the data to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train a deep neural network for detecting smoke emissions</a>.
-                As we gather more data, the AI system will begin to detect smoke, and our team will design visualization for industrial pollution events.
+                We use the data to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train an AI model for recognizing smoke emissions</a>.
+                The model is a deep neural network that can learn how to classify videos into two categories: having smoke or no smoke.
+                Then, we use the model to recognize smoke for many dates and camera views (refer to our <a href="event.html" target="_blank">event page</a>).
               </li>
             </ul>
             <a class="jump" name="q2"></a>
@@ -68,7 +69,7 @@
             <a class="jump" name="q3"></a>
             <p class="text no-bottom-margin add-top-margin">
               <span>
-                Q3: Why is it important to detect and visualize smoke emissions?
+                Q3: Why is it important to recognize and visualize smoke emissions?
               </span>
             </p>
             <hr>
@@ -197,7 +198,7 @@
             <ul>
               <li>
                 Smoke emissions in nighttime videos (captured by commercial digital cameras) are tough for the computer to recognize due to insufficient light.
-                We want to focus on training the computer to detect daytime smoke emissions first.
+                We want to focus on training the computer to recognize daytime smoke emissions first.
               </li>
             </ul>
             <a class="jump" name="q13"></a>
@@ -211,6 +212,34 @@
               <li>
                 We worked with the <a href="https://breatheproject.org/about/#collaborative" target="_blank">Breathe Collaborative</a> in engaging citizens to label smoke emissions.
                 We thank the <a href="https://cleanair.org/" target="_blank">Clean Air Council</a> and <a href="https://gasp-pgh.org/" target="_blank">GASP (Group Against Smog and Pollution)</a> in organizing workshops for labeling smoke events with us.
+              </li>
+            </ul>
+            <a class="jump" name="q14"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q14: Why are some dates and camera views missing?
+              </span>
+            </p>
+            <hr>
+            <ul>
+              <li>
+                Due to unexpected situations (e.g., severe weather, spider, system malfunction), the camera network can be down at some dates, or some views may be unclear.
+                We removed these dates and views in our visualization.
+              </li>
+            </ul>
+            <a class="jump" name="q15"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q15: Why do some videos on the event page have no smoke?
+              </span>
+            </p>
+            <hr>
+            <ul>
+              <li>
+                The AI model can make mistakes.
+                For example, steam and fast-moving cloud shadow may be recognized as industrial smoke emissions.
+                One way to mitigate the problem is to train the model using more annotated videos.
+                We would greatly appreciate it if you could <a href="label.html" target="_blank">help us label more videos</a>.
               </li>
             </ul>
           </div>

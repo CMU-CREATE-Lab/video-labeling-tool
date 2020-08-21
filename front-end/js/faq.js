@@ -16,7 +16,10 @@
       $q.next().addClass("custom-text-info-dark-theme");
       // Scroll to the question
       if (i == 0) {
-        window.scrollTo(0, $q.offset().top);
+        var p = $q.offset();
+        if (typeof p !== "undefined") {
+          window.scrollTo(0, p.top);
+        }
       }
     }
   }
