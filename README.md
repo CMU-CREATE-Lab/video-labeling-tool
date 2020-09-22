@@ -272,8 +272,8 @@ sudo systemctl status video-labeling-tool
 sudo systemctl restart video-labeling-tool
 
 # Stop and disable the service
-sudo systemctl disable video-labeling-tool
 sudo systemctl stop video-labeling-tool
+sudo systemctl disable video-labeling-tool
 ```
 Check if the service work.
 ```sh
