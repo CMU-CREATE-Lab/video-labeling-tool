@@ -14,9 +14,9 @@
   var $page_next;
   var $page_control;
   var current_date_str = "2019-04-02";
+  var current_camera_str = "0";
   var current_view_str = "all";
-  var data_urls_for_current_date;
-  var current_event_data;
+  var data_for_current_date;
   var video_test_dialog;
   var is_video_autoplay_tested = false;
   var $smell_pgh_link;
@@ -137,14 +137,11 @@
     // Filter the urls by view ID
     var filtered_data_sources = [];
     if (desired_view_str == "all") {
-      filtered_data_sources = data_sources;
-    } else {
-      for (var i = 0; i < data_sources.length; i++) {
-        var c = data_sources[i];
-        if (c[1] == desired_view_str) {
-          filtered_data_sources.push(c);
-        }
+      for (var k in data_sources) {
+        filtered_data_sources = filtered_data_sources.concat(data_sources[k]["url"])
       }
+    } else {
+      filtered_data_sources = data_sources[desired_view_str]["url"];
     }
 
     // Set the pagination UI
@@ -304,12 +301,11 @@
       if (typeof $page_nav !== "undefined") {
         $page_nav.pagination("destroy");
       }
-      setViewFilterDropdown(event_metadata[desired_date_str]["view_list"]);
-      setPagination(data["url"], current_view_str);
-      data_urls_for_current_date = data["url"];
-      drawEventTimeline(data["event"]);
+      data_for_current_date = data[current_camera_str];
+      setViewFilterDropdown(event_metadata[desired_date_str]["cam_list"][current_camera_str]["view_list"]);
+      //setPagination(data[current_camera_str]["url"], current_view_str);
       setSmellPghLink(desired_date_str);
-      setShareUrl(desired_date_str, current_view_str);
+      //setShareUrl(desired_date_str, current_view_str);
     }).fail(function () {
       onPagination();
     });
@@ -317,8 +313,13 @@
 
   function onViewChange(desired_view_str) {
     current_view_str = desired_view_str;
-    setPagination(data_urls_for_current_date, desired_view_str);
+    setPagination(data_for_current_date["url"], desired_view_str);
     setShareUrl(current_date_str, desired_view_str);
+    if (desired_view_str == "all") {
+      drawEventTimeline(data_for_current_date["event"]);
+    } else {
+      drawEventTimeline(data_for_current_date["url"][desired_view_str]["event"]);
+    }
   }
 
   function epochtimeToDate(epochtime) {
@@ -339,14 +340,8 @@
     var container = document.getElementById("event-timeline");
     var $container = $(container);
     if (typeof data === "undefined" || data.length == 0) {
-      if (typeof current_event_data === "undefined" || current_event_data.length == 0) {
-        $container.hide();
-        return false;
-      } else {
-        data = current_event_data;
-      }
-    } else {
-      current_event_data = data;
+      $container.hide();
+      return false;
     }
     $container.empty().show(); // need this line to resize properly
     var data_rows = [];
