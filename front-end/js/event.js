@@ -20,7 +20,7 @@
   var video_test_dialog;
   var is_video_autoplay_tested = false;
   var $smell_pgh_link;
-  var event_metadata;
+  var $camera_image;
 
   function updateGallery($new_content) {
     $gallery_videos.detach(); // detatch prevents the click event from being removed
@@ -43,9 +43,25 @@
     updateGallery($gallery_not_supported_text);
   }
 
-  function sec_to_min(secs) {
+  function secToMin(secs) {
     var m = secs / 60;
     return Math.round(m * 10) / 10;
+  }
+
+  function changeCameraImage(camera_str) {
+    if ($camera_image.hasClass("cam-0-image")) {
+      $camera_image.removeClass("cam-0-image");
+    }
+    if ($camera_image.hasClass("cam-2-image")) {
+      $camera_image.removeClass("cam-2-image");
+    }
+    if (camera_str == "0") {
+      $camera_image.addClass("cam-0-image");
+      $camera_image.attr("href", "img/cam_0.png");
+    } else if (camera_str == "2") {
+      $camera_image.addClass("cam-2-image");
+      $camera_image.attr("href", "img/cam_2.png");
+    }
   }
 
   // Create a video label element
@@ -82,10 +98,10 @@
       day: "2-digit",
       hour12: false
     });
-    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>");
-    $($i.get(1)).text("Duration: " + sec_to_min(v[4] - v[3]) + " min");
+    $($i.get(0)).html("<a target='_blank' href='" + util.replaceThumbnailWidth(src_url) + "'>" + date_str + "</a>");
+    $($i.get(1)).text("Duration: " + secToMin(v[4] - v[3]) + " min");
     var $view_id = $($i.get(2)).text("View ID: " + v[1]);
-    if (["0-1", "0-3", "0-5", "0-7", "0-8", "0-11", "0-13"].indexOf(v[1]) > -1) {
+    if (["0-1", "0-3", "0-5", "0-7", "0-8", "0-11", "0-13", "2-2", "2-3"].indexOf(v[1]) > -1) {
       $view_id.addClass("custom-text-info2-dark-theme");
     } else {
       $view_id.addClass("custom-text-info-dark-theme");
@@ -138,8 +154,12 @@
     var filtered_data_sources = [];
     if (desired_view_str == "all") {
       for (var k in data_sources) {
-        filtered_data_sources = filtered_data_sources.concat(data_sources[k]["url"])
+        filtered_data_sources = filtered_data_sources.concat(data_sources[k]["url"]);
       }
+      // Sort by starting epochtime
+      filtered_data_sources.sort(function (a, b) {
+        return a[3] - b[3];
+      });
     } else {
       filtered_data_sources = data_sources[desired_view_str]["url"];
     }
@@ -210,6 +230,19 @@
     }
   }
 
+  function setShareUrl(date_str, camera_str, view_str) {
+    var updated_query_url = "?date=" + date_str + "&camera=" + camera_str + "&view=" + view_str;
+    var replaced = window.location.protocol + "//" + window.location.hostname + window.location.pathname + updated_query_url;
+    window.history.replaceState("shareURL", "Title", replaced);
+  }
+
+  function setSmellPghLink(date_str) {
+    var zoom = util.isMobile() ? "11" : "10";
+    var latlng = "40.405759,-79.908511";
+    var url = "https://smellpgh.org/visualization?share=true&date=" + date_str.split("-").join("") + "&zoom=" + zoom + "&latLng=" + latlng + "&city_id=1";
+    $smell_pgh_link.prop("href", url);
+  }
+
   function setDateFilterDropdown(data) {
     var key_list = Object.keys(data);
 
@@ -221,23 +254,18 @@
       }
     }
     if (key_list.indexOf(current_date_str) == -1) {
-      current_date_str = undefined;
+      current_date_str = key_list[0];
     }
 
     // Set date dropdown
     var $date_filter = $("#date-filter");
     for (var i = 0; i < key_list.length; i++) {
-      var k = key_list[i]
+      var k = key_list[i];
       var $option;
-      if (typeof current_date_str === "undefined") {
+      if (k == current_date_str) {
         $option = $('<option selected value="' + k + '">' + k + '</option>');
-        current_date_str = k;
       } else {
-        if (k == current_date_str) {
-          $option = $('<option selected value="' + k + '">' + k + '</option>');
-        } else {
-          $option = $('<option value="' + k + '">' + k + '</option>');
-        }
+        $option = $('<option value="' + k + '">' + k + '</option>');
       }
       $date_filter.append($option);
     }
@@ -249,23 +277,79 @@
     onDateChange(current_date_str);
   }
 
+  function onDateChange(desired_date_str) {
+    current_date_str = desired_date_str;
+    $.getJSON("event/" + desired_date_str + ".json", function (data) {
+      if (typeof $page_nav !== "undefined") {
+        $page_nav.pagination("destroy");
+      }
+      setSmellPghLink(desired_date_str);
+      data_for_current_date = data;
+      setCameraFilterDropdown(data_for_current_date);
+    }).fail(function () {
+      onPagination();
+    });
+  }
+
+  function setCameraFilterDropdown(data) {
+    var key_list = Object.keys(data);
+
+    // Set current camera from the query url
+    var query_paras = util.parseVars(window.location.search);
+    if ("camera" in query_paras) {
+      if (key_list.indexOf(query_paras["camera"]) > -1) {
+        current_camera_str = query_paras["camera"];
+      }
+    }
+    if (key_list.indexOf(current_camera_str) == -1) {
+      current_camera_str = key_list[0];
+    }
+
+    // Set camera dropdown
+    var $camera_filter = $("#camera-filter").empty();
+    for (var i = 0; i < key_list.length; i++) {
+      var k = key_list[i];
+      var $option;
+      if (k == current_camera_str) {
+        $option = $('<option selected value="' + k + '">' + k + '</option>');
+      } else {
+        $option = $('<option value="' + k + '">' + k + '</option>');
+      }
+      $camera_filter.append($option);
+    }
+    $camera_filter.off().on("change", function () {
+      onCameraChange($(this).val());
+    });
+
+    // Set to the default camera
+    onCameraChange(current_camera_str);
+  }
+
+  function onCameraChange(desired_camera_str) {
+    current_camera_str = desired_camera_str;
+    changeCameraImage(desired_camera_str);
+    setViewFilterDropdown(data_for_current_date[desired_camera_str]["url"]);
+  }
+
   function setViewFilterDropdown(data) {
-    // Set current date from the query url
+    var key_list = Object.keys(data);
+
+    // Set current view from the query url
     var query_paras = util.parseVars(window.location.search);
     if ("view" in query_paras) {
-      if (data.indexOf(query_paras["view"]) > -1) {
+      if (key_list.indexOf(query_paras["view"]) > -1) {
         current_view_str = query_paras["view"];
       }
     }
-    if (data.indexOf(current_view_str) == -1) {
+    if (key_list.indexOf(current_view_str) == -1) {
       current_view_str = "all";
     }
 
-    // Set date dropdown
+    // Set view dropdown
     var $view_filter = $("#view-filter").empty();
-    data.push("all");
-    for (var i = 0; i < data.length; i++) {
-      var k = data[i]
+    key_list.push("all");
+    for (var i = 0; i < key_list.length; i++) {
+      var k = key_list[i];
       var $option;
       if (k == current_view_str) {
         $option = $('<option selected value="' + k + '">' + k + '</option>');
@@ -278,47 +362,18 @@
       onViewChange($(this).val());
     });
 
-    // Set to the default date
+    // Set to the default view
     onViewChange(current_view_str);
-  }
-
-  function setShareUrl(date_str, view_str) {
-    var updated_query_url = "?date=" + date_str + "&view=" + view_str;
-    var replaced = window.location.protocol + "//" + window.location.hostname + window.location.pathname + updated_query_url;
-    window.history.replaceState("shareURL", "Title", replaced);
-  }
-
-  function setSmellPghLink(date_str) {
-    var zoom = util.isMobile() ? "11" : "10";
-    var latlng = "40.405759,-79.908511";
-    var url = "https://smellpgh.org/visualization?share=true&date=" + date_str.split("-").join("") + "&zoom=" + zoom + "&latLng=" + latlng + "&city_id=1";
-    $smell_pgh_link.prop("href", url);
-  }
-
-  function onDateChange(desired_date_str) {
-    current_date_str = desired_date_str;
-    $.getJSON("event/" + desired_date_str + ".json", function (data) {
-      if (typeof $page_nav !== "undefined") {
-        $page_nav.pagination("destroy");
-      }
-      data_for_current_date = data[current_camera_str];
-      setViewFilterDropdown(event_metadata[desired_date_str]["cam_list"][current_camera_str]["view_list"]);
-      //setPagination(data[current_camera_str]["url"], current_view_str);
-      setSmellPghLink(desired_date_str);
-      //setShareUrl(desired_date_str, current_view_str);
-    }).fail(function () {
-      onPagination();
-    });
   }
 
   function onViewChange(desired_view_str) {
     current_view_str = desired_view_str;
-    setPagination(data_for_current_date["url"], desired_view_str);
-    setShareUrl(current_date_str, desired_view_str);
+    setPagination(data_for_current_date[current_camera_str]["url"], desired_view_str);
+    setShareUrl(current_date_str, current_camera_str, desired_view_str);
     if (desired_view_str == "all") {
-      drawEventTimeline(data_for_current_date["event"]);
+      drawEventTimeline(data_for_current_date[current_camera_str]["event"]);
     } else {
-      drawEventTimeline(data_for_current_date["url"][desired_view_str]["event"]);
+      drawEventTimeline(data_for_current_date[current_camera_str]["url"][desired_view_str]["event"]);
     }
   }
 
@@ -348,6 +403,7 @@
     for (var i = 0; i < data.length; i++) {
       data_rows.push(["Event", epochtimeToDate(data[i][0]), epochtimeToDate(data[i][1])]);
     }
+
     var chart = new google.visualization.Timeline(container);
     var dataTable = new google.visualization.DataTable();
     dataTable.addColumn({
@@ -415,6 +471,7 @@
     $gallery = $(".gallery");
     $gallery_videos = $(".gallery-videos");
     $smell_pgh_link = $("#smell-pgh-link");
+    $camera_image = $("#camera-image");
 
     // Check browser support
     if (util.browserSupported()) {
@@ -442,7 +499,6 @@
     google.charts.setOnLoadCallback(function () {
       // Load event data
       $.getJSON("event/event_metadata.json", function (data) {
-        event_metadata = data;
         setDateFilterDropdown(data);
       });
     });

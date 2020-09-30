@@ -44,14 +44,17 @@
               This page shows videos that the Artificial Intelligence model thinks <span class="custom-text-info-dark-theme">have hazardous smoke emissions</span>.
               The following image shows the camera view ID and location.
             </p>
-            <a class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;" href="img/pan.png"></a>
+            <a class="image adaptive-image" id="camera-image" href="img/cam_0.png"></a>
             <p class="text">
               The timeline below shows smoke events (<a href="faq.html#q14&q15&q16" target="_blank">learn more</a>), where the x-axis means hour of day.
               To show videos, select a date
               <select name="date-filter" id="date-filter" style="font-size: 16px;"></select>
               and compare the events with <a href="" id="smell-pgh-link" target="_blank">Smell Pittsburgh</a>.
-              Also, select a camera view ID to filter videos:
+              Also, select a camera ID
+              <select name="camera-filter" id="camera-filter" style="font-size: 16px;"></select>
+              and view ID
               <select name="view-filter" id="view-filter" style="font-size: 16px;"></select>
+              to filter videos.
             </p>
             <div id="event-timeline" class="image"></div>
           </div>

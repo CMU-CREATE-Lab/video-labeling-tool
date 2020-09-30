@@ -476,6 +476,16 @@ body,
   text-align: center;
 }
 
+.cam-0-image {
+  background-image: url("../img/cam_0.png");
+  min-height: 130px;
+}
+
+.cam-2-image {
+  background-image: url("../img/cam_2.png");
+  min-height: 180px;
+}
+
 @media screen and (min-width: 700px) {
   .gallery a {
     flex: 1 0 25% !important;

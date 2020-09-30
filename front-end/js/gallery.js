@@ -217,7 +217,7 @@
         var d = fns[2] + "-" + fns[3] + "-" + fns[4]; // date
         var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
         var $a = $item.find("a").removeClass();
-        $($a.get(0)).prop("href", href);
+        $($i.get(4)).prop("href", href);
         // Save data to DOM
         $item.find("select").data("v", v).val("default");
         $item.find("button").data("v", v);
