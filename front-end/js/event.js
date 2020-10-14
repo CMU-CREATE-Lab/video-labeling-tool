@@ -77,7 +77,7 @@
     $item.append($vid);
     var $control = $("<div class='label-control'></div>");
     // Add lines for displaying video metadata
-    var n_lines = 3;
+    var n_lines = 4;
     for (var i = 0; i < n_lines; i++) {
       $control.append($("<p class='text-small-margin'><i></i></p>"));
     }
@@ -106,6 +106,15 @@
     } else {
       $view_id.addClass("custom-text-info-dark-theme");
     }
+    var q = util.parseVars(src_url);
+    var r_split = q["root"].split("/");
+    var s = r_split[5]; // camera name
+    var d = r_split[6].split(".")[0]; // date
+    var b = q["boundsLTRB"]; // bounds
+    var t = parseInt(q["startFrame"]) / parseInt(q["fps"]); // starting time
+    t = Math.round(t * 1000) / 1000
+    var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
+    $($i.get(3)).html("<a target='_blank' href='" + href + "'>Link to Viewer</a>");
     // Update video
     var $vid = $item.find("video");
     $vid.one("canplay", function () {

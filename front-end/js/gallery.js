@@ -108,7 +108,7 @@
         $control.append($label_state_researcher);
         var $label_state_citizen = $("<p class='text-small-margin'><i></i></p>");
         $control.append($label_state_citizen);
-        var $link_to_viewer = $("<p class='text-small-margin'><a target='_blank'>Link to Viewer</a></p>");
+        var $link_to_viewer = $("<p class='text-small-margin'><i></i></p>");
         $control.append($link_to_viewer);
         if (is_researcher) {
           // Add the dropdown select button
@@ -216,8 +216,8 @@
         var s = camera_id_to_name[fns[0]] // camera name
         var d = fns[2] + "-" + fns[3] + "-" + fns[4]; // date
         var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
-        var $a = $item.find("a").removeClass();
-        $($i.get(4)).prop("href", href);
+        $item.find("a").removeClass();
+        $($i.get(4)).html("<a target='_blank' href='" + href + "'>Link to Viewer</a>");
         // Save data to DOM
         $item.find("select").data("v", v).val("default");
         $item.find("button").data("v", v);
