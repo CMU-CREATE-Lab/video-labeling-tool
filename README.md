@@ -28,7 +28,7 @@ This tool is tested and worked on:
 - [Install MySQL](#install-mysql)
 - [Setup back-end](#setup-back-end)
 - [Prepare gold standards for quality check](#prepare-gold-standards)
-- [Dump and import MySQL database](#dump-and-import-mysql)
+- [Dump, import, and backup MySQL database](#dump-and-import-mysql)
 - [Deploy back-end using uwsgi](#deploy-back-end-using-uwsgi)
 - [Connect uwsgi to apache](#connect-uwsgi-to-apache)
 - [Setup front-end on apache](#setup-front-end-on-apache)
@@ -200,7 +200,7 @@ If you found that some videos are not suitable for labeling (e.g., due to incorr
 python set_client_type.py [video_url]
 ```
 
-# <a name="dump-and-import-mysql"></a>Dump and import MySQL database
+# <a name="dump-and-import-mysql"></a>Dump, import, and backup MySQL database
 This section assumes that you want to dump the production database to a file and import it to the development database. First, SSH to the production server and dump the database to the /tmp/ directory.
 ```sh
 ssh [USER_NAME_PRODUCTION]@[SERVER_ADDRESS_PRODUCTION]
@@ -223,7 +223,24 @@ create database video_labeling_tool_development;
 exit
 sudo mysql -u root -p video_labeling_tool_development </tmp/video_labeling_tool_production.out
 ```
+We provide a script to backup the database:
+```sh
+# For the production database
+sh video-labeling-tool/back-end/www/backup_db.sh production
 
+# For the development database
+sh video-labeling-tool/back-end/www/backup_db.sh development
+```
+You can also use crontab to backup the database automatically:
+```sh
+sudo crontab -e
+
+# Add the following line for the production database
+0 0 * * * cd /var/www/smoke-detection/video-labeling-tool/back-end/data/db_backup; sh ../../www/backup_db.sh production
+
+# Add the following line for the development database
+0 0 * * * cd /var/www/smoke-detection/video-labeling-tool/back-end/data/db_backup; sh ../../www/backup_db.sh development
+```
 # <a name="deploy-back-end-using-uwsgi"></a>Deploy back-end using uwsgi
 Install [uwsgi](https://uwsgi-docs.readthedocs.io/en/latest/) using conda.
 ```sh
