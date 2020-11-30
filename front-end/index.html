@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Smoke Hunting</title>
+  <title>Project RISE</title>
   <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
@@ -20,56 +20,61 @@
   <script src="js/GoogleAnalyticsTracker.js"></script>
   <script src="js/VideoTestDialog.js"></script>
   <script src="js/index.js"></script>
+  <script src="js/menu.js"></script>
+  <style>
+    .menu-index {
+      color: rgb(255, 255, 255) !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="menu-container">
-    <div class="menu">
-      <div class="menu-table flex-row-space-between">
-        <div class="logo flex-row-center">
-          <a href="index.html">Smoke Hunting</a>
-        </div>
-        <a class="menu-button" tabindex="0" href="javascript:void(0)">
-          <img src="img/menu.png">
-        </a>
-        <div class="menu-items flex-row-center flex-item">
-          <a href="index.html" class="menu-highlight">Overview</a>
-          <a href="learn.html">Learn</a>
-          <a href="label.html">Label</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="faq.html">FAQ</a>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="menu-container"></div>
   <div class="content-container">
     <div class="content">
       <div class="content-table flex-column">
         <div class="flex-row">
           <div class="flex-item flex-column">
+            <a class="image adaptive-image cam-0-image" href="img/cam_0.png"></a>
             <p class="text">
-              The <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a> aims to train an Artificial Intelligence system to detect smoke automatically, and we need volunteers to help <span class="custom-text-info-dark-theme">label smoke emissions</span>.
-              So far, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> out of <span class="num-all-videos-text">[...]</span> videos are fully labeled</span>.
+              Project <span class="custom-text-info-dark-theme">RISE</span>,
+              initiated by the <a href="https://cmucreatelab.org/" target="_bank">CMU CREATE Lab</a>,
+              aims to train an Artificial Intelligence model to <span class="custom-text-info-dark-theme">R</span>ecognize <span class="custom-text-info-dark-theme">I</span>ndustrial <span class="custom-text-info-dark-theme">S</span>moke <span class="custom-text-info-dark-theme">E</span>missions,
+              and we need volunteers to help <span class="custom-text-info-dark-theme">label smoke emissions</span>.
+              So far, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span></span> videos are fully labeled.
               We would greatly appreciate your participation in this community-powered AI research!
-            </p>
-            <div class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
-            <p class="text add-bottom-margin">
-              The system supports Android 7+, iOS 11+, and modern desktop browsers.
-              Please let us know which aspects are working well or could be improved via our <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOntuKXuZiQy2OxYvjYByAKkK44xEgBHtj-K_AFHCZUxda9A/viewform?usp=sf_link" target="_blank">feedback form</a>!
-              For the project goals, please refer to <a href="faq.html#q1&q2&q3" target="_blank">the highlighted FAQs</a>.
-              For technical details, please refer to <a href="faq.html#q4&q5&q6" target="_blank">another set of FAQs</a>.
-              We appreciate your support!
             </p>
             <div class="control-group">
               <a class="custom-button-flat large stretch-on-mobile" href="learn.html"><img src="img/book.png"><span>Learn More</span></a>
               <a class="custom-button-flat large stretch-on-mobile" href="label.html"><img src="img/play.png"><span>Start Labeling</span></a>
             </div>
+            <p class="text">
+              Our goal is to invite citizens in creating <span class="custom-text-info-dark-theme">data-driven evidence</span> that shows the pollution source (<a href="event.html">using the smoke emissions found by the AI model</a>) and its impact on the community (<a target="_blank" href="https://smellpgh.org/visualization">using Smell Pittsburgh</a>).
+              We hope that this evidence can facilitate air quality advocacy in Pittsburgh and also other regions.
+            </p>
+            <p class="text">
+              The system supports Android 7+, iOS 11+, and modern desktop browsers.
+              Please let us know which aspects are working well or could be improved via our <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOntuKXuZiQy2OxYvjYByAKkK44xEgBHtj-K_AFHCZUxda9A/viewform?usp=sf_link" target="_blank">feedback form</a>!
+              More information about this project can be found in <a href="faq.html#q1&q2&q3" target="_blank">the highlighted FAQs</a>.
+              For technical details, please refer to <a href="faq.html#q4&q5&q6" target="_blank">another set of FAQs</a>.
+              We appreciate your support!
+            </p>
+            <h3 class="add-top-margin">Progress Update (Aug 2020)</h3>
+            <hr>
+            <p class="text">
+              We have used the AI model to process some dates to <a href="event.html">identify smoke emissions</a>.
+              Please help us improve this tool via our <a href="https://docs.google.com/forms/d/e/1FAIpQLSeOntuKXuZiQy2OxYvjYByAKkK44xEgBHtj-K_AFHCZUxda9A/viewform?usp=sf_link" target="_blank">feedback form</a>!
+              We would greatly appreciate it if you could <span class="custom-text-info-dark-theme">hep us label more data</span>, as the AI model can become better with more annotated videos.
+              Next, we will process more dates and improve the visualization.
+            </p>
             <h3 class="add-top-margin">Progress Update (May 2020)</h3>
             <hr>
             <p class="text">
-              We have released the <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">dataset, model</a>, and <a href="https://arxiv.org/abs/2005.06111" target="_blank">technical report</a> for recognizing industrial smoke emissions.
+              We have released the <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">dataset/model</a>, and <a href="https://arxiv.org/abs/2005.06111" target="_blank">technical report</a> for recognizing industrial smoke emissions.
               Many thanks to our volunteers!
-              For the next step, we will use the model to analyze and visualize air pollution events in Pittsburgh.
+              For the next step, we will use the AI model to analyze and visualize air pollution events in Pittsburgh.
             </p>
             <a class="image" href="img/viz.png" target="_blank"><img src="img/viz.png"></a>
             <p class="text">

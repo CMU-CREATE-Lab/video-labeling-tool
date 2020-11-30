@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Smoke Hunting</title>
+  <title>Project RISE</title>
   <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
@@ -18,58 +18,19 @@
   <script src="js/widgets.js"></script>
   <script src="js/Util.js"></script>
   <script src="js/GoogleAnalyticsTracker.js"></script>
-  <script>
-    (function () {
-      "use strict";
-      var util = new edaplotjs.Util();
-
-      function handleHashChange() {
-        var hash = window.location.hash.replace('#', '');
-        var q = hash.split("&");
-        // Remove all highlights
-        var $q_all = $("a.jump").next();
-        $q_all.find("span").removeClass("custom-text-info-dark-theme");
-        $q_all.next().removeClass("custom-text-info-dark-theme")
-        // Highlight the selected questions
-        for (var i = 0; i < q.length; i++) {
-          var $q = $("a[name='" + q[i] + "']").next();
-          $q.find("span").addClass("custom-text-info-dark-theme");
-          $q.next().addClass("custom-text-info-dark-theme");
-        }
-      }
-
-      function init() {
-        var ga_tracker = new edaplotjs.GoogleAnalyticsTracker({
-          tracker_id: util.getGoogleAnalyticsId()
-        });
-        window.addEventListener("hashchange", handleHashChange, false);
-        handleHashChange();
-      }
-      $(init);
-    })();
-  </script>
+  <script src="js/faq.js"></script>
+  <script src="js/menu.js"></script>
+  <style>
+    .menu-faq {
+      color: rgb(255, 255, 255) !important;
+      opacity: 1 !important;
+      font-weight: 700 !important;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="menu-container">
-    <div class="menu">
-      <div class="menu-table flex-row-space-between">
-        <div class="logo flex-row-center">
-          <a href="index.html">Smoke Hunting</a>
-        </div>
-        <a class="menu-button" tabindex="0" href="javascript:void(0)">
-          <img src="img/menu.png">
-        </a>
-        <div class="menu-items flex-row-center flex-item">
-          <a href="index.html">Overview</a>
-          <a href="learn.html">Learn</a>
-          <a href="label.html">Label</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="faq.html" class="menu-highlight">FAQ</a>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="menu-container"></div>
   <div class="content-container">
     <div class="content">
       <div class="content-table flex-column">
@@ -81,14 +42,15 @@
             <a class="jump" name="q1"></a>
             <p class="text no-bottom-margin add-top-margin">
               <span>
-                Q1: What are you planning to do with all these labeled data?
+                Q1: How do you use all these labeled data?
               </span>
             </p>
             <hr>
             <ul>
               <li>
-                We will use the data to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train a deep neural network for detecting smoke emissions</a>.
-                As we gather more data, the AI system will begin to detect smoke, and our team will design visualization for industrial pollution events.
+                We use the data to <a href="https://github.com/CMU-CREATE-Lab/deep-smoke-machine" target="_blank">train an AI model for recognizing smoke emissions</a>.
+                The model is a deep neural network that can learn how to classify videos into two categories: having smoke or no smoke.
+                Then, we use the model to recognize smoke for many dates and camera views (refer to our <a href="event.html" target="_blank">event page</a>).
               </li>
             </ul>
             <a class="jump" name="q2"></a>
@@ -107,7 +69,7 @@
             <a class="jump" name="q3"></a>
             <p class="text no-bottom-margin add-top-margin">
               <span>
-                Q3: Why is it important to detect and visualize smoke emissions?
+                Q3: Why is it important to recognize and visualize smoke emissions?
               </span>
             </p>
             <hr>
@@ -130,7 +92,7 @@
                 Each video contains 36 frames, which represent about 6 minutes in real-world time.
               </li>
             </ul>
-            <div class="image adaptive-image no-top-margin" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
+            <a class="image adaptive-image no-top-margin cam-0-image" href="img/cam_0.png"></a>
             <a class="jump" name="q5"></a>
             <p class="text no-bottom-margin add-top-margin">
               <span>
@@ -236,7 +198,7 @@
             <ul>
               <li>
                 Smoke emissions in nighttime videos (captured by commercial digital cameras) are tough for the computer to recognize due to insufficient light.
-                We want to focus on training the computer to detect daytime smoke emissions first.
+                We want to focus on training the computer to recognize daytime smoke emissions first.
               </li>
             </ul>
             <a class="jump" name="q13"></a>
@@ -250,6 +212,49 @@
               <li>
                 We worked with the <a href="https://breatheproject.org/about/#collaborative" target="_blank">Breathe Collaborative</a> in engaging citizens to label smoke emissions.
                 We thank the <a href="https://cleanair.org/" target="_blank">Clean Air Council</a> and <a href="https://gasp-pgh.org/" target="_blank">GASP (Group Against Smog and Pollution)</a> in organizing workshops for labeling smoke events with us.
+              </li>
+            </ul>
+            <a class="jump" name="q14"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q14: Why are some dates and camera views missing on the event page?
+              </span>
+            </p>
+            <hr>
+            <ul>
+              <li>
+                Due to unexpected situations (e.g., severe weather, spider, system malfunction), the camera network can be down at some dates, or some views may be unclear.
+                We removed these dates and views in our visualization.
+              </li>
+            </ul>
+            <a class="jump" name="q15"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q15: Why do some videos on the event page have no smoke?
+              </span>
+            </p>
+            <hr>
+            <ul>
+              <li>
+                The AI model can make mistakes.
+                For example, steam and fast-moving cloud shadow may be recognized as industrial smoke emissions.
+                One way to mitigate the problem is to train the model using more annotated videos.
+                We would greatly appreciate it if you could <a href="label.html" target="_blank">help us label more videos</a>.
+              </li>
+            </ul>
+            <a class="jump" name="q16"></a>
+            <p class="text no-bottom-margin add-top-margin">
+              <span>
+                Q16: Why is the most recent date on the event page not up to the current date?
+              </span>
+            </p>
+            <hr>
+            <ul>
+              <li>
+                Processing videos involve many manual steps.
+                We have to inspect the views for each date and check if they are in good condition.
+                Then, we need to specify the location (bounding box) on the panorama.
+                Due to such limitations, we are currently unable to automate the smoke recognition system fully.
               </li>
             </ul>
           </div>

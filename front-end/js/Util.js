@@ -340,8 +340,15 @@
     };
 
     // Replace thumbnail width
-    this.replaceThumbnailWidth = function (url, new_width) {
-      return url.replace("/180/", "/320/").replace("-180-180-", "-320-320-");
+    // From Android 9, videos having small resolutions can have weird artifacts at the edge
+    // So we need to use higher resolutions
+    this.replaceThumbnailWidth = function (url) {
+      return url.replace("/180/", "/320/").replace("-180-180-", "-320-320-").replace("width=180", "width=320").replace("height=180", "height=320");
+    };
+
+    // Is mobile device
+    this.isMobile = function () {
+      return isMobileDevice;
     };
   };
 

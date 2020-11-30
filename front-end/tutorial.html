@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Smoke Hunting</title>
+  <title>Project RISE</title>
   <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" media="screen" rel="stylesheet" type="text/css" />
   <link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css" media="screen" rel="stylesheet" type="text/css" />
@@ -24,6 +24,7 @@
   <script src="js/VideoTestDialog.js"></script>
   <script src="js/tutorial_data.js"></script>
   <script src="js/tutorial.js"></script>
+  <script src="js/menu.js"></script>
   <!-- Start for Google Sign-In -->
   <meta name="google-signin-scope" content="profile email">
   <meta name="google-signin-client_id" content="231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com">
@@ -32,25 +33,7 @@
 </head>
 
 <body>
-  <div class="menu-container">
-    <div class="menu">
-      <div class="menu-table flex-row-space-between">
-        <div class="logo flex-row-center">
-          <a href="index.html">Smoke Hunting</a>
-        </div>
-        <a class="menu-button" tabindex="0" href="javascript:void(0)">
-          <img src="img/menu.png">
-        </a>
-        <div class="menu-items flex-row-center flex-item">
-          <a href="index.html">Overview</a>
-          <a href="learn.html">Learn</a>
-          <a href="label.html">Label</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="faq.html">FAQ</a>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="menu-container"></div>
   <div class="content-container">
     <div class="content">
       <div class="content-table flex-column">
@@ -64,7 +47,7 @@
                 <span class="custom-text-info-dark-theme">Congratulations! You have completed the tutorial</span> for identifying smoke emissions.
                 Please also let us know which aspects are working well and which could be improved via our <a href="https://docs.google.com/forms/d/e/1FAIpQLSf5yrCEfwR5wXLQh8jE_icZXHmPfAs19tNbx9KaAeGKg3B6Xw/viewform?usp=sf_link" target="_blank">Feedback Form</a>.
               </p>
-              <div class="image adaptive-image" style="background-image: url('img/pan.png'); min-height: 130px;"></div>
+              <a class="image adaptive-image cam-0-image" href="img/cam_0.png"></a>
               <p id="label-statistics" class="text no-top-margin">
                 Currently, the dataset has <span class="num-all-videos-text">[...]</span> videos.
                 Among them, <span class="custom-text-info-dark-theme"><span class="num-fully-labeled-text">[...]</span> are fully labeled</span> and confirmed by multiple users so far.

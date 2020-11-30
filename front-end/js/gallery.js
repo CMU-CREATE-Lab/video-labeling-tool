@@ -87,7 +87,7 @@
   // Create a video label element
   // IMPORTANT: Safari on iPhone only allows displaying maximum 16 videos at once
   // UPDATE: starting from Safari 12, more videos are allowed
-  function createVideo(v) {
+  function createVideo() {
     var $item = $("<a class='flex-column'></a>");
     // "autoplay" is needed for iPhone Safari to work
     // "preload" is ignored by mobile devices
@@ -108,7 +108,7 @@
         $control.append($label_state_researcher);
         var $label_state_citizen = $("<p class='text-small-margin'><i></i></p>");
         $control.append($label_state_citizen);
-        var $link_to_viewer = $("<p class='text-small-margin'><a target='_blank'>Link to Viewer</a></p>");
+        var $link_to_viewer = $("<p class='text-small-margin'><i></i></p>");
         $control.append($link_to_viewer);
         if (is_researcher) {
           // Add the dropdown select button
@@ -186,18 +186,19 @@
 
   function updateItem($item, v) {
     // Update date and time information
+    var src_url = v["url_root"] + v["url_part"];
     var fns = v["file_name"].split("-");
     var $i = $item.children(".label-control").find("i").removeClass();
-    var date_str = (new Date(parseInt(fns[12])*1000)).toLocaleString("en-US", {
+    var date_str = (new Date(parseInt(fns[12]) * 1000)).toLocaleString("en-US", {
       timeZone: "America/New_York",
       hour: "2-digit",
-      minute:"2-digit",
+      minute: "2-digit",
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour12: false
-    })
-    $($i.get(0)).text(date_str).addClass("custom-text-info-dark-theme");
+    });
+    $($i.get(0)).html("<a target='_blank' href='" + src_url + "'>" + date_str + "</a>");
     if (typeof user_id === "undefined") {
       if (is_admin) {
         // Update label information
@@ -215,8 +216,8 @@
         var s = camera_id_to_name[fns[0]] // camera name
         var d = fns[2] + "-" + fns[3] + "-" + fns[4]; // date
         var href = "http://mon.createlab.org/#v=" + b + ",pts&t=" + t + "&ps=25&d=" + d + "&s=" + s;
-        var $a = $item.find("a").removeClass();
-        $($a.get(0)).prop("href", href);
+        $item.find("a").removeClass();
+        $($i.get(4)).html("<a target='_blank' href='" + href + "'>Link to Viewer</a>");
         // Save data to DOM
         $item.find("select").data("v", v).val("default");
         $item.find("button").data("v", v);
@@ -237,12 +238,7 @@
       // Play the video
       util.handleVideoPromise(this, "play");
     });
-    var src_url = v["url_root"] + v["url_part"];
-    // There is a bug that the edge of small videos have weird artifacts on Google Pixel Android 9 and 10.
-    // The current workaround is to make the thumbnail larger.
-    if (util.getAndroidVersion() >= 9) {
-      src_url = util.replaceThumbnailWidth(src_url, 320);
-    }
+    src_url = util.replaceThumbnailWidth(src_url); // always use high resolution videos
     $vid.prop("src", src_url);
     util.handleVideoPromise($vid.get(0), "load"); // load to reset video promise
     return $item;
@@ -254,7 +250,7 @@
       var v = video_data[i];
       var $item;
       if (typeof video_items[i] === "undefined") {
-        $item = createVideo(v);
+        $item = createVideo();
         video_items.push($item);
         $gallery_videos.append($item);
       } else {
