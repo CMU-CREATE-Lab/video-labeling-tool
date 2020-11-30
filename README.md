@@ -164,7 +164,7 @@ Add testing videos (optional) or your own videos.
 python add_video_set_small.py confirm
 python add_video_set_large.py confirm
 ```
-Note that the system uses the following folder structure to store videos:
+We use a "add_community_videos.py" script to generate video clips, based on the panorama video on the [BreatheCam page](http://mon.createlab.org/). See the docstring in the script for more details. Note that the system uses the following folder structure to store videos:
 ```
 └── front-end                            # this corresponds to video-labeling-tool/front-end/
     └── videos
@@ -197,7 +197,7 @@ To assign gold standards videos, go to the "gallery.html" page when logging in w
 
 If you found that some videos are not suitable for labeling (e.g., due to incorrect image stitching), you can get the url of the video and use the following command to mark similar ones (with the same date and bounding box) as "bad" videos. This process does not remove videos. Instead it gives all bad videos a label state -2.
 ```sh
-python set_client_type.py [video_url]
+python mark_bad_videos.py [video_url]
 ```
 
 # <a name="dump-and-import-mysql"></a>Dump, import, and backup MySQL database

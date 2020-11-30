@@ -1,3 +1,31 @@
+"""
+This file takes a json file with a specific format (described below),
+...and then generate a set of videos (each video has 36 frames)
+
+Format of the json file:
+    {
+        "CAMERA_ID_0": [
+            [
+                EXAMPLE_URL_OF_VIEW_0_ON_DATE_0,
+                EXAMPLE_URL_OF_VIEW_1_ON_DATE_0,
+                ...
+            ],
+            [
+                EXAMPLE_URL_OF_VIEW_0_ON_DATE_1,
+                EXAMPLE_URL_OF_VIEW_1_ON_DATE_1,
+                ...
+            ],
+        ],
+        "CAMERA_ID_1": [...]
+    }
+
+An example of the URL is below:
+    https://thumbnails-v2.createlab.org/thumbnail?root=https://tiles.cmucreatelab.org/ecam/timemachines/clairton1/2018-06-11.timemachine/&width=180&height=180&startFrame=9716&format=mp4&fps=12&tileFormat=mp4&startDwell=0&endDwell=0&boundsLTRB=6304,964,6807,1467&labelsFromDataset&nframes=36
+
+For each URL in the json file, this code only uses the date and bounds information.
+"""
+
+
 import sys
 from application import add_video, get_all_url_part
 import requests
