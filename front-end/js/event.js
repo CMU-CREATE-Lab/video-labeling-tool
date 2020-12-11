@@ -391,9 +391,14 @@
   }
 
   function epochtimeToDate(epochtime) {
+    // We need to consider the timezone offset difference between the browser and the US Eastern Time
+    // We want to show the timeline in Eastern Time (Pittsburgh), but google chart uses local time
     var d = new Date(0);
     d.setUTCSeconds(epochtime);
-    return d;
+    d = moment.tz(d, "America/New_York");
+    var original_timezone_offset = d.utcOffset();
+    var browser_timezone_offset = -new Date().getTimezoneOffset();
+    return new Date(d.add(original_timezone_offset - browser_timezone_offset, "minutes"));
   }
 
   function copyAndReplaceHMS(date_obj, hour, minute, second) {
