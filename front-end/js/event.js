@@ -424,6 +424,11 @@
     $container.empty().show(); // need this line to resize properly
     var data_rows = [];
     for (var i = 0; i < data.length; i++) {
+      if (data[i][0] > data[i][1]) {
+        // Skip if the starting time is larger than ending time
+        // Not sure why this happens, weired...
+        continue;
+      }
       data_rows.push(["Event", epochtimeToDate(data[i][0]), epochtimeToDate(data[i][1])]);
     }
 
