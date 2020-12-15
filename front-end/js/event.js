@@ -390,15 +390,20 @@
     }
   }
 
-  function epochtimeToDate(epochtime) {
+  function correctTimestamp(original_timestamp_in_millisec) {
+    // This function is used to fix the timezone problem
     // We need to consider the timezone offset difference between the browser and the US Eastern Time
     // We want to show the timeline in Eastern Time (Pittsburgh), but google chart uses local time
-    var d = new Date(0);
-    d.setUTCSeconds(epochtime);
+    var d = new Date(original_timestamp_in_millisec);
     d = moment.tz(d, "America/New_York");
-    var original_timezone_offset = d.utcOffset();
-    var browser_timezone_offset = -new Date().getTimezoneOffset();
-    return new Date(d.add(original_timezone_offset - browser_timezone_offset, "minutes"));
+    var original_timezone_offset_in_min = d.utcOffset();
+    var browser_timezone_offset_in_min = -new Date().getTimezoneOffset();
+    var diff_timezone_offset_in_min = original_timezone_offset_in_min - browser_timezone_offset_in_min;
+    return original_timestamp_in_millisec + diff_timezone_offset_in_min * 60000;
+  }
+
+  function epochtimeToDate(epochtime) {
+    return new Date(correctTimestamp(epochtime * 1000));
   }
 
   function copyAndReplaceHMS(date_obj, hour, minute, second) {
