@@ -13,8 +13,8 @@
   var $page_back;
   var $page_next;
   var $page_control;
-  var current_date_str = "2019-04-02";
-  var current_camera_str = "0";
+  var current_date_str = "2020-07-07";
+  var current_camera_str = "2";
   var current_view_str = "all";
   var data_for_current_date;
   var video_test_dialog;
