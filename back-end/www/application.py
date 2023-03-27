@@ -26,7 +26,7 @@ private_key = Path("../data/private_key").read_text().strip()
 batch_size = 16 # the number of videos for each batch
 video_jwt_nbf_duration = 5 # cooldown duration (seconds) before the jwt can be accepted (to prevent spam)
 max_page_size = 1000 # the max page size allowed for getting videos
-partial_label_ratio = 0.8 # 0.8 means that we want 80% of the requested videos to be partially labeled
+partial_label_ratio = 1 # 0.8 means that we want 80% of the requested videos to be partially labeled
 gold_standard_in_batch = 4 # the number of gold standard videos added the batch for citizens (not reseacher)
 if gold_standard_in_batch < 2: gold_standard_in_batch = 2 # must be larger than 2
 

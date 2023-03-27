@@ -104,10 +104,10 @@
       tracker_id: util.getGoogleAnalyticsId(),
       ready: function (client_id) {
         google_account_dialog.silentSignInWithGoogle({
-          success: function (is_signed_in, google_user) {
+          success: function (is_signed_in, google_id_token) {
             if (is_signed_in) {
               util.login({
-                google_id_token: google_user.getAuthResponse().id_token
+                google_id_token: google_id_token
               }, {
                 success: onLoginSuccess,
                 complete: onLoginComplete

@@ -24,6 +24,9 @@
     var sign_out_success = settings["sign_out_success"];
     var no_ui = safeGet(settings["no_ui"], false);
 
+    // Client ID and API key from the Developer Console
+    var CLIENT_ID = "231059631125-7purhi103qml7hapjnetmrmcrr4jff0f.apps.googleusercontent.com";
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     // Private methods
@@ -54,15 +57,23 @@
       $guest_button.on("click", function () {
         $account_dialog.dialog("close");
       });
+      google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        auto_select: true,
+        callback: handleCredentialResponse
+      });
       renderGoogleSignInButton();
     }
 
+    function handleCredentialResponse(googleUser) {
+      var google_id_token = googleUser["credential"];
+      window.localStorage.setItem("google_id_token", google_id_token);
+      onGoogleSignInSuccess(google_id_token);
+    }
+
     function googleSignOut() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut().then(function () {
-        auth2.disconnect();
-        onGoogleSignOutSuccess();
-      });
+      window.localStorage.removeItem("google_id_token");
+      onGoogleSignOutSuccess();
     }
 
     function onGoogleSignOutSuccess() {
@@ -82,30 +93,38 @@
     }
 
     function renderGoogleSignInButton() {
-      gapi.signin2.render("google-sign-in-button", {
-        scope: "profile email",
-        prompt: "select_account",
+      google.accounts.id.renderButton(document.getElementById("google-sign-in-button"), {
+        theme: "filled_blue",
         width: 231,
-        height: 46,
-        longtitle: true,
-        theme: "dark",
-        onsuccess: function (google_user) {
-          onGoogleSignInSuccess(google_user);
-        }
-      });
+        height: 46
+      })
     }
 
-    function onGoogleSignInSuccess(google_user) {
-      var profile = google_user.getBasicProfile();
-      $guest_button.hide();
-      $google_sign_out_button.show();
-      $user_name_text.text(profile.getGivenName());
-      $hello_text.show();
-      $sign_in_text.hide();
-      $google_sign_in_button.hide();
-      $account_dialog.dialog("close");
+    function onGoogleSignInSuccess(google_id_token) {
+      if (typeof $guest_button !== "undefined") {
+        $guest_button.hide();
+      }
+      if (typeof $google_sign_out_button !== "undefined") {
+        $google_sign_out_button.show();
+      }
+      if (typeof $user_name_text !== "undefined") {
+        var google_id_token_obj = jwt_decode(google_id_token);
+        $user_name_text.text(google_id_token_obj["given_name"]);
+      }
+      if (typeof $hello_text !== "undefined") {
+        $hello_text.show();
+      }
+      if (typeof $sign_in_text !== "undefined") {
+        $sign_in_text.hide();
+      }
+      if (typeof $google_sign_in_button !== "undefined") {
+        $google_sign_in_button.hide();
+      }
+      if (typeof $account_dialog !== "undefined") {
+        $account_dialog.dialog("close");
+      }
       if (typeof sign_in_success === "function") {
-        sign_in_success(google_user);
+        sign_in_success(google_id_token);
       }
     }
 
@@ -119,54 +138,19 @@
     //
     var isAuthenticatedWithGoogle = function (callback) {
       callback = safeGet(callback, {});
-      if (typeof gapi !== "undefined" && typeof gapi.auth2 === "undefined") {
-        gapi.load("auth2", function () {
-          gapi.auth2.init().then(function () {
-            isAuthenticatedWithGoogle(callback);
-          }, function (error) {
-            if (typeof error !== "undefined") {
-              if (typeof callback["error"] === "function") {
-                callback["error"](error);
-              }
-            }
-          });
-        });
+      var google_id_token = window.localStorage.getItem("google_id_token");
+      var is_signed_in = google_id_token == null ? false : true;
+      if (is_signed_in) {
+        onGoogleSignInSuccess(google_id_token);
+        callback["success"](is_signed_in, google_id_token);
       } else {
-        if (typeof callback["success"] === "function") {
-          var auth2 = gapi.auth2.getAuthInstance();
-          var is_signed_in = auth2.isSignedIn.get();
-          if (is_signed_in) {
-            callback["success"](is_signed_in, auth2.currentUser.get());
-          } else {
-            callback["success"](is_signed_in);
-          }
-        }
+        callback["success"](is_signed_in);
       }
     };
     this.isAuthenticatedWithGoogle = isAuthenticatedWithGoogle;
 
     this.silentSignInWithGoogle = function (callback) {
-      callback = safeGet(callback, {});
-      gapi.load("auth2", function () {
-        // gapi.auth2.init() will automatically sign in a user to the application if previously signed in
-        gapi.auth2.init().then(function () {
-          if (typeof callback["success"] === "function") {
-            var auth2 = gapi.auth2.getAuthInstance();
-            var is_signed_in = auth2.isSignedIn.get();
-            if (is_signed_in) {
-              callback["success"](is_signed_in, auth2.currentUser.get());
-            } else {
-              callback["success"](is_signed_in);
-            }
-          }
-        }, function (error) {
-          if (typeof error !== "undefined") {
-            if (typeof callback["error"] === "function") {
-              callback["error"](error);
-            }
-          }
-        });
-      });
+      isAuthenticatedWithGoogle(callback);
     };
 
     this.getDialog = function () {

@@ -156,8 +156,8 @@
       }
     });
     google_account_dialog = new edaplotjs.GoogleAccountDialog({
-      sign_in_success: function (google_user) {
-        video_labeling_tool.updateUserIdByGoogleIdToken(google_user.getAuthResponse().id_token, {
+      sign_in_success: function (google_id_token) {
+        video_labeling_tool.updateUserIdByGoogleIdToken(google_id_token, {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
             $sign_in_prompt.find("span").text("Sign Out");
