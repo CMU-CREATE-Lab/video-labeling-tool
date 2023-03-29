@@ -365,7 +365,12 @@ def login():
     if request.json is not None:
         if "google_id_token" in request.json:
             google_id_token = request.json["google_id_token"]
-            id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
+            id_info = {}
+            try:
+                id_info = id_token.verify_oauth2_token(google_id_token, g_requests.Request(), google_signin_client_id)
+            except Exception as ex:
+                e = InvalidUsage(ex.args[0], status_code=418)
+                return handle_invalid_usage(e)
             if id_info["iss"] not in ["accounts.google.com", "https://accounts.google.com"]:
                 e = InvalidUsage("Wrong token issuer", status_code=401)
                 return handle_invalid_usage(e)
