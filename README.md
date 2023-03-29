@@ -297,6 +297,11 @@ Check if the service work.
 curl localhost:8080
 # Should get the "Hello World!" message
 ```
+We use a "reload" file under "back-end/www" to gracefully restart the uwsgi server, as indicated in the "uwsgi.ini" file in "touch-reload". Run the following when there are code changes on the backend and we want to restart the server.
+```sh
+cd back-end/www
+touch reload
+```
 
 # <a name="connect-uwsgi-to-apache"></a>Connect uwsgi to apache
 Obtain domains from providers such as [Google Domains](https://domains.google/) or [Namecheap](https://www.namecheap.com/) for both the back-end and the front-end. Point these domain names to the domain of the Ubuntu machine. Then install apache2 and enable mods.
@@ -504,7 +509,7 @@ The server will return a user token in the form of JWT (JSON Web Token). There a
 - Available methods:
   - POST
 - Required fields (either google_id_token or client_id):
-  - "google_id_token": from [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in)
+  - "google_id_token": from [Google Identity Service](https://developers.google.com/identity/authentication)
   - "client_id": from Google Analytics id or randomly generated uuid
 - Returned fields:
   - "user_token": user token for the front-end client
@@ -514,7 +519,7 @@ The server will return a user token in the form of JWT (JSON Web Token). There a
 $.ajax({
   url: "http://localhost:5000/api/v1/login",
   type: "POST",
-  data: JSON.stringify({google_id_token: gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().id_token}),
+  data: JSON.stringify({google_id_token: "the_returned_google_id_token"}),
   contentType: "application/json",
   dataType: "json",
   success: function (data) {console.log(data)},
