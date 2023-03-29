@@ -203,22 +203,34 @@
     // Login to the smoke labeling tool
     this.login = function (post_json, callback) {
       callback = safeGet(callback, {});
-      $.ajax({
-        url: getRootApiUrl() + "login",
-        type: "POST",
-        data: JSON.stringify(post_json),
-        contentType: "application/json",
-        dataType: "json",
-        success: function (data) {
-          if (typeof callback["success"] === "function") callback["success"](data);
-        },
-        error: function (xhr) {
-          if (typeof callback["error"] === "function") callback["error"](xhr);
-        },
-        complete: function () {
-          if (typeof callback["complete"] === "function") callback["complete"]();
-        }
-      });
+      var user_data = window.localStorage.getItem("user_data");
+      if (user_data != null) {
+        user_data = JSON.parse(user_data);
+        if (typeof callback["success"] === "function") callback["success"](user_data);
+        if (typeof callback["complete"] === "function") callback["complete"]();
+      } else {
+        $.ajax({
+          url: getRootApiUrl() + "login",
+          type: "POST",
+          data: JSON.stringify(post_json),
+          contentType: "application/json",
+          dataType: "json",
+          success: function (data) {
+            // We only want to add the user data when we know that the user has signed in with Google.
+            // Otherwise we store the Google Analytics user data and reuse it, which is wrong.
+            if (window.localStorage.getItem("google_id_token") != null) {
+              window.localStorage.setItem("user_data", JSON.stringify(data));
+            }
+            if (typeof callback["success"] === "function") callback["success"](data);
+          },
+          error: function (xhr) {
+            if (typeof callback["error"] === "function") callback["error"](xhr);
+          },
+          complete: function () {
+            if (typeof callback["complete"] === "function") callback["complete"]();
+          }
+        });
+      }
     };
 
     // Check if a string contains a substring

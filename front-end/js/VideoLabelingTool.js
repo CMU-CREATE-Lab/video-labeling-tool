@@ -45,7 +45,7 @@
     // Get the user id from the server
     function login(post_json, callback) {
       callback = safeGet(callback, {});
-      util.postJSON(api_url_root + "login", post_json, {
+      util.login(post_json, {
         success: function (data) {
           if (typeof callback["success"] === "function") callback["success"](data);
         },

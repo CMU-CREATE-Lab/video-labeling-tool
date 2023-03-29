@@ -78,6 +78,7 @@
     $("#review").prop("href", "gallery.html" + "?user_id=" + new_user_id);
     google_account_dialog.updateUserId(new_user_id);
     if (is_first_time) {
+      is_first_time = false;
       $next = $("#next");
       $next.on("click", function () {
         nextBatch();
@@ -90,7 +91,6 @@
           }
         }
       });
-      is_first_time = false;
     } else {
       // Each video batch is signed with the user id
       // So we need to load a new batch after the user id changes
@@ -173,6 +173,7 @@
         });
       },
       sign_out_success: function () {
+        window.localStorage.removeItem("user_data");
         video_labeling_tool.updateUserIdByClientId(ga_tracker.getClientId(), {
           success: function (obj) {
             onUserIdChangeSuccess(obj.userId());
